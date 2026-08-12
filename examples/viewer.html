@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>@sourcentis/bpmn-editor — read-only viewer demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!--
+    Zero backend, zero bundler: this page only needs to be served over
+    http(s) (browsers block ES module imports from file://). From this
+    directory, e.g.: `python3 -m http.server 8000`, then open
+    http://localhost:8000/viewer.html — after running `npm run build`
+    once at the package root so ../dist/bpmn-editor.js exists.
+
+    @maxgraph/core is a peerDependency of @sourcentis/bpmn-editor (it is
+    not bundled — see the "peer dependency, not a bundler" note in the
+    README) so this demo resolves it from a CDN via an import map. A real
+    project would instead resolve it from its own node_modules via its
+    bundler.
+  -->
+  <script type="importmap">
+    {
+      "imports": {
+        "@maxgraph/core": "https://esm.sh/@maxgraph/core@0.21.0",
+        "@sourcentis/bpmn-editor": "../dist/bpmn-editor.js"
+      }
+    }
+  </script>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; background: #f3f4f6; }
+    h1 { font-size: 18px; margin: 0 0 4px; }
+    p { color: #4b5563; margin: 0 0 16px; font-size: 14px; }
+    #viewer { min-height: 320px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+  </style>
+</head>
+<body>
+  <h1>@sourcentis/bpmn-editor — read-only viewer</h1>
+  <p>
+    <code>ui: 'none'</code> + <code>readOnly: true</code>: canvas only, no toolbar,
+    no editing. This is the standalone equivalent of Mercator's "show" page —
+    pan and mouse-wheel zoom still work, and the container auto-resizes to fit
+    the loaded diagram once <code>sample.bpmn</code> loads.
+  </p>
+
+  <div id="viewer"></div>
+
+  <script type="module">
+    import { createBpmnEditor } from '@sourcentis/bpmn-editor';
+
+    const container = document.getElementById('viewer');
+    const editor = createBpmnEditor(container, {
+      ui: 'none',
+      readOnly: true,
+      onNavigate: (url) => { window.location.href = url; },
+    });
+
+    editor.on('error', (err) => console.error('[bpmn-editor]', err));
+
+    fetch('./sample.bpmn')
+      .then((res) => res.text())
+      .then((xml) => editor.loadXml(xml))
+      .catch((err) => console.error('[bpmn-editor] could not load sample.bpmn', err));
+  </script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>@sourcentis/bpmn-editor — simulated backend (provider + persistence)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!--
+    Zero backend, zero bundler: this page only needs to be served over
+    http(s) (browsers block ES module imports from file://). From this
+    directory, e.g.: `python3 -m http.server 8000`, then open
+    http://localhost:8000/with-simulated-backend.html — after running
+    `npm run build` once at the package root so ../dist/bpmn-editor.js exists.
+
+    @maxgraph/core is a peerDependency of @sourcentis/bpmn-editor (it is
+    not bundled — see the "peer dependency, not a bundler" note in the
+    README) so this demo resolves it from a CDN via an import map. A real
+    project would instead resolve it from its own node_modules via its
+    bundler.
+
+    This example implements BpmnObjectProvider and BpmnPersistence entirely
+    in memory (no fetch(), no server) — it exists purely to make the two
+    port interfaces concrete and runnable. A real backend integration would
+    implement the same two interfaces against actual HTTP endpoints — see
+    the README's "Ports" section and Mercator's own adapter
+    (mercator-provider.ts / mercator-persistence.ts) for that.
+  -->
+  <script type="importmap">
+    {
+      "imports": {
+        "@maxgraph/core": "https://esm.sh/@maxgraph/core@0.21.0",
+        "@sourcentis/bpmn-editor": "../dist/bpmn-editor.js"
+      }
+    }
+  </script>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; background: #f3f4f6; }
+    h1 { font-size: 18px; margin: 0 0 4px; }
+    p { color: #4b5563; margin: 0 0 16px; font-size: 14px; }
+    #editor { height: 560px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+    #log {
+      margin-top: 12px;
+      background: #111827;
+      color: #d1fae5;
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      height: 120px;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>@sourcentis/bpmn-editor — simulated backend</h1>
+  <p>
+    <code>provider</code> and <code>persistence</code> are both implemented here
+    entirely in memory (see the &lt;script&gt; below) — no server involved. Select
+    a task/state/lane/conversation shape and use the search action in its
+    contextual menu to insert a "cartography object" from the fake catalogue,
+    or click Save to see <code>persistence.save()</code> get called.
+  </p>
+
+  <div id="editor"></div>
+  <div id="log">Waiting for events…</div>
+
+  <script type="module">
+    import { createBpmnEditor } from '@sourcentis/bpmn-editor';
+
+    const logEl = document.getElementById('log');
+    function log(message) {
+      const line = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logEl.textContent = logEl.textContent === 'Waiting for events…' ? line : `${logEl.textContent}\n${line}`;
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    // In-memory catalogue of "cartography objects" the editor can link
+    // elements to — this is exactly the shape a real BpmnObjectProvider
+    // fetch() implementation would resolve to.
+    const catalogue = {
+      graph:       [{ id: 'app-1', name: 'Invoicing service', glyph: 'A', url: '#app-1' }],
+      information: [{ id: 'info-1', name: 'Customer record', glyph: 'I', url: '#info-1' }],
+      actors:      [{ id: 'actor-1', name: 'Billing team', glyph: 'B', url: '#actor-1' }],
+      process:     [{ id: 'proc-1', name: 'Order fulfillment', glyph: 'O', url: '#proc-1' }],
+    };
+    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    const provider = {
+      async getGraphObjects()       { await delay(150); log('provider.getGraphObjects()');       return catalogue.graph; },
+      async getInformationObjects() { await delay(150); log('provider.getInformationObjects()'); return catalogue.information; },
+      async getActorObjects()       { await delay(150); log('provider.getActorObjects()');        return catalogue.actors; },
+      async getProcessObjects()     { await delay(150); log('provider.getProcessObjects()');      return catalogue.process; },
+    };
+
+    // In-memory "database" — a real BpmnPersistence would fetch() a server
+    // endpoint instead of writing to this array.
+    const savedDiagrams = new Map();
+    let nextId = 1;
+
+    const persistence = {
+      async save({ id, name, type, content }) {
+        await delay(300);
+        const savedId = id === -1 ? nextId++ : id;
+        savedDiagrams.set(savedId, { name, type, content });
+        log(`persistence.save() -> id ${savedId} (${content.length} chars)`);
+        return { id: savedId };
+      },
+    };
+
+    const container = document.getElementById('editor');
+    const editor = createBpmnEditor(container, { ui: 'default', provider, persistence });
+
+    editor.on('error', (err) => log(`error: ${err.message}`));
+    editor.on('save', (payload) => log(`'save' event fired (before persistence.save): name="${payload.name}"`));
+    editor.on('select', (cell) => log(`'select' event: ${cell ? 'a cell is selected' : 'nothing selected'}`));
+
+    fetch('./sample.bpmn')
+      .then((res) => res.text())
+      .then((xml) => editor.loadXml(xml))
+      .catch((err) => console.error('[bpmn-editor] could not load sample.bpmn', err));
+  </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+{
+  "name": "@sourcentis/bpmn-editor",
+  "version": "0.1.0",
+  "description": "BPMN diagram editor, agnostic of UI framework and backend, built on @maxgraph/core",
+  "type": "module",
+  "main": "./dist/bpmn-editor.umd.cjs",
+  "module": "./dist/bpmn-editor.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/bpmn-editor.js",
+      "require": "./dist/bpmn-editor.umd.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@maxgraph/core": "^0.21.0"
+  },
+  "devDependencies": {
+    "@maxgraph/core": "^0.21.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.16",
+    "vite-plugin-dts": "^4.5.0"
+  },
+  "keywords": [
+    "bpmn",
+    "diagram",
+    "editor",
+    "maxgraph",
+    "workflow",
+    "cartography"
+  ],
+  "license": "GPL-3.0",
+  "author": "Didier Barzin",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sourcentis/bpmn-editor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sourcentis/bpmn-editor/issues"
+  },
+  "homepage": "https://github.com/sourcentis/bpmn-editor#readme",
+  "publishConfig": {
+    "access": "public"
+  }
+}

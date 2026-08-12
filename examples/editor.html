@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>@sourcentis/bpmn-editor — standalone demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!--
+    Zero backend, zero bundler: this page only needs to be served over
+    http(s) (browsers block ES module imports from file://). From this
+    directory, e.g.: `python3 -m http.server 8000`, then open
+    http://localhost:8000/editor.html — after running `npm run build`
+    once at the package root so ../dist/bpmn-editor.js exists.
+
+    @maxgraph/core is a peerDependency of @sourcentis/bpmn-editor (it is
+    not bundled — see the "peer dependency, not a bundler" note in the
+    README) so this demo resolves it from a CDN via an import map. A real
+    project would instead resolve it from its own node_modules via its
+    bundler.
+  -->
+  <script type="importmap">
+    {
+      "imports": {
+        "@maxgraph/core": "https://esm.sh/@maxgraph/core@0.21.0",
+        "@sourcentis/bpmn-editor": "../dist/bpmn-editor.js"
+      }
+    }
+  </script>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; background: #f3f4f6; }
+    h1 { font-size: 18px; margin: 0 0 4px; }
+    p { color: #4b5563; margin: 0 0 16px; font-size: 14px; }
+    #editor { height: 640px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+  </style>
+</head>
+<body>
+  <h1>@sourcentis/bpmn-editor</h1>
+  <p>
+    Standalone editor, <code>ui: 'default'</code>, no <code>provider</code> and no
+    <code>persistence</code> configured. Starts by loading <code>sample.bpmn</code>
+    (via <code>editor.loadXml()</code>) so there's something to look at — edit it,
+    drag new shapes from the palette, connect them, or use Import/Export in the
+    toolbar to load/save your own file. Everything runs client-side.
+  </p>
+
+  <div id="editor"></div>
+
+  <script type="module">
+    import { createBpmnEditor } from '@sourcentis/bpmn-editor';
+
+    const container = document.getElementById('editor');
+    const editor = createBpmnEditor(container, { ui: 'default' });
+
+    editor.on('error', (err) => console.error('[bpmn-editor]', err));
+
+    fetch('./sample.bpmn')
+      .then((res) => res.text())
+      .then((xml) => editor.loadXml(xml))
+      .catch((err) => console.error('[bpmn-editor] could not load sample.bpmn', err));
+  </script>
+</body>
+</html>
