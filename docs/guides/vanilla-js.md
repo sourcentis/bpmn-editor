@@ -12,11 +12,10 @@ From the package root:
 ```bash
 npm install
 npm run build      # produces dist/bpmn-editor.js
-cd examples
-python3 -m http.server 8000
+npm run serve      # start http server at http://localhost:8000
 ```
 
-Then open `http://localhost:8000/editor.html`. Browsers block ES module
+Then open `http://localhost:8000/examples/editor.html`. Browsers block ES module
 imports from `file://` URLs, so a static server (any will do — the Python
 one above needs nothing installed beyond Python itself) is required even
 though there's no actual backend involved.
