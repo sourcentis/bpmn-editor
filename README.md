@@ -23,7 +23,7 @@ is a peer dependency you install alongside it. Think of the distinction as:
   editor still works fully standalone: draw, import a `.bpmn`/XML file,
   export it back out.
 
-[<img src="docs/images/sample1.png" width="400">](docs/images/sample1.png)
+[<img src="docs/images/sample1.png" width="600">](docs/images/sample1.png)
 
 ## Features
 
