@@ -239,6 +239,14 @@ export function initBpmnEditor(
         return prevIsCellSelectable ? prevIsCellSelectable(cell) : true;
     };
 
+    // Curseur "déplacer" (4 flèches) au survol d'un "state", comme sur un "process"
+    const prevGetCursorForCell = graph.getCursorForCell?.bind(graph);
+    (graph as any).getCursorForCell = (cell: any) => {
+        const names = cell?.style?.baseStyleNames ?? [];
+        if (names.includes('state') || names.includes('stateIcon')) return 'move';
+        return prevGetCursorForCell ? prevGetCursorForCell(cell) : null;
+    };
+
     // Autoriser le drop uniquement dans les lanes
     graph.getDropTarget = function (cells: any[], _evt: MouseEvent, cell: any) {
         if (cell?.style?.baseStyleNames?.includes?.("lane")) return cell;
