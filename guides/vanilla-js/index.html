@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://sourcentis.github.io/bpmn-editor/guides/vanilla-js/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Vanilla JS / HTML - bpmn-editor</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Vanilla JS / HTML";
+        var mkdocs_page_input_path = "guides/vanilla-js.md";
+        var mkdocs_page_url = "/bpmn-editor/guides/vanilla-js/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> bpmn-editor
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Guides</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Vanilla JS / HTML</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#running-the-examples">Running the examples</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#the-editor-from-scratch">The editor, from scratch</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#resolving-maxgraphcore-without-a-bundler">Resolving @maxgraph/core without a bundler</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#loading-an-existing-diagram">Loading an existing diagram</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#read-only-viewer">Read-only viewer</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#next-steps">Next steps</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../backend-integration/">Backend integration</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../i18n/">i18n</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../assets/">Assets</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../api-reference/">API reference</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../security/">Security / CSP</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">bpmn-editor</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Guides</li>
+      <li class="breadcrumb-item active">Vanilla JS / HTML</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/sourcentis/bpmn-editor/edit/master/docs/guides/vanilla-js.md">Edit on sourcentis/bpmn-editor</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="guide-vanilla-js-html-no-backend">Guide: Vanilla JS / HTML (no backend)<a class="headerlink" href="#guide-vanilla-js-html-no-backend" title="Permanent link">&para;</a></h1>
+<p>The editor works fully standalone: no server, no build step required to try
+it. This guide walks through <a href="https://github.com/sourcentis/bpmn-editor/blob/main/examples/editor.html"><code>examples/editor.html</code></a>
+and <a href="https://github.com/sourcentis/bpmn-editor/blob/main/examples/viewer.html"><code>examples/viewer.html</code></a>
+— see also the <a href="../../#live-examples">live, runnable versions</a> on the Home page.</p>
+<h2 id="running-the-examples">Running the examples<a class="headerlink" href="#running-the-examples" title="Permanent link">&para;</a></h2>
+<p>From the package root:</p>
+<pre><code class="language-bash">npm install
+npm run build      # produces dist/bpmn-editor.js
+cd examples
+python3 -m http.server 8000
+</code></pre>
+<p>Then open <code>http://localhost:8000/editor.html</code>. Browsers block ES module
+imports from <code>file://</code> URLs, so a static server (any will do — the Python
+one above needs nothing installed beyond Python itself) is required even
+though there's no actual backend involved.</p>
+<h2 id="the-editor-from-scratch">The editor, from scratch<a class="headerlink" href="#the-editor-from-scratch" title="Permanent link">&para;</a></h2>
+<pre><code class="language-html">&lt;div id=&quot;editor&quot; style=&quot;height: 640px;&quot;&gt;&lt;/div&gt;
+
+&lt;script type=&quot;module&quot;&gt;
+  import { createBpmnEditor } from '@sourcentis/bpmn-editor';
+
+  const editor = createBpmnEditor(document.getElementById('editor'), {
+    ui: 'default',
+  });
+&lt;/script&gt;
+</code></pre>
+<p><code>ui: 'default'</code> builds a complete toolbar (drag-and-drop palette,
+zoom/undo/redo, save, import, export-to-SVG) and a status bar, entirely
+inside the <code>&lt;div&gt;</code> — no other markup or CSS needed.</p>
+<h2 id="resolving-maxgraphcore-without-a-bundler">Resolving <code>@maxgraph/core</code> without a bundler<a class="headerlink" href="#resolving-maxgraphcore-without-a-bundler" title="Permanent link">&para;</a></h2>
+<p><code>@maxgraph/core</code> is a peer dependency (see
+<a href="../../#what-this-is-and-isnt">"What this is (and isn't)"</a> for why
+it isn't bundled). In a real project with a bundler (Vite, webpack, …),
+<code>npm install @maxgraph/core</code> is enough — your bundler resolves the bare
+<code>import ... from '@maxgraph/core'</code> from <code>node_modules</code> automatically.</p>
+<p>Without a bundler, the browser needs to be told where to find it. The
+examples use an <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script/type/importmap">import map</a>
+pointing at a CDN:</p>
+<pre><code class="language-html">&lt;script type=&quot;importmap&quot;&gt;
+  {
+    &quot;imports&quot;: {
+      &quot;@maxgraph/core&quot;: &quot;https://esm.sh/@maxgraph/core@0.21.0&quot;,
+      &quot;@sourcentis/bpmn-editor&quot;: &quot;../dist/bpmn-editor.js&quot;
+    }
+  }
+&lt;/script&gt;
+</code></pre>
+<h2 id="loading-an-existing-diagram">Loading an existing diagram<a class="headerlink" href="#loading-an-existing-diagram" title="Permanent link">&para;</a></h2>
+<pre><code class="language-js">const editor = createBpmnEditor(container, { ui: 'default' });
+
+fetch('./sample.bpmn')
+  .then((res) =&gt; res.text())
+  .then((xml) =&gt; editor.loadXml(xml));
+</code></pre>
+<p>See the <a href="../../api-reference/#a-note-on-xml-formats">API reference's note on XML formats</a>
+— <code>loadXml()</code> expects the editor's own serialization format (what
+<code>getXml()</code> produces), not raw BPMN 2.0 XML. The toolbar's <strong>Import</strong> button
+is the one that reads actual BPMN 2.0 files from other tools.</p>
+<h2 id="read-only-viewer">Read-only viewer<a class="headerlink" href="#read-only-viewer" title="Permanent link">&para;</a></h2>
+<pre><code class="language-js">const viewer = createBpmnEditor(document.getElementById('viewer'), {
+  ui: 'none',
+  readOnly: true,
+});
+viewer.loadXml(xml);
+</code></pre>
+<p><code>ui: 'none'</code> + <code>readOnly: true</code> renders just the canvas, disables editing,
+keeps pan/wheel-zoom, and auto-resizes the container to fit the diagram.
+See <a href="https://github.com/sourcentis/bpmn-editor/blob/main/examples/viewer.html"><code>examples/viewer.html</code></a>.</p>
+<h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../backend-integration/">Backend integration guide</a> — implement the
+  optional <code>provider</code>/<code>persistence</code> ports against a real API.</li>
+<li><a href="https://github.com/sourcentis/bpmn-editor/blob/main/examples/with-simulated-backend.html"><code>examples/with-simulated-backend.html</code></a> —
+  the same ports, implemented in memory, runnable with no server at all.</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../.." class="btn btn-neutral float-left" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../backend-integration/" class="btn btn-neutral float-right" title="Backend integration">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>GPL-3.0 — © Sourcentis</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/sourcentis/bpmn-editor" class="fa fa-code-fork" style="color: #fcfcfc"> sourcentis/bpmn-editor</a>
+        </span>
+    
+    
+      <span><a href="../.." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../backend-integration/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

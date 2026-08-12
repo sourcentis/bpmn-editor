@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://sourcentis.github.io/bpmn-editor/guides/backend-integration/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Backend integration - bpmn-editor</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Backend integration";
+        var mkdocs_page_input_path = "guides/backend-integration.md";
+        var mkdocs_page_url = "/bpmn-editor/guides/backend-integration/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> bpmn-editor
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Guides</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../vanilla-js/">Vanilla JS / HTML</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Backend integration</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#bpmnobjectprovider">BpmnObjectProvider</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#bpmnpersistence">BpmnPersistence</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#if-youre-using-ui-none">If you're using ui: 'none'</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#mercator-a-worked-example">Mercator: a worked example</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../i18n/">i18n</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../assets/">Assets</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../api-reference/">API reference</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../security/">Security / CSP</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">bpmn-editor</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Guides</li>
+      <li class="breadcrumb-item active">Backend integration</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/sourcentis/bpmn-editor/edit/master/docs/guides/backend-integration.md">Edit on sourcentis/bpmn-editor</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="guide-backend-integration">Guide: backend integration<a class="headerlink" href="#guide-backend-integration" title="Permanent link">&para;</a></h1>
+<p>The editor talks to a backend only through two optional ports —
+<code>BpmnObjectProvider</code> and <code>BpmnPersistence</code> (both plain TypeScript
+interfaces, see the <a href="../../api-reference/#ports">API reference</a> for their
+full shape). Nothing in the editor's own code knows about HTTP, CSRF,
+routes, or any particular backend framework; all of that lives in your
+implementation of these two interfaces.</p>
+<p>This guide is framework-agnostic — the fetch calls below are plain
+<code>fetch()</code>, adapt them to whatever your backend actually expects. <strong>Laravel
+is not assumed anywhere in this package</strong>; it just happens to be the
+backend Mercator (the reference integration below) uses.</p>
+<h2 id="bpmnobjectprovider"><code>BpmnObjectProvider</code><a class="headerlink" href="#bpmnobjectprovider" title="Permanent link">&para;</a></h2>
+<p>Powers the "insert cartography object" search action inside the contextual
+menu that appears when you select an element. Implement it against
+whatever "catalogue of things a diagram element can link to" means in your
+app:</p>
+<pre><code class="language-ts">import type { BpmnObjectProvider } from '@sourcentis/bpmn-editor';
+
+const provider: BpmnObjectProvider = {
+  getGraphObjects: () =&gt;
+    fetch('/api/applications', { credentials: 'same-origin' })
+      .then((res) =&gt; res.json()),
+  getInformationObjects: () =&gt;
+    fetch('/api/information', { credentials: 'same-origin' })
+      .then((res) =&gt; res.json()),
+  getActorObjects: () =&gt;
+    fetch('/api/actors', { credentials: 'same-origin' })
+      .then((res) =&gt; res.json()),
+  getProcessObjects: () =&gt;
+    fetch('/api/processes', { credentials: 'same-origin' })
+      .then((res) =&gt; res.json()),
+};
+
+createBpmnEditor(container, { provider });
+</code></pre>
+<p>Each endpoint should resolve to an array of <code>{ id, name, glyph, url? }</code>.
+Leave the <code>provider</code> option out entirely and this feature is simply hidden
+— nothing else about the editor changes.</p>
+<h2 id="bpmnpersistence"><code>BpmnPersistence</code><a class="headerlink" href="#bpmnpersistence" title="Permanent link">&para;</a></h2>
+<p>Powers the built-in <code>ui: 'default'</code> toolbar's Save button:</p>
+<pre><code class="language-ts">import type { BpmnPersistence } from '@sourcentis/bpmn-editor';
+
+const persistence: BpmnPersistence = {
+  save: ({ id, name, type, content }) =&gt;
+    fetch(`/api/diagrams/${id}`, {
+      method: 'PUT',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, type, content }),
+    }).then((res) =&gt; {
+      if (!res.ok) throw new Error(`Save failed (${res.status})`);
+      return res.json(); // must resolve to { id }
+    }),
+};
+
+createBpmnEditor(container, { persistence });
+</code></pre>
+<p>Leave <code>persistence</code> out and Save downloads a local <code>.bpmn</code> file instead —
+useful for prototyping before a save endpoint exists.</p>
+<h3 id="if-youre-using-ui-none">If you're using <code>ui: 'none'</code><a class="headerlink" href="#if-youre-using-ui-none" title="Permanent link">&para;</a></h3>
+<p>The built-in Save button doesn't exist in <code>ui: 'none'</code> mode (there's no
+toolbar at all), so <code>options.persistence</code> has no effect there. Call your
+<code>BpmnPersistence</code> implementation directly from your own Save button
+instead:</p>
+<pre><code class="language-ts">const editor = createBpmnEditor(container, { ui: 'none' });
+
+document.getElementById('my-save-button').addEventListener('click', async () =&gt; {
+  const content = editor.getXml();
+  const { id } = await persistence.save({ id: currentId, name, type, content });
+  currentId = id;
+});
+</code></pre>
+<p>This is exactly the pattern Mercator's own adapter uses — see below.</p>
+<h2 id="mercator-a-worked-example">Mercator: a worked example<a class="headerlink" href="#mercator-a-worked-example" title="Permanent link">&para;</a></h2>
+<p><a href="https://github.com/dbarzin/mercator">Mercator</a> (a Laravel app) is the
+project this package was extracted from, and its current BPMN editor is
+built on it — mounted with <code>ui: 'none'</code> to reuse Mercator's own Bootstrap
+sidebar/toolbar. Its two adapter files
+(<code>resources/BPMN/mercator-provider.ts</code> and <code>mercator-persistence.ts</code> in the
+Mercator repo — not part of this package) implement exactly the two ports
+above against Laravel routes, with the framework-specific details fully
+contained there:</p>
+<pre><code class="language-ts">// mercator-provider.ts (excerpt)
+async function fetchBpmnObjects(endpoint: string): Promise&lt;BpmnElementDef[]&gt; {
+  const res = await fetch(endpoint, {
+    method: 'GET',
+    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    credentials: 'same-origin',
+  });
+  const data = await res.json();
+  return data.map((o) =&gt; ({ id: o.id, name: o.name, glyph: o.id[0], url: o.url }));
+}
+
+export const MercatorBpmnProvider: BpmnObjectProvider = {
+  getGraphObjects:       () =&gt; fetchBpmnObjects('/admin/bpmn/objects'),
+  getInformationObjects: () =&gt; fetchBpmnObjects('/admin/bpmn/information'),
+  getActorObjects:       () =&gt; fetchBpmnObjects('/admin/bpmn/actors'),
+  getProcessObjects:     () =&gt; fetchBpmnObjects('/admin/bpmn/process'),
+};
+</code></pre>
+<pre><code class="language-ts">// mercator-persistence.ts (excerpt)
+export const MercatorBpmnPersistence: BpmnPersistence = {
+  async save({ id, name, type, content }) {
+    if (!name.trim()) throw new Error('Le nom du graphe est obligatoire.');
+
+    const response = await fetch(`/admin/bpmn/${id}`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name=&quot;csrf-token&quot;]')?.getAttribute('content') ?? '',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      // Laravel's PUT-via-POST convention — nothing the editor itself needs to know about.
+      body: JSON.stringify({ _method: 'PUT', id, name, type, content }),
+    });
+    if (response.status !== 200) throw new Error('Erreur lors de la sauvegarde du graphe.');
+
+    const { graph_id: graphId } = await response.json();
+    // Reflect the newly-assigned id back into the page — Mercator uses a
+    // fixed #id input and the URL to track &quot;which diagram is this&quot;.
+    const idInput = document.getElementById('id');
+    if (idInput &amp;&amp; graphId) idInput.value = String(graphId);
+    if (id === -1 &amp;&amp; graphId) window.history.replaceState({}, '', `/admin/bpmn/${graphId}`);
+
+    return { id: graphId };
+  },
+};
+</code></pre>
+<p>And its bootstrap (<code>resources/BPMN/bpmn.ts</code> in the Mercator repo) ties it
+together, mounting with <code>ui: 'none'</code> and driving Mercator's own toolbar
+buttons through the editor's instance API:</p>
+<pre><code class="language-ts">const editor = createBpmnEditor(document.getElementById('graph-container'), {
+  ui: 'none',
+  paletteRoot: document.getElementById('sidebar'), // Mercator's own palette, tagged with data-node-type
+  provider: MercatorBpmnProvider,
+  persistence: MercatorBpmnPersistence,
+  onNavigate: (url) =&gt; { window.location.href = url; },
+});
+
+document.getElementById('zoom-in-btn').addEventListener('click', () =&gt; editor.zoomIn());
+document.getElementById('save-btn').addEventListener('click', async () =&gt; {
+  const content = editor.getXml();
+  await MercatorBpmnPersistence.save({ id: currentId(), name: nameField.value, type: typeField.value, content });
+});
+</code></pre>
+<p>No CSRF handling, no route strings, no <code>_method: 'PUT'</code> convention appears
+anywhere in the editor package itself — all of it lives in these three
+adapter files, on the host side of the port boundary.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../vanilla-js/" class="btn btn-neutral float-left" title="Vanilla JS / HTML"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../i18n/" class="btn btn-neutral float-right" title="i18n">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>GPL-3.0 — © Sourcentis</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/sourcentis/bpmn-editor" class="fa fa-code-fork" style="color: #fcfcfc"> sourcentis/bpmn-editor</a>
+        </span>
+    
+    
+      <span><a href="../vanilla-js/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../i18n/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

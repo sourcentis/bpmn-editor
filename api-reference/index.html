@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://sourcentis.github.io/bpmn-editor/api-reference/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>API reference - bpmn-editor</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "API reference";
+        var mkdocs_page_input_path = "api-reference.md";
+        var mkdocs_page_url = "/bpmn-editor/api-reference/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> bpmn-editor
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/vanilla-js/">Vanilla JS / HTML</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/backend-integration/">Backend integration</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/i18n/">i18n</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/assets/">Assets</a>
+                  </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">API reference</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#createbpmneditorcontainer-options">createBpmnEditor(container, options?)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#bpmneditoroptions">BpmnEditorOptions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#bpmneditorinstance">BpmnEditorInstance</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#loadxmlxml-string-void">loadXml(xml: string): void</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#getxml-string">getXml(): string</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#importbpmnxmlxml-string-void">importBpmnXml(xml: string): void</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#setenabledenabled-boolean-void">setEnabled(enabled: boolean): void</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#exportsvgfilename-string-promisevoid">exportSvg(filename?: string): Promise&lt;void&gt;</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#zoomin-zoomout-fit">zoomIn() / zoomOut() / fit()</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#onevent-handler-offevent-handler">on(event, handler) / off(event, handler)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#destroy-void">destroy(): void</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#events">Events</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ports">Ports</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#bpmnobjectprovider">BpmnObjectProvider</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#bpmnpersistence">BpmnPersistence</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#bpmneditormessages-i18n">BpmnEditorMessages / i18n</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#a-note-on-xml-formats">A note on XML formats</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../security/">Security / CSP</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">bpmn-editor</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">API reference</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/sourcentis/bpmn-editor/edit/master/docs/api-reference.md">Edit on sourcentis/bpmn-editor</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="api-reference">API reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h1>
+<p>Full reference for <code>@sourcentis/bpmn-editor</code>. For a quicker orientation, see
+the <a href="../">Home page</a>; for task-oriented walkthroughs, see the
+<a href="../guides/vanilla-js/">guides</a>.</p>
+<h2 id="createbpmneditorcontainer-options"><code>createBpmnEditor(container, options?)</code><a class="headerlink" href="#createbpmneditorcontainer-options" title="Permanent link">&para;</a></h2>
+<p>The package's single entry point.</p>
+<pre><code class="language-ts">function createBpmnEditor(
+  container: HTMLElement,
+  options?: BpmnEditorOptions
+): BpmnEditorInstance;
+</code></pre>
+<ul>
+<li><code>container</code> — an element already in the DOM. Its existing children are
+  removed; the editor builds its own DOM inside it. Never assumes anything
+  about <code>container</code>'s id or the surrounding page.</li>
+<li>Nothing runs at import time — creating an instance is the only side
+  effect, and it's entirely scoped to <code>container</code> (plus one shared,
+  idempotently-injected <code>&lt;style&gt;</code> tag reused by every instance on the page).</li>
+<li>Safe to call multiple times on different containers: instances don't
+  share state, and <code>destroy()</code> on one never affects another.</li>
+</ul>
+<h2 id="bpmneditoroptions"><code>BpmnEditorOptions</code><a class="headerlink" href="#bpmneditoroptions" title="Permanent link">&para;</a></h2>
+<pre><code class="language-ts">interface BpmnEditorOptions {
+  ui?: 'default' | 'none';
+  readOnly?: boolean;
+  provider?: BpmnObjectProvider;
+  persistence?: BpmnPersistence;
+  onNavigate?: (url: string) =&gt; void;
+  paletteRoot?: HTMLElement | null;
+  messages?: BpmnEditorMessages;
+  fontUrl?: string;
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ui</code></td>
+<td><code>'default' \| 'none'</code></td>
+<td><code>'default'</code></td>
+<td><code>'default'</code> builds a toolbar (drag palette, zoom/undo/redo/save/import/export-SVG) and a status bar inside <code>container</code>. <code>'none'</code> builds only the canvas — the contextual per-element menu is still built in both modes, since it's core editing UX, not toolbar chrome.</td>
+</tr>
+<tr>
+<td><code>readOnly</code></td>
+<td><code>boolean</code></td>
+<td><code>false</code></td>
+<td>Disables editing; enables mouse-wheel zoom, cursor-becomes-pointer + click-to-navigate over elements with a <code>url</code>, and auto-resizes the container's height to fit the loaded diagram after <code>loadXml()</code>. With <code>ui: 'default'</code> this suppresses the toolbar/palette/file-input (there's nothing to edit with) but a status bar is still built.</td>
+</tr>
+<tr>
+<td><code>provider</code></td>
+<td><code>BpmnObjectProvider</code></td>
+<td>—</td>
+<td>See <a href="#ports">Ports</a>. Absent → the "insert cartography object" search action in the contextual menu is hidden and disabled; everything else works normally.</td>
+</tr>
+<tr>
+<td><code>persistence</code></td>
+<td><code>BpmnPersistence</code></td>
+<td>—</td>
+<td>See <a href="#ports">Ports</a>. Only consumed by the built-in <code>ui: 'default'</code> "Save" toolbar button — absent there, "Save" downloads a local <code>.bpmn</code> file instead. Has <strong>no effect at all</strong> in <code>ui: 'none'</code> mode (there's no built-in Save button to call it); a <code>ui: 'none'</code> host wanting persistence should call its own <code>BpmnPersistence</code> implementation directly from its own button.</td>
+</tr>
+<tr>
+<td><code>onNavigate</code></td>
+<td><code>(url: string) =&gt; void</code></td>
+<td>—</td>
+<td>Called (alongside the <code>navigate</code> event) when an element carrying a <code>url</code> is clicked in <code>readOnly</code> mode. Absent → clicking such an element is a no-op besides the event still firing (you can rely on <code>on('navigate', …)</code> alone if you prefer).</td>
+</tr>
+<tr>
+<td><code>paletteRoot</code></td>
+<td><code>HTMLElement \| null</code></td>
+<td>—</td>
+<td>Only meaningful with <code>ui: 'none'</code>. Point it at a container whose descendants carry <code>data-node-type</code> attributes to reuse the built-in drag-to-insert mechanism with your own palette markup. Ignored with <code>ui: 'default'</code> (the built-in palette is used instead). Valid <code>data-node-type</code> values: <code>task-node</code>, <code>state-node</code>, <code>gateway-node</code>, <code>data-node</code>, <code>lane-node</code>, <code>activities-node</code>, <code>annotation-node</code>, <code>conversation-node</code>.</td>
+</tr>
+<tr>
+<td><code>messages</code></td>
+<td><code>BpmnEditorMessages</code></td>
+<td>bundled French</td>
+<td>See <a href="#bpmneditormessages-i18n">Messages</a> below and the <a href="../guides/i18n/">i18n guide</a>.</td>
+</tr>
+<tr>
+<td><code>fontUrl</code></td>
+<td><code>string</code></td>
+<td>bundled font (data URI)</td>
+<td>Overrides the font used when embedding the BPMN glyph font into an SVG export (<code>exportSvg()</code> / the toolbar's SVG button). Does <strong>not</strong> affect on-canvas rendering, which always uses the bundled <code>@font-face</code>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="bpmneditorinstance"><code>BpmnEditorInstance</code><a class="headerlink" href="#bpmneditorinstance" title="Permanent link">&para;</a></h2>
+<p>The object <code>createBpmnEditor</code> returns.</p>
+<pre><code class="language-ts">interface BpmnEditorInstance {
+  loadXml(xml: string): void;
+  getXml(): string;
+  importBpmnXml(xml: string): void;
+  setEnabled(enabled: boolean): void;
+  exportSvg(filename?: string): Promise&lt;void&gt;;
+  zoomIn(): void;
+  zoomOut(): void;
+  fit(): void;
+  on&lt;K extends BpmnEditorEventName&gt;(event: K, handler: (payload: BpmnEditorEventMap[K]) =&gt; void): void;
+  off&lt;K extends BpmnEditorEventName&gt;(event: K, handler: (payload: BpmnEditorEventMap[K]) =&gt; void): void;
+  destroy(): void;
+}
+</code></pre>
+<h3 id="loadxmlxml-string-void"><code>loadXml(xml: string): void</code><a class="headerlink" href="#loadxmlxml-string-void" title="Permanent link">&para;</a></h3>
+<p>Replaces the current graph with the one described by <code>xml</code> (the format
+<code>getXml()</code>/<code>loadXml()</code> round-trip — MaxGraph's own model serialization, the
+same format Mercator stores diagrams in; <strong>not</strong> raw BPMN 2.0 XML — see the
+<a href="#a-note-on-xml-formats">assets/format note</a> below). Fires <code>change</code>. Throws
+(and emits <code>error</code>) if <code>xml</code> can't be parsed — the graph is left unchanged
+in that case. In <code>readOnly</code> mode, also schedules the container's
+auto-resize.</p>
+<h3 id="getxml-string"><code>getXml(): string</code><a class="headerlink" href="#getxml-string" title="Permanent link">&para;</a></h3>
+<p>Serializes the current graph. Never throws in practice (an empty graph
+serializes to an empty-but-valid document).</p>
+<h3 id="importbpmnxmlxml-string-void"><code>importBpmnXml(xml: string): void</code><a class="headerlink" href="#importbpmnxmlxml-string-void" title="Permanent link">&para;</a></h3>
+<p>Replaces the current graph by parsing standard BPMN 2.0 XML — the format
+real BPMN modeling tools export, distinct from <code>loadXml()</code>'s format (see
+<a href="#a-note-on-xml-formats">the XML formats note</a>). This is the same parser
+the built-in <code>ui: 'default'</code> toolbar's file-input <strong>Import</strong> button uses
+internally, exposed so a <code>ui: 'none'</code> host (or any other caller — a drag-and-drop
+zone, a URL parameter, …) can trigger the same import programmatically.
+Fires <code>change</code> on success. Throws (and emits <code>error</code>) if <code>xml</code> can't be
+parsed — the graph is left unchanged in that case.</p>
+<h3 id="setenabledenabled-boolean-void"><code>setEnabled(enabled: boolean): void</code><a class="headerlink" href="#setenabledenabled-boolean-void" title="Permanent link">&para;</a></h3>
+<p>Toggles editing at runtime — the same switch <code>readOnly</code> flips at creation
+time, exposed so you can change it after the fact (e.g. an edit/view toggle
+button) without re-creating the instance. Note this only touches
+editability; it does not add or remove the <code>readOnly</code>-mode extras
+(wheel-zoom, click-to-navigate, auto-resize) that were wired in based on the
+<code>readOnly</code> option at creation time.</p>
+<h3 id="exportsvgfilename-string-promisevoid"><code>exportSvg(filename?: string): Promise&lt;void&gt;</code><a class="headerlink" href="#exportsvgfilename-string-promisevoid" title="Permanent link">&para;</a></h3>
+<p>Exports the current graph as an SVG file (with the BPMN glyph font embedded
+so it renders correctly outside the browser) and triggers a browser
+download. <code>filename</code> defaults to <code>"bpmn-export.svg"</code>. This is exactly what
+the built-in <code>ui: 'default'</code> toolbar's SVG button calls — use it to wire
+your own button when mounting with <code>ui: 'none'</code>.</p>
+<h3 id="zoomin-zoomout-fit"><code>zoomIn()</code> / <code>zoomOut()</code> / <code>fit()</code><a class="headerlink" href="#zoomin-zoomout-fit" title="Permanent link">&para;</a></h3>
+<p>Viewport controls, usable regardless of <code>ui</code> mode. <code>fit()</code> centers the
+current view on the graph's contents.</p>
+<h3 id="onevent-handler-offevent-handler"><code>on(event, handler)</code> / <code>off(event, handler)</code><a class="headerlink" href="#onevent-handler-offevent-handler" title="Permanent link">&para;</a></h3>
+<p>Subscribe/unsubscribe. See <a href="#events">Events</a> below.</p>
+<h3 id="destroy-void"><code>destroy(): void</code><a class="headerlink" href="#destroy-void" title="Permanent link">&para;</a></h3>
+<p>Removes every listener the instance added — including ones on
+<code>window</code>/<code>document</code>, not just inside <code>container</code> — and empties <code>container</code>.
+Idempotent (safe to call more than once). After <code>destroy()</code>, the instance
+should not be used further.</p>
+<h2 id="events">Events<a class="headerlink" href="#events" title="Permanent link">&para;</a></h2>
+<pre><code class="language-ts">interface BpmnEditorEventMap {
+  change: undefined;
+  select: Cell | null;
+  save: { id: number; name: string; type: string; content: string };
+  navigate: string;
+  error: Error;
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Payload</th>
+<th>Fires when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>change</code></td>
+<td><code>undefined</code></td>
+<td>The graph model changes: an edit, an undo/redo, or a <code>loadXml()</code> call.</td>
+</tr>
+<tr>
+<td><code>select</code></td>
+<td><code>Cell \| null</code> (a <code>@maxgraph/core</code> <code>Cell</code>)</td>
+<td>The selection changes. <code>null</code> when nothing, or more than one thing, is selected.</td>
+</tr>
+<tr>
+<td><code>save</code></td>
+<td><code>BpmnPersistencePayload</code> (<code>{ id, name, type, content }</code>)</td>
+<td>Right before the built-in <code>ui: 'default'</code> Save button calls <code>persistence.save(payload)</code> — an observation hook, not a place to short-circuit the save.</td>
+</tr>
+<tr>
+<td><code>navigate</code></td>
+<td><code>url: string</code></td>
+<td>A <code>readOnly</code>-mode click lands on an element carrying a <code>url</code> — fires alongside (not instead of) <code>onNavigate</code>.</td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td><code>Error</code></td>
+<td>An XML parse failure, a rejected <code>provider</code>/<code>persistence</code> call, or an <code>exportSvg()</code> failure.</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-ts">editor.on('select', (cell) =&gt; {
+  saveButton.disabled = cell === null;
+});
+</code></pre>
+<h2 id="ports">Ports<a class="headerlink" href="#ports" title="Permanent link">&para;</a></h2>
+<p>Both ports are plain TypeScript interfaces — implement only what you need.
+Neither is required; the editor degrades gracefully without them (see the
+<code>provider</code>/<code>persistence</code> rows in the <a href="#bpmneditoroptions">options table</a>
+above for exactly what's disabled/falls back).</p>
+<h3 id="bpmnobjectprovider"><code>BpmnObjectProvider</code><a class="headerlink" href="#bpmnobjectprovider" title="Permanent link">&para;</a></h3>
+<pre><code class="language-ts">interface BpmnObjectProvider {
+  getGraphObjects(): Promise&lt;BpmnElementDef[]&gt;;
+  getInformationObjects(): Promise&lt;BpmnElementDef[]&gt;;
+  getActorObjects(): Promise&lt;BpmnElementDef[]&gt;;
+  getProcessObjects(): Promise&lt;BpmnElementDef[]&gt;;
+}
+
+type BpmnElementDef = {
+  id: string;
+  name: string;
+  glyph: string;
+  url?: string;
+};
+</code></pre>
+<p>Each method backs the "insert cartography object" search for a different
+selected-element kind (process/task element → <code>getGraphObjects</code>, data
+object → <code>getInformationObjects</code>, lane → <code>getActorObjects</code>, conversation →
+<code>getProcessObjects</code>). <code>glyph</code> is a short label rendered next to <code>name</code> in
+the picker list (Mercator's own provider uses the first character of <code>id</code>;
+any short string works).</p>
+<p>Minimal in-memory example (see
+<a href="https://github.com/sourcentis/bpmn-editor/blob/main/examples/with-simulated-backend.html"><code>examples/with-simulated-backend.html</code></a>
+for a runnable version):</p>
+<pre><code class="language-ts">const provider: BpmnObjectProvider = {
+  getGraphObjects:       async () =&gt; [{ id: 'a1', name: 'Invoicing', glyph: 'A' }],
+  getInformationObjects: async () =&gt; [{ id: 'i1', name: 'Customer record', glyph: 'I' }],
+  getActorObjects:       async () =&gt; [{ id: 'b1', name: 'Billing team', glyph: 'B' }],
+  getProcessObjects:     async () =&gt; [{ id: 'p1', name: 'Order fulfillment', glyph: 'O' }],
+};
+</code></pre>
+<p>A rejected promise from any of these is caught internally, surfaced via the
+<code>error</code> event, and logged — it does not crash the editor.</p>
+<h3 id="bpmnpersistence"><code>BpmnPersistence</code><a class="headerlink" href="#bpmnpersistence" title="Permanent link">&para;</a></h3>
+<pre><code class="language-ts">interface BpmnPersistence {
+  save(payload: BpmnPersistencePayload): Promise&lt;BpmnPersistenceResult&gt;;
+}
+
+interface BpmnPersistencePayload {
+  id: number;
+  name: string;
+  type: string;
+  content: string; // getXml() output
+}
+
+interface BpmnPersistenceResult {
+  id: number;
+}
+</code></pre>
+<p>The built-in <code>ui: 'default'</code> Save button has no name/type fields of its
+own, so it always calls <code>save()</code> with <code>id: -1, name: '', type: ''</code> — treat
+<code>id === -1</code> as "not yet saved" the way Mercator's own adapter does. A host
+that needs real name/type metadata should mount with <code>ui: 'none'</code>, own its
+own Save button, and call its <code>BpmnPersistence</code> implementation directly
+(bypassing <code>options.persistence</code> entirely) — see
+<a href="../guides/backend-integration/#mercator-a-worked-example">Mercator's adapter</a>
+for exactly that pattern, including CSRF and reflecting a newly-assigned id
+back into the page.</p>
+<h2 id="bpmneditormessages-i18n"><code>BpmnEditorMessages</code> / i18n<a class="headerlink" href="#bpmneditormessages-i18n" title="Permanent link">&para;</a></h2>
+<p>Every key is optional; unset keys fall back to the bundled French defaults.
+See the <a href="../guides/i18n/">i18n guide</a> for a full English override example.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default (French)</th>
+<th>Used for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>welcome</code></td>
+<td><code>👋 Bienvenue ! Charge un fichier BPMN</code></td>
+<td>Status message shown once, on mount, in <code>ui: 'default'</code> non-readOnly mode.</td>
+</tr>
+<tr>
+<td><code>saveSuccess</code></td>
+<td><code>✓ Graphe sauvegardé</code></td>
+<td>Status message after a successful Save (download fallback or <code>persistence.save()</code>).</td>
+</tr>
+<tr>
+<td><code>saveError</code></td>
+<td><code>Erreur lors de la sauvegarde du graphe.</code></td>
+<td>Status message when <code>persistence.save()</code> rejects.</td>
+</tr>
+<tr>
+<td><code>loadSuccess</code></td>
+<td><code>✓ Fichier chargé avec succès</code></td>
+<td>Status message after successfully importing a file via the toolbar's file input.</td>
+</tr>
+<tr>
+<td><code>loadError</code></td>
+<td><code>✗ Erreur lors du chargement du fichier</code></td>
+<td>Status message when importing a file fails.</td>
+</tr>
+<tr>
+<td><code>exportError</code></td>
+<td><code>✗ Impossible de générer le BPMN</code></td>
+<td>Status message when <code>getXml()</code> fails or returns empty during Save.</td>
+</tr>
+<tr>
+<td><code>filterPlaceholder</code></td>
+<td><code>Filter...</code></td>
+<td>Placeholder text of the "insert cartography object" search input.</td>
+</tr>
+<tr>
+<td><code>filterAriaLabel</code></td>
+<td><code>Filter elements</code></td>
+<td><code>aria-label</code> of that same input.</td>
+</tr>
+<tr>
+<td><code>noMatch</code></td>
+<td><code>No match.</code></td>
+<td>Shown in the object picker when the filter matches nothing.</td>
+</tr>
+<tr>
+<td><code>saveNameRequired</code></td>
+<td><code>Le nom du graphe est obligatoire.</code></td>
+<td><em>Not consumed by the editor itself</em> — reserved for a host adapter that has its own name field and wants to reuse this message for its own validation.</td>
+</tr>
+<tr>
+<td><code>xmlParseError</code></td>
+<td><code>Erreur de parsing XML</code></td>
+<td><em>Not consumed by the editor itself</em> — reserved the same way, for a host with its own raw-XML handling.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="a-note-on-xml-formats">A note on XML formats<a class="headerlink" href="#a-note-on-xml-formats" title="Permanent link">&para;</a></h2>
+<p>The editor understands two different XML formats, each with its own pair of
+methods:</p>
+<ul>
+<li><code>loadXml()</code> / <code>getXml()</code> round-trip MaxGraph's own <code>GraphDataModel</code>
+  serialization — the format Mercator stores diagrams in, and the format
+  <a href="https://github.com/sourcentis/bpmn-editor/blob/main/examples/sample.bpmn"><code>examples/sample.bpmn</code></a> is written in, despite
+  the <code>.bpmn</code> extension.</li>
+<li><code>importBpmnXml()</code> parses actual BPMN 2.0 XML — <code>&lt;definitions&gt;</code>,
+  <code>&lt;process&gt;</code>, <code>&lt;startEvent&gt;</code>, <code>&lt;sequenceFlow&gt;</code>, <code>&lt;bpmndi:BPMNShape&gt;</code>
+  positions, etc. — the format real BPMN modeling tools export, and converts
+  it into the editor's own shapes. This is also what the built-in
+  <code>ui: 'default'</code> toolbar's file-input <strong>Import</strong> button calls internally.
+  There is no matching <code>exportBpmnXml()</code> — round-trip through
+  <code>getXml()</code>/<code>loadXml()</code> instead, or use <code>exportSvg()</code> for a portable
+  rendered output.</li>
+</ul>
+<p>If you're generating diagrams programmatically to feed to <code>loadXml()</code>
+(rather than importing an existing BPMN 2.0 file with <code>importBpmnXml()</code>),
+use <code>getXml()</code>'s own output as your reference format — round-trip a diagram
+you've built by hand in the editor once, and use that as a template.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../guides/assets/" class="btn btn-neutral float-left" title="Assets"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../security/" class="btn btn-neutral float-right" title="Security / CSP">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>GPL-3.0 — © Sourcentis</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/sourcentis/bpmn-editor" class="fa fa-code-fork" style="color: #fcfcfc"> sourcentis/bpmn-editor</a>
+        </span>
+    
+    
+      <span><a href="../guides/assets/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../security/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

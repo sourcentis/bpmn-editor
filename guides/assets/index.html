@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://sourcentis.github.io/bpmn-editor/guides/assets/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Assets - bpmn-editor</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Assets";
+        var mkdocs_page_input_path = "guides/assets.md";
+        var mkdocs_page_url = "/bpmn-editor/guides/assets/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> bpmn-editor
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Guides</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../vanilla-js/">Vanilla JS / HTML</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../backend-integration/">Backend integration</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../i18n/">i18n</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Assets</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#whats-bundled">What's bundled</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#overriding-the-font">Overriding the font</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#why-not-bundle-the-maxgraph-stock-ui-images-too">Why not bundle the maxgraph stock UI images too?</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../api-reference/">API reference</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../security/">Security / CSP</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">bpmn-editor</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Guides</li>
+      <li class="breadcrumb-item active">Assets</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/sourcentis/bpmn-editor/edit/master/docs/guides/assets.md">Edit on sourcentis/bpmn-editor</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="guide-assets">Guide: assets<a class="headerlink" href="#guide-assets" title="Permanent link">&para;</a></h1>
+<p>The editor is self-contained by design — importing the package is enough,
+with no separate <code>&lt;link&gt;</code>, icon font, or asset file to host and serve
+yourself.</p>
+<h2 id="whats-bundled">What's bundled<a class="headerlink" href="#whats-bundled" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>License</th>
+<th>Where it's used</th>
+<th>How it's bundled</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BPMN glyph font (<code>bpmn.ttf</code>)</td>
+<td>OFL-1.1 (<code>assets/fonts/OFL-1.1.txt</code> in this repo)</td>
+<td>On-canvas shape icons (tasks, events, gateways, …) via a bundled <code>@font-face</code>; also embedded into SVG exports.</td>
+<td>Inlined as a base64 data URI at build time (Vite's <code>?inline</code> asset import).</td>
+</tr>
+<tr>
+<td>Toolbar/menu icons (Bootstrap Icons)</td>
+<td>MIT (<code>assets/icons/LICENSE-bootstrap-icons.txt</code> in this repo)</td>
+<td>The <code>ui: 'default'</code> toolbar and the contextual per-element menu.</td>
+<td>Each SVG inlined as a data URI at build time — Vite chooses base64 or URL-encoding per asset (URL-encoding is smaller for text/SVG; either way, no separate file or network request).</td>
+</tr>
+</tbody>
+</table>
+<p>Both are pulled into <code>dist/bpmn-editor.js</code>/<code>dist/bpmn-editor.umd.cjs</code>
+themselves — there is nothing under <code>dist/</code> besides the JS bundles and the
+type declarations.</p>
+<h2 id="overriding-the-font">Overriding the font<a class="headerlink" href="#overriding-the-font" title="Permanent link">&para;</a></h2>
+<p><code>fontUrl</code> only affects <strong>SVG export</strong> — where the font gets embedded into
+the exported file so it renders correctly in tools that open the SVG
+outside a browser. It does not affect on-canvas rendering, which always
+uses the bundled font (on-canvas icons need the font available synchronously
+via CSS <code>@font-face</code>, not a URL fetched at export time).</p>
+<pre><code class="language-ts">createBpmnEditor(container, {
+  fontUrl: 'https://example.com/fonts/my-bpmn-font.ttf',
+});
+</code></pre>
+<pre><code class="language-ts">editor.exportSvg('diagram.svg'); // uses fontUrl if provided, the bundled font otherwise
+</code></pre>
+<h2 id="why-not-bundle-the-maxgraph-stock-ui-images-too">Why not bundle the maxgraph stock UI images too?<a class="headerlink" href="#why-not-bundle-the-maxgraph-stock-ui-images-too" title="Permanent link">&para;</a></h2>
+<p><code>@maxgraph/core</code> ships a small set of stock GIFs (window chrome,
+collapsed/expanded tree icons, …) used by features like <code>MaxWindow</code>,
+<code>Outline</code>, and tree controls. This editor doesn't use any of those features
+— it builds its own toolbar and contextual menu from scratch — so
+<code>Client.imageBasePath</code> is left pointing at a plain relative default
+(<code>/images</code>) rather than bundling ~17 icons that nothing in this package
+actually renders. If you use <code>@maxgraph/core</code> features beyond what this
+editor wires up and need those stock images, set
+<code>Client.imageBasePath</code> yourself before creating an editor instance.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../i18n/" class="btn btn-neutral float-left" title="i18n"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../../api-reference/" class="btn btn-neutral float-right" title="API reference">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>GPL-3.0 — © Sourcentis</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/sourcentis/bpmn-editor" class="fa fa-code-fork" style="color: #fcfcfc"> sourcentis/bpmn-editor</a>
+        </span>
+    
+    
+      <span><a href="../i18n/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../../api-reference/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
