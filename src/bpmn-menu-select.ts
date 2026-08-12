@@ -463,13 +463,21 @@ export function setupBpmnMenuSelect(
 
         // Fill the menu with objects
         if (objects) {
-            objects.push({
-                id: "",
-                name: "",
-                url: "",
-                glyph: BPMN_ICONS.TRASH
-            });
-            elements = objects;
+            // Build a new array instead of mutating the caller's — `objects`
+            // may be the exact array/reference a BpmnObjectProvider keeps
+            // (e.g. returned straight from an in-memory catalogue rather
+            // than freshly fetched each call). Pushing onto it directly
+            // would permanently graft one more "delete" entry onto the
+            // provider's own data every time the menu opens.
+            elements = [
+                ...objects,
+                {
+                    id: "",
+                    name: "Delete",
+                    url: "",
+                    glyph: BPMN_ICONS.TRASH
+                },
+            ];
         } else if (edge) {
             elements = EDGE_ELEMENTS;
         }

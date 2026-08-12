@@ -5,11 +5,6 @@ A BPMN diagram editor you can drop into any page — agnostic of UI framework an
 [![npm version](https://img.shields.io/npm/v/@sourcentis/bpmn-editor)](https://www.npmjs.com/package/@sourcentis/bpmn-editor)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
-> Extracted from [Mercator](https://github.com/dbarzin/mercator)'s BPMN
-> editor into a standalone package — see
-> [`examples/editor.html`](examples/editor.html) for a working demo you can
-> open today.
-
 ---
 
 ## What this is (and isn't)
@@ -27,6 +22,8 @@ is a peer dependency you install alongside it. Think of the distinction as:
   interfaces ("ports") that *you* implement. Provide none of them and the
   editor still works fully standalone: draw, import a `.bpmn`/XML file,
   export it back out.
+
+[<img src="docs/images/sample1.png" width="400">](docs/images/sample1.png)
 
 ## Features
 

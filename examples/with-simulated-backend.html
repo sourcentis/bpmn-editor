@@ -78,7 +78,12 @@
     // elements to — this is exactly the shape a real BpmnObjectProvider
     // fetch() implementation would resolve to.
     const catalogue = {
-      graph:       [{ id: 'app-1', name: 'Invoicing service', glyph: 'A', url: '#app-1' }],
+      graph:       [
+        { id: 'app-1', name: 'Invoicing service', glyph: 'A', url: '#app-1' },
+        { id: 'app-2', name: 'HR portal', glyph: 'H', url: '#app-2' },
+        { id: 'app-3', name: 'Shipping tracker', glyph: 'S', url: '#app-3' },
+        { id: 'app-4', name: 'Payroll system', glyph: 'P', url: '#app-4' },
+      ],
       information: [{ id: 'info-1', name: 'Customer record', glyph: 'I', url: '#info-1' }],
       actors:      [{ id: 'actor-1', name: 'Billing team', glyph: 'B', url: '#actor-1' }],
       process:     [{ id: 'proc-1', name: 'Order fulfillment', glyph: 'O', url: '#proc-1' }],
