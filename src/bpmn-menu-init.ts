@@ -140,6 +140,46 @@ export function initVertexMenuActions(
     // 🔥 On accepte vertex OU edge
     const isMenuCell = (c: Cell | null | undefined) => !!c && (c.isVertex() || c.isEdge());
 
+    // Distance (en pixels écran) au-delà de laquelle un mousedown->mouseup
+    // sur une cellule est considéré comme un déplacement plutôt qu'un simple clic.
+    const CLICK_MOVE_TOLERANCE = 4;
+
+    // Position (écran) au moment du mousedown, pour détecter un déplacement
+    // avant d'afficher le menu contextuel au relâchement du bouton.
+    let mouseDownPoint: { x: number; y: number } | null = null;
+
+    // true tant que le bouton de la souris est maintenu enfoncé sur le graph.
+    // Sert à empêcher l'ouverture du menu pendant la pression/le déplacement:
+    // SelectionHandler sélectionne la cellule (et déclenche donc l'écouteur de
+    // sélection ci-dessous) dès le mousedown, avant même de savoir si le
+    // geste sera un simple clic ou un drag.
+    let pressed = false;
+
+    const mouseListener = {
+        mouseDown: (_sender: unknown, me: { getEvent: () => MouseEvent }) => {
+            const evt = me.getEvent();
+            mouseDownPoint = { x: evt.clientX, y: evt.clientY };
+            pressed = true;
+        },
+        mouseMove: () => {},
+        mouseUp: () => {
+            pressed = false;
+        },
+    };
+    // Inséré en tête de graph.mouseListeners (plutôt que via addMouseListener,
+    // qui l'ajouterait en fin de liste) pour s'exécuter avant SelectionHandler,
+    // déjà enregistré à la construction du graph: on doit lever `pressed`
+    // avant que SelectionHandler ne sélectionne la cellule et ne déclenche
+    // l'écouteur de sélection, dans le même passage synchrone du mousedown.
+    graph.mouseListeners.unshift(mouseListener);
+
+    const wasCellMoved = (e: MouseEvent | null) => {
+        if (!e || !mouseDownPoint) return false;
+        const dx = e.clientX - mouseDownPoint.x;
+        const dy = e.clientY - mouseDownPoint.y;
+        return Math.hypot(dx, dy) > CLICK_MOVE_TOLERANCE;
+    };
+
     // Sert à "replacer" le menu quand la vue bouge
     let lastAnchor: { x: number; y: number } | null = null;
 
@@ -250,6 +290,12 @@ export function initVertexMenuActions(
         if (requireSingle) {
             if (cells.length !== 1 || !isMenuCell(cells[0])) return hide();
             currentCell = cells[0];
+
+            // Tant que le bouton est enfoncé, on ne (re)positionne pas le menu:
+            // SelectionHandler sélectionne la cellule dès le mousedown, avant
+            // de savoir si le geste est un clic ou un déplacement. L'ouverture
+            // effective est décidée au relâchement par onGraphClick.
+            if (pressed) return;
 
             // Si on a un ancrage (dernier clic), on garde l'emplacement
             if (lastAnchor) {
@@ -370,15 +416,18 @@ export function initVertexMenuActions(
         const cell = evt.getProperty("cell") as Cell | null;
         const me = evt.getProperty("event") as MouseEvent | null; // MouseEvent natif
 
-        if (!cell) {
+        // Si la souris a bougé entre le mousedown et le relâchement, il
+        // s'agit d'un déplacement de l'objet et non d'un clic: on n'ouvre
+        // pas le menu contextuel (la sélection, elle, reste gérée par maxgraph).
+        const moved = wasCellMoved(me);
+        mouseDownPoint = null;
+
+        if (!cell || !isMenuCell(cell)) {
             hide();
             return;
         }
 
-        if (!isMenuCell(cell)) {
-            hide();
-            return;
-        }
+        if (moved) return;
 
         currentCell = cell;
 
@@ -408,6 +457,7 @@ export function initVertexMenuActions(
         graph.getSelectionModel().removeListener(onSelectionChange as any);
         graph.view.removeListener(onViewChanged as any);
         graph.removeListener(onGraphClick as any);
+        graph.removeMouseListener(mouseListener);
 
         menuEl.removeEventListener("click", onMenuClick);
         menuEl.removeEventListener("mousedown", stop, true);

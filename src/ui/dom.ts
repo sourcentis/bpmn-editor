@@ -275,6 +275,16 @@ const CSS_TEXT = `
   font: inherit;
   line-height: normal;
 }
+/* Firefox gives every <button> its own internal focus-ring box
+   (::-moz-focus-inner) with a default padding/border that live outside the
+   button's own box model — the padding:0/border:none reset above doesn't
+   touch it. Chrome/WebKit have no equivalent, so left unreset this widens
+   buttons only in Firefox, enough to throw off .bpmn-editor-vertex-menu's
+   width-tuned row wrapping (see max-width comment below). */
+.bpmn-editor-container button::-moz-focus-inner {
+  padding: 0;
+  border: 0;
+}
 .bpmn-editor-root {
   display: flex;
   flex-direction: column;
