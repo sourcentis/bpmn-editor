@@ -2,12 +2,13 @@
 
 A BPMN diagram editor you can drop into any page — agnostic of UI framework and backend, built on [`@maxgraph/core`](https://www.npmjs.com/package/@maxgraph/core).
 
+[![npm version](https://img.shields.io/npm/v/@sourcentis/bpmn-editor)](https://www.npmjs.com/package/@sourcentis/bpmn-editor)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
-> **Status:** pre-release (`0.1.0`), not yet published to npm. Extracted from
-> [Mercator](https://github.com/dbarzin/mercator)'s BPMN editor into a
-> standalone package — see [`examples/editor.html`](examples/editor.html) for
-> a working demo you can open today.
+> Extracted from [Mercator](https://github.com/dbarzin/mercator)'s BPMN
+> editor into a standalone package — see
+> [`examples/editor.html`](examples/editor.html) for a working demo you can
+> open today.
 
 ---
 

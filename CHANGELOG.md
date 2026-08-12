@@ -3,10 +3,12 @@
 All notable changes to this package are documented in this file. Format
 loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [0.1.0] — Unreleased
+## [1.0.0] — Unreleased
 
-Initial extraction from [Mercator](https://github.com/dbarzin/mercator)'s
-BPMN editor into a standalone, framework/backend-agnostic package.
+Everything below landed on top of the initial 0.1.0 scaffold: the actual
+core migration, librarification, decoupling from Mercator, asset bundling,
+the Mercator adapter, and full documentation. Declaring the public API
+stable now that Mercator runs on it in production.
 
 ### Added
 
@@ -42,3 +44,8 @@ BPMN editor into a standalone, framework/backend-agnostic package.
 - `window.loadGraph`/`window.getXMLGraph` globals replaced by instance
   methods (`loadXml`/`getXml`); a host that still needs the old globals for
   compatibility can shim them itself by delegating to the instance.
+
+## [0.1.0]
+
+Initial package scaffold (`package.json`, build config, port/option type
+definitions) — reserved the name on npm ahead of the actual core migration.

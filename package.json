@@ -1,6 +1,6 @@
 {
   "name": "@sourcentis/bpmn-editor",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "BPMN diagram editor, agnostic of UI framework and backend, built on @maxgraph/core",
   "type": "module",
   "main": "./dist/bpmn-editor.umd.cjs",
@@ -21,7 +21,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
     "@maxgraph/core": "^0.21.0"
