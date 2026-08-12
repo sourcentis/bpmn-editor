@@ -1,8 +1,8 @@
 # API reference
 
 Full reference for `@sourcentis/bpmn-editor`. For a quicker orientation, see
-the [README](../README.md); for task-oriented walkthroughs, see the
-[guides](./guides/).
+the [Home page](index.md); for task-oriented walkthroughs, see the
+[guides](guides/vanilla-js.md).
 
 ## `createBpmnEditor(container, options?)`
 
@@ -47,7 +47,7 @@ interface BpmnEditorOptions {
 | `persistence` | `BpmnPersistence` | — | See [Ports](#ports). Only consumed by the built-in `ui: 'default'` "Save" toolbar button — absent there, "Save" downloads a local `.bpmn` file instead. Has **no effect at all** in `ui: 'none'` mode (there's no built-in Save button to call it); a `ui: 'none'` host wanting persistence should call its own `BpmnPersistence` implementation directly from its own button. |
 | `onNavigate` | `(url: string) => void` | — | Called (alongside the `navigate` event) when an element carrying a `url` is clicked in `readOnly` mode. Absent → clicking such an element is a no-op besides the event still firing (you can rely on `on('navigate', …)` alone if you prefer). |
 | `paletteRoot` | `HTMLElement \| null` | — | Only meaningful with `ui: 'none'`. Point it at a container whose descendants carry `data-node-type` attributes to reuse the built-in drag-to-insert mechanism with your own palette markup. Ignored with `ui: 'default'` (the built-in palette is used instead). Valid `data-node-type` values: `task-node`, `state-node`, `gateway-node`, `data-node`, `lane-node`, `activities-node`, `annotation-node`, `conversation-node`. |
-| `messages` | `BpmnEditorMessages` | bundled French | See [Messages](#bpmneditormessages--i18n) below and the [i18n guide](./guides/i18n.md). |
+| `messages` | `BpmnEditorMessages` | bundled French | See [Messages](#bpmneditormessages-i18n) below and the [i18n guide](guides/i18n.md). |
 | `fontUrl` | `string` | bundled font (data URI) | Overrides the font used when embedding the BPMN glyph font into an SVG export (`exportSvg()` / the toolbar's SVG button). Does **not** affect on-canvas rendering, which always uses the bundled `@font-face`. |
 
 ## `BpmnEditorInstance`
@@ -188,7 +188,7 @@ the picker list (Mercator's own provider uses the first character of `id`;
 any short string works).
 
 Minimal in-memory example (see
-[`examples/with-simulated-backend.html`](../examples/with-simulated-backend.html)
+[`examples/with-simulated-backend.html`](https://github.com/sourcentis/bpmn-editor/blob/main/examples/with-simulated-backend.html)
 for a runnable version):
 
 ```ts
@@ -258,7 +258,7 @@ methods:
 
 - `loadXml()` / `getXml()` round-trip MaxGraph's own `GraphDataModel`
   serialization — the format Mercator stores diagrams in, and the format
-  [`examples/sample.bpmn`](../examples/sample.bpmn) is written in, despite
+  [`examples/sample.bpmn`](https://github.com/sourcentis/bpmn-editor/blob/main/examples/sample.bpmn) is written in, despite
   the `.bpmn` extension.
 - `importBpmnXml()` parses actual BPMN 2.0 XML — `<definitions>`,
   `<process>`, `<startEvent>`, `<sequenceFlow>`, `<bpmndi:BPMNShape>`

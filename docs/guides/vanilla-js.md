@@ -1,8 +1,9 @@
 # Guide: Vanilla JS / HTML (no backend)
 
 The editor works fully standalone: no server, no build step required to try
-it. This guide walks through [`examples/editor.html`](../../examples/editor.html)
-and [`examples/viewer.html`](../../examples/viewer.html).
+it. This guide walks through [`examples/editor.html`](https://github.com/sourcentis/bpmn-editor/blob/main/examples/editor.html)
+and [`examples/viewer.html`](https://github.com/sourcentis/bpmn-editor/blob/main/examples/viewer.html)
+— see also the [live, runnable versions](../index.md#live-examples) on the Home page.
 
 ## Running the examples
 
@@ -40,8 +41,8 @@ inside the `<div>` — no other markup or CSS needed.
 
 ## Resolving `@maxgraph/core` without a bundler
 
-`@maxgraph/core` is a peer dependency (see the README's
-["What this is (and isn't)"](../../README.md#what-this-is-and-isnt) for why
+`@maxgraph/core` is a peer dependency (see
+["What this is (and isn't)"](../index.md#what-this-is-and-isnt) for why
 it isn't bundled). In a real project with a bundler (Vite, webpack, …),
 `npm install @maxgraph/core` is enough — your bundler resolves the bare
 `import ... from '@maxgraph/core'` from `node_modules` automatically.
@@ -88,11 +89,11 @@ viewer.loadXml(xml);
 
 `ui: 'none'` + `readOnly: true` renders just the canvas, disables editing,
 keeps pan/wheel-zoom, and auto-resizes the container to fit the diagram.
-See [`examples/viewer.html`](../../examples/viewer.html).
+See [`examples/viewer.html`](https://github.com/sourcentis/bpmn-editor/blob/main/examples/viewer.html).
 
 ## Next steps
 
 - [Backend integration guide](./backend-integration.md) — implement the
   optional `provider`/`persistence` ports against a real API.
-- [`examples/with-simulated-backend.html`](../../examples/with-simulated-backend.html) —
+- [`examples/with-simulated-backend.html`](https://github.com/sourcentis/bpmn-editor/blob/main/examples/with-simulated-backend.html) —
   the same ports, implemented in memory, runnable with no server at all.

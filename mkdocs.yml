@@ -1,0 +1,28 @@
+site_name: "bpmn-editor"
+site_description: "BPMN diagram editor, agnostic of UI framework and backend, built on @maxgraph/core"
+site_url: "https://sourcentis.github.io/bpmn-editor/"
+repo_url: "https://github.com/sourcentis/bpmn-editor"
+repo_name: "sourcentis/bpmn-editor"
+copyright: "GPL-3.0 — © Sourcentis"
+
+docs_dir: docs
+
+theme:
+  name: readthedocs
+
+nav:
+  - Home: index.md
+  - Guides:
+      - Vanilla JS / HTML: guides/vanilla-js.md
+      - Backend integration: guides/backend-integration.md
+      - i18n: guides/i18n.md
+      - Assets: guides/assets.md
+  - API reference: api-reference.md
+  - Security / CSP: security.md
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - attr_list
