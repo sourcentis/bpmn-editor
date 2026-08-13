@@ -36,10 +36,11 @@
   <h1>@sourcentis/bpmn-editor</h1>
   <p>
     Standalone editor, <code>ui: 'default'</code>, no <code>provider</code> and no
-    <code>persistence</code> configured. Starts by loading <code>sample.bpmn</code>
-    (via <code>editor.loadXml()</code>) so there's something to look at — edit it,
-    drag new shapes from the palette, connect them, or use Import/Export in the
-    toolbar to load/save your own file. Everything runs client-side.
+    <code>persistence</code> configured. Starts by importing <code>sample.bpmn</code>
+    (a real BPMN 2.0 file, via <code>editor.importBpmnXml()</code>) so there's
+    something to look at — edit it, drag new shapes from the palette, connect
+    them, or use Import/Export in the toolbar to load/save your own file.
+    Everything runs client-side.
   </p>
 
   <div id="editor"></div>
@@ -54,7 +55,7 @@
 
     fetch('./sample.bpmn')
       .then((res) => res.text())
-      .then((xml) => editor.loadXml(xml))
+      .then((xml) => editor.importBpmnXml(xml))
       .catch((err) => console.error('[bpmn-editor] could not load sample.bpmn', err));
   </script>
 </body>

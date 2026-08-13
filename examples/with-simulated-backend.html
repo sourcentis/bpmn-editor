@@ -119,10 +119,10 @@
     editor.on('save', (payload) => log(`'save' event fired (before persistence.save): name="${payload.name}"`));
     editor.on('select', (cell) => log(`'select' event: ${cell ? 'a cell is selected' : 'nothing selected'}`));
 
-    fetch('./sample.bpmn')
+    fetch('./sample.maxgraph')
       .then((res) => res.text())
       .then((xml) => editor.loadXml(xml))
-      .catch((err) => console.error('[bpmn-editor] could not load sample.bpmn', err));
+      .catch((err) => console.error('[bpmn-editor] could not load sample.maxgraph', err));
   </script>
 </body>
 </html>

@@ -1,258 +1,109 @@
-<GraphDataModel>
-  <root>
-    <Cell id="0">
-      <Object as="style" />
-    </Cell>
-    <Cell id="1" parent="0">
-      <Object as="style" />
-    </Cell>
-    <Cell id="29" edge="1" parent="1" source="22" target="28">
-      <Geometry relative="1" as="geometry" />
-      <Object dashed="1" edgeStyle="straightEdgeStyle" startArrow="none" endArrow="none" as="style">
-        <Array as="baseStyleNames">
-          <add value="bpmn-edge" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="25" edge="1" parent="1" source="22" target="17">
-      <Geometry relative="1" as="geometry" />
-      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
-        <Array as="baseStyleNames">
-          <add value="bpmn-edge" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="24" edge="1" parent="1" source="19" target="22">
-      <Geometry relative="1" as="geometry" />
-      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
-        <Array as="baseStyleNames">
-          <add value="bpmn-edge" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="21" value="No" edge="1" parent="1" source="8" target="19">
-      <Geometry relative="1" as="geometry" />
-      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
-        <Array as="baseStyleNames">
-          <add value="bpmn-edge" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="18" edge="1" parent="1" source="13" target="16">
-      <Geometry relative="1" as="geometry" />
-      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
-        <Array as="baseStyleNames">
-          <add value="bpmn-edge" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="15" edge="1" parent="1" source="10" target="13">
-      <Geometry relative="1" as="geometry" />
-      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
-        <Array as="baseStyleNames">
-          <add value="bpmn-edge" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="12" value="Yes" edge="1" parent="1" source="8" target="10">
-      <Geometry relative="1" as="geometry" />
-      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
-        <Array as="baseStyleNames">
-          <add value="bpmn-edge" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="9" edge="1" parent="1" source="4" target="8">
-      <Geometry relative="1" as="geometry" />
-      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
-        <Array as="baseStyleNames">
-          <add value="bpmn-edge" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="6" edge="1" parent="1" source="3" target="4">
-      <Geometry relative="1" as="geometry" />
-      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
-        <Array as="baseStyleNames">
-          <add value="bpmn-edge" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="4" value="Task 1" vertex="1" parent="1">
-      <Geometry _x="200" _y="90" _width="100" _height="80" as="geometry" />
-      <Object fillColor="#bfdbfe" as="style">
-        <Array as="baseStyleNames">
-          <add value="process" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="5" value="" vertex="1" parent="4">
-      <Geometry _width="26" _height="26" relative="1" as="geometry">
-        <Object x="0" y="-2" as="offset" />
-      </Geometry>
-      <Object as="style">
-        <Array as="baseStyleNames">
-          <add value="bpmnIcon" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="10" value="Task 2" vertex="1" parent="1">
-      <Geometry _x="470" _y="90" _width="100" _height="80" as="geometry" />
-      <Object fillColor="#fde68a" as="style">
-        <Array as="baseStyleNames">
-          <add value="process" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="11" value="" vertex="1" parent="10">
-      <Geometry _width="26" _height="26" relative="1" as="geometry">
-        <Object x="0" y="-2" as="offset" />
-      </Geometry>
-      <Object as="style">
-        <Array as="baseStyleNames">
-          <add value="bpmnIcon" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="13" value="Task 3" vertex="1" parent="1">
-      <Geometry _x="640" _y="90" _width="100" _height="80" as="geometry" />
-      <Object fillColor="#fde68a" as="style">
-        <Array as="baseStyleNames">
-          <add value="process" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="14" value="" vertex="1" parent="13">
-      <Geometry _width="26" _height="26" relative="1" as="geometry">
-        <Object x="0" y="-2" as="offset" />
-      </Geometry>
-      <Object as="style">
-        <Array as="baseStyleNames">
-          <add value="bpmnIcon" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="19" value="Task 4" vertex="1" parent="1">
-      <Geometry _x="320" _y="250" _width="100" _height="80" as="geometry" />
-      <Object fillColor="#e9d5ff" as="style">
-        <Array as="baseStyleNames">
-          <add value="process" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="20" value="" vertex="1" parent="19">
-      <Geometry _width="26" _height="26" relative="1" as="geometry">
-        <Object x="0" y="-2" as="offset" />
-      </Geometry>
-      <Object as="style">
-        <Array as="baseStyleNames">
-          <add value="bpmnIcon" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="26" value="" vertex="1" connectable="0" parent="19">
-      <Geometry _x="0.5" _y="1" _width="30" _height="28" relative="1" as="geometry">
-        <Point _x="-15" _y="-28" as="offset" />
-      </Geometry>
-      <Object as="style">
-        <Array as="baseStyleNames">
-          <add value="bpmnBadge" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="22" value="Task 5" vertex="1" parent="1">
-      <Geometry _x="650" _y="250" _width="100" _height="80" as="geometry" />
-      <Object fillColor="#e9d5ff" as="style">
-        <Array as="baseStyleNames">
-          <add value="process" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="23" value="" vertex="1" parent="22">
-      <Geometry _width="26" _height="26" relative="1" as="geometry">
-        <Object x="0" y="-2" as="offset" />
-      </Geometry>
-      <Object as="style">
-        <Array as="baseStyleNames">
-          <add value="bpmnIcon" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="27" value="" vertex="1" connectable="0" parent="22">
-      <Geometry _x="0.5" _y="1" _width="30" _height="28" relative="1" as="geometry">
-        <Point _x="-15" _y="-28" as="offset" />
-      </Geometry>
-      <Object as="style">
-        <Array as="baseStyleNames">
-          <add value="bpmnBadge" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="7" value="Check&#xa;" vertex="1" parent="1">
-      <Geometry _x="350" _y="110" _width="45" _height="45" as="geometry">
-        <Point _x="26" _y="3" as="offset" />
-      </Geometry>
-      <Object fillColor="#d1d5db" as="style">
-        <Array as="baseStyleNames">
-          <add value="gateway" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="8" value="" vertex="1" parent="7">
-      <Geometry _x="0.5" _y="0.5" _width="45" _height="45" relative="1" as="geometry">
-        <Object x="-23" y="-23" as="offset" />
-      </Geometry>
-      <Object as="style">
-        <Array as="baseStyleNames">
-          <add value="stateIcon" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="2" value="Start" vertex="1" parent="1">
-      <Geometry _x="90" _y="110" _width="40" _height="40" as="geometry">
-        <Point _x="1" _y="13" as="offset" />
-      </Geometry>
-      <Object fillColor="#bbf7d0" as="style">
-        <Array as="baseStyleNames">
-          <add value="state" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="3" value="" vertex="1" parent="2">
-      <Geometry _x="0.5" _y="0.5" _width="40" _height="40" relative="1" as="geometry">
-        <Object x="-20" y="-20" as="offset" />
-      </Geometry>
-      <Object as="style">
-        <Array as="baseStyleNames">
-          <add value="stateIcon" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="16" value="" vertex="1" parent="1">
-      <Geometry _x="810" _y="110" _width="40" _height="40" as="geometry" />
-      <Object fillColor="#fecaca" as="style">
-        <Array as="baseStyleNames">
-          <add value="state" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="17" value="" vertex="1" parent="16">
-      <Geometry _x="0.5" _y="0.5" _width="40" _height="40" relative="1" as="geometry">
-        <Object x="-20" y="-20" as="offset" />
-      </Geometry>
-      <Object as="style">
-        <Array as="baseStyleNames">
-          <add value="stateIcon" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="28" value="Description goes here" vertex="1" parent="1">
-      <Geometry _x="810" _y="340" _width="100" _height="80" as="geometry" />
-      <Object fillColor="#FFFFFF" as="style">
-        <Array as="baseStyleNames">
-          <add value="annotation" />
-        </Array>
-      </Object>
-    </Cell>
-  </root>
-</GraphDataModel>
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" id="sid-38422fae-e03e-43a3-bef4-bd33b32041b2" targetNamespace="http://bpmn.io/bpmn" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="18.24.0">
+  <process id="Process_1" isExecutable="false">
+    <startEvent id="StartEvent_1y45yut" name="hunger noticed">
+      <outgoing>SequenceFlow_0h21x7r</outgoing>
+    </startEvent>
+    <task id="Task_1hcentk" name="choose recipe">
+      <incoming>SequenceFlow_0h21x7r</incoming>
+      <outgoing>SequenceFlow_0wnb4ke</outgoing>
+    </task>
+    <sequenceFlow id="SequenceFlow_0h21x7r" sourceRef="StartEvent_1y45yut" targetRef="Task_1hcentk" />
+    <exclusiveGateway id="ExclusiveGateway_15hu1pt" name="desired dish?">
+      <incoming>SequenceFlow_0wnb4ke</incoming>
+      <outgoing>Flow_18cpedi</outgoing>
+      <outgoing>Flow_09nfx55</outgoing>
+    </exclusiveGateway>
+    <sequenceFlow id="SequenceFlow_0wnb4ke" sourceRef="Task_1hcentk" targetRef="ExclusiveGateway_15hu1pt" />
+    <task id="Activity_1hox3zv" name="Prepare">
+      <incoming>Flow_18cpedi</incoming>
+      <outgoing>Flow_0jrf2fp</outgoing>
+    </task>
+    <sequenceFlow id="Flow_18cpedi" sourceRef="ExclusiveGateway_15hu1pt" targetRef="Activity_1hox3zv" />
+    <task id="Activity_09lwld8" name="Move">
+      <incoming>Flow_09nfx55</incoming>
+      <outgoing>Flow_0tu5s6y</outgoing>
+    </task>
+    <sequenceFlow id="Flow_09nfx55" sourceRef="ExclusiveGateway_15hu1pt" targetRef="Activity_09lwld8" />
+    <sequenceFlow id="Flow_0jrf2fp" sourceRef="Activity_1hox3zv" targetRef="Activity_0shrtjh" />
+    <task id="Activity_0shrtjh" name="Eat">
+      <incoming>Flow_0jrf2fp</incoming>
+      <outgoing>Flow_0hdyild</outgoing>
+    </task>
+    <sequenceFlow id="Flow_0tu5s6y" sourceRef="Activity_09lwld8" targetRef="Event_1v9vguw" />
+    <intermediateThrowEvent id="Event_1cvec5f">
+      <incoming>Flow_0hdyild</incoming>
+    </intermediateThrowEvent>
+    <sequenceFlow id="Flow_0hdyild" sourceRef="Activity_0shrtjh" targetRef="Event_1cvec5f" />
+    <intermediateThrowEvent id="Event_1v9vguw">
+      <incoming>Flow_0tu5s6y</incoming>
+      <messageEventDefinition id="MessageEventDefinition_0w0e69u" />
+    </intermediateThrowEvent>
+  </process>
+  <bpmndi:BPMNDiagram id="BpmnDiagram_1">
+    <bpmndi:BPMNPlane id="BpmnPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="StartEvent_1y45yut_di" bpmnElement="StartEvent_1y45yut" bioc:stroke="#205022" bioc:fill="#c8e6c9" color:background-color="#c8e6c9" color:border-color="#205022">
+        <omgdc:Bounds x="152" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="134" y="145" width="73" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_1hcentk_di" bpmnElement="Task_1hcentk">
+        <omgdc:Bounds x="240" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_15hu1pt_di" bpmnElement="ExclusiveGateway_15hu1pt" isMarkerVisible="true">
+        <omgdc:Bounds x="395" y="95" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="387" y="71" width="66" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1hox3zv_di" bpmnElement="Activity_1hox3zv">
+        <omgdc:Bounds x="500" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_09lwld8_di" bpmnElement="Activity_09lwld8">
+        <omgdc:Bounds x="500" y="190" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0shrtjh_di" bpmnElement="Activity_0shrtjh">
+        <omgdc:Bounds x="670" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1cvec5f_di" bpmnElement="Event_1cvec5f" bioc:stroke="#831311" bioc:fill="#ffcdd2" color:background-color="#ffcdd2" color:border-color="#831311">
+        <omgdc:Bounds x="842" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0f0ja3r_di" bpmnElement="Event_1v9vguw" bioc:stroke="#0d4372" bioc:fill="#bbdefb" color:background-color="#bbdefb" color:border-color="#0d4372">
+        <omgdc:Bounds x="702" y="212" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0h21x7r_di" bpmnElement="SequenceFlow_0h21x7r">
+        <omgdi:waypoint x="188" y="120" />
+        <omgdi:waypoint x="240" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0wnb4ke_di" bpmnElement="SequenceFlow_0wnb4ke">
+        <omgdi:waypoint x="340" y="120" />
+        <omgdi:waypoint x="395" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18cpedi_di" bpmnElement="Flow_18cpedi">
+        <omgdi:waypoint x="445" y="120" />
+        <omgdi:waypoint x="500" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_09nfx55_di" bpmnElement="Flow_09nfx55">
+        <omgdi:waypoint x="420" y="145" />
+        <omgdi:waypoint x="420" y="230" />
+        <omgdi:waypoint x="500" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0jrf2fp_di" bpmnElement="Flow_0jrf2fp">
+        <omgdi:waypoint x="600" y="120" />
+        <omgdi:waypoint x="670" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0tu5s6y_di" bpmnElement="Flow_0tu5s6y">
+        <omgdi:waypoint x="600" y="230" />
+        <omgdi:waypoint x="702" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0hdyild_di" bpmnElement="Flow_0hdyild">
+        <omgdi:waypoint x="770" y="120" />
+        <omgdi:waypoint x="842" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

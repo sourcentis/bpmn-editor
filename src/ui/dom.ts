@@ -60,23 +60,26 @@ const ACTION_BUTTONS: ReadonlyArray<{ action: string; icon: string; title: strin
 ];
 
 type MenuButton =
-    | { action: string; title: string; glyph: string; icon?: undefined; breakAfter?: boolean }
-    | { action: string; title: string; icon: string; glyph?: undefined; breakAfter?: boolean };
+    | { action: string; title: string; glyph: string; icon?: undefined }
+    | { action: string; title: string; icon: string; glyph?: undefined };
 
-// `breakAfter` reproduces the two forced line breaks the original
-// vertex-menu template had (via `<span class="menu-break">`): one after the
-// first 4 buttons, one after "delete" — so "search" always sits alone on its
-// own row, regardless of available width.
+// Every button gets a break slot right after it in the DOM (see
+// buildVertexMenu), hidden by default; which ones actually show is
+// recomputed at runtime by recomputeMenuBreaks() in bpmn-menu-init.ts each
+// time per-cell action visibility changes (see applyMenuVisibilityForCell):
+// a break is shown after every 4th *visible* button, matching
+// `.bpmn-editor-vertex-menu`'s max-width (tuned to a 4-button row) so rows
+// never silently overflow into browser-dependent auto-wrap behavior.
 const MENU_BUTTONS: ReadonlyArray<MenuButton> = [
     { action: 'add-state',       title: 'State',                        icon: ICONS.addState },
     { action: 'add-task',        title: 'Task',                         icon: ICONS.addTask },
     { action: 'add-gateway',     title: 'Condition',                    icon: ICONS.addGateway },
-    { action: 'connect',         title: 'Lier',                         icon: ICONS.connect, breakAfter: true },
+    { action: 'connect',         title: 'Lier',                         icon: ICONS.connect },
     { action: 'config',          title: 'Configuration',                icon: ICONS.config },
     { action: 'color',           title: 'Couleur',                      icon: ICONS.color },
     { action: 'rotate',          title: 'Rotate',                       icon: ICONS.rotate },
     { action: 'add-annotations', title: 'Annotation',                   glyph: BPMN_ICONS.ANNOTATION },
-    { action: 'delete',          title: 'Supprimer',                    icon: ICONS.delete, breakAfter: true },
+    { action: 'delete',          title: 'Supprimer',                    icon: ICONS.delete },
     { action: 'search',          title: 'Insert cartography object',    icon: ICONS.search },
 ];
 
@@ -223,11 +226,12 @@ function buildVertexMenu(): HTMLElement {
         if (def.action === 'color') btn.setAttribute('aria-expanded', 'false');
         menu.appendChild(btn);
 
-        if (def.breakAfter) {
-            const menuBreak = document.createElement('span');
-            menuBreak.className = 'bpmn-editor-menu-break';
-            menu.appendChild(menuBreak);
-        }
+        // One break slot after every button, hidden by default — which ones
+        // show is decided at runtime by recomputeMenuBreaks() (bpmn-menu-init.ts)
+        // based on which buttons actually end up visible for the clicked cell.
+        const menuBreak = document.createElement('span');
+        menuBreak.className = 'bpmn-editor-menu-break bpmn-editor-hidden';
+        menu.appendChild(menuBreak);
     }
 
     const palette = document.createElement('div');
@@ -399,9 +403,12 @@ const CSS_TEXT = `
      ALL items on one line (shrink-to-fit against max-content), then just
      clips that width down to max-width — it does NOT shrink to the actual
      widest wrapped row. Sized to a 4-button row (4 × 28px buttons + 3 × 2px
-     gaps + padding + border) — the 5-button group wraps further into 4+1
-     as a result, matching the original narrower menu. Recompute if button
-     size/gap/padding changes. */
+     gaps + padding + border). Row breaks are forced explicitly via
+     .bpmn-editor-menu-break slots, toggled at runtime by
+     recomputeMenuBreaks() (bpmn-menu-init.ts) against the buttons actually
+     visible for the clicked cell — this max-width is kept only as a
+     fallback ceiling for narrow hosts. Recompute if button size/gap/padding
+     changes. */
   max-width: 128px;
   padding: 4px;
   background: #ffffff;

@@ -258,13 +258,16 @@ methods:
 
 - `loadXml()` / `getXml()` round-trip MaxGraph's own `GraphDataModel`
   serialization — the format Mercator stores diagrams in, and the format
-  [`examples/sample.bpmn`](https://github.com/sourcentis/bpmn-editor/blob/main/examples/sample.bpmn) is written in, despite
-  the `.bpmn` extension.
+  [`examples/sample.maxgraph`](https://github.com/sourcentis/bpmn-editor/blob/main/examples/sample.maxgraph)
+  is written in.
 - `importBpmnXml()` parses actual BPMN 2.0 XML — `<definitions>`,
   `<process>`, `<startEvent>`, `<sequenceFlow>`, `<bpmndi:BPMNShape>`
   positions, etc. — the format real BPMN modeling tools export, and converts
   it into the editor's own shapes. This is also what the built-in
-  `ui: 'default'` toolbar's file-input **Import** button calls internally.
+  `ui: 'default'` toolbar's file-input **Import** button calls internally, and
+  what [`examples/editor.html`](https://github.com/sourcentis/bpmn-editor/blob/main/examples/editor.html)
+  uses to load [`examples/sample.bpmn`](https://github.com/sourcentis/bpmn-editor/blob/main/examples/sample.bpmn)
+  on startup.
   There is no matching `exportBpmnXml()` — round-trip through
   `getXml()`/`loadXml()` instead, or use `exportSvg()` for a portable
   rendered output.

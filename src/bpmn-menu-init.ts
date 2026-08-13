@@ -32,6 +32,38 @@ export function initVertexMenuActions(
         }
     }
 
+    // Nombre de boutons visibles par ligne (doit rester cohérent avec le
+    // max-width de .bpmn-editor-vertex-menu, tuné pour une ligne de 4
+    // boutons — voir le commentaire dans dom.ts).
+    const BUTTONS_PER_ROW = 4;
+
+    // Recalcule quels séparateurs (.bpmn-editor-menu-break) doivent être
+    // visibles, en fonction des boutons réellement visibles pour la cellule
+    // cliquée (certains sont masqués selon le type de vertex, voir
+    // applyMenuVisibilityForCell ci-dessous). Un saut est affiché après
+    // chaque 4e bouton visible (les boutons masqués ne comptent pas), quel
+    // que soit le sous-ensemble de boutons visible pour la cellule cliquée.
+    function recomputeMenuBreaks() {
+        const buttons = Array.from(
+            menuEl.querySelectorAll<HTMLElement>(".bpmn-editor-menu-btn")
+        );
+
+        let visibleCount = 0;
+
+        for (const btn of buttons) {
+            const next = btn.nextElementSibling as HTMLElement | null;
+            const ownBreak = next?.classList.contains("bpmn-editor-menu-break") ? next : null;
+
+            if (btn.classList.contains("bpmn-editor-hidden")) {
+                ownBreak?.classList.add("bpmn-editor-hidden");
+                continue;
+            }
+
+            visibleCount++;
+            ownBreak?.classList.toggle("bpmn-editor-hidden", visibleCount % BUTTONS_PER_ROW !== 0);
+        }
+    }
+
     // -------------------------------------------------------
     // Show/Hide menu items based on cell style
 
@@ -49,7 +81,6 @@ export function initVertexMenuActions(
             "delete",
             "search",
             "rotate",
-            "menu-break"
         ] as const;
 
 
@@ -125,7 +156,6 @@ export function initVertexMenuActions(
             actions.delete("add-gateway");
             actions.delete("config");
             actions.delete("rotate");
-            actions.delete("menu-break");
         }
         else { /* unknown style — show all actions by default */ }
 
@@ -133,6 +163,8 @@ export function initVertexMenuActions(
         for (const action of ALL_ACTIONS) {
             setActionVisible(action, actions.has(action));
         }
+
+        recomputeMenuBreaks();
     }
 
     let currentCell: Cell | null = null;

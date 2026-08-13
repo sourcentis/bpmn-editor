@@ -38,7 +38,7 @@
     <code>ui: 'none'</code> + <code>readOnly: true</code>: canvas only, no toolbar,
     no editing. This is the standalone equivalent of Mercator's "show" page —
     pan and mouse-wheel zoom still work, and the container auto-resizes to fit
-    the loaded diagram once <code>sample.bpmn</code> loads.
+    the loaded diagram once <code>sample.maxgraph</code> loads.
   </p>
 
   <div id="viewer"></div>
@@ -55,10 +55,10 @@
 
     editor.on('error', (err) => console.error('[bpmn-editor]', err));
 
-    fetch('./sample.bpmn')
+    fetch('./sample.maxgraph')
       .then((res) => res.text())
       .then((xml) => editor.loadXml(xml))
-      .catch((err) => console.error('[bpmn-editor] could not load sample.bpmn', err));
+      .catch((err) => console.error('[bpmn-editor] could not load sample.maxgraph', err));
   </script>
 </body>
 </html>

@@ -80,7 +80,8 @@ npm run build
 # Then publish these as a static site (any static host works, e.g. GitHub
 # Pages via a gh-pages branch or the repo's Pages settings):
 #   dist/            (the built package, referenced by the examples via ../dist/…)
-#   examples/         (editor.html, viewer.html, with-simulated-backend.html, sample.bpmn)
+#   examples/         (editor.html, viewer.html, with-simulated-backend.html,
+#                      sample.bpmn, sample.maxgraph)
 ```
 
 The examples resolve `@maxgraph/core` via a CDN import map (see the comment

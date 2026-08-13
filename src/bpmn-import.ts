@@ -761,16 +761,22 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
             let offsetY: number;
 
             if (vlp === 'bottom') {
-                // valign='top' → margin.y = 0 → bounds.y += 0*labelH = 0 (pas de décalage margin)
-                // spacing.y = spacingTop + baseSpacing
-                const spacingY = spacingTop + baseSpacing;
-                // spacing.x = (spacingLeft - spacingRight) / 2
+                // BPMN DI : BPMNLabel/Bounds = coin haut-gauche ABSOLU du label sur le plan.
+                //
+                // Le rendu réel (labels HTML/foreignObject, mesuré dans un navigateur,
+                // cf. `applyLabelPosition`) diffère du pipeline SVG texte pur : le
+                // correctif géométrique de `rotateLabelBounds` (margin.x lié à
+                // align='center') n'est pas visible sur ce chemin de rendu — seul le
+                // décalage de `updateVertexLabelOffset` (dû à labelWidth ≠ largeur du
+                // sommet) s'applique. La boîte du label (largeur = labelPos.width) est
+                // donc positionnée par :
+                //   bx = vx + offsetX - (labelWidth - vw)/2 + (spacingLeft - spacingRight)/2
+                //   by = vy + offsetY + vh + spacing + spacingTop
+                // On impose (bx, by) = (labelPos.x, labelPos.y) :
                 const spacingX = (spacingLeft - spacingRight) / 2;
-                offsetX = labelPos.x - elementPos.x - 0.5 * labelPos.width - spacingX;
-                offsetY = labelPos.y - elementPos.y - elementPos.height - labelPos.height - spacingY;
-                // Fix inexplicable mais qui rend bien
-                offsetY += 20;
-                offsetX += labelPos.width;
+                const spacingY = baseSpacing + spacingTop; // baseSpacing = style.spacing
+                offsetX = labelPos.x - elementPos.x + 0.5 * (labelPos.width - elementPos.width) - spacingX;
+                offsetY = labelPos.y - elementPos.y - elementPos.height - spacingY;
             } else if (vlp === 'top') {
                 const spacingY = spacingTop + baseSpacing;
                 const spacingX = (spacingLeft - spacingRight) / 2;
