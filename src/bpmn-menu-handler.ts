@@ -1,8 +1,31 @@
 // src/bpmn-menu-handlers.ts
-import {InternalEvent} from "@maxgraph/core";
+import {Cell, Graph, InternalEvent} from "@maxgraph/core";
 import type {VertexActionHandler, VertexActionId} from "./bpmn-menu";
 import {startPlaceVertexFollowMouse} from "./bpmn-menu-placement";
-import {addBPMNAnnotation, addBPMNConnection, addBPMNGateway, addBPMNState, addBPMNTask} from "./bpmn-helpers";
+import {addBPMNAnnotation, addBPMNConnection, addBPMNGateway, addBPMNState, addBPMNTask, isLaneVertex} from "./bpmn-helpers";
+
+// Décoratifs (icône/badge) : pas de rôle de remplissage propre, à ignorer lors de la
+// propagation de couleur.
+const DECORATIVE_STYLES = ["stateIcon", "bpmnIcon", "bpmnBadge"];
+
+// Propage une couleur de remplissage aux enfants d'une lane qui n'ont pas leur propre
+// couleur définie (cell.style.fillColor absent = jamais coloré explicitement, ni par
+// l'import BPMN ni par une action de recoloration précédente). Un enfant qui a déjà sa
+// propre couleur la conserve et délimite sa propre portée : on ne descend pas plus bas
+// dans ses propres enfants.
+function applyFillToUncoloredChildren(graph: Graph, cell: Cell, color: string): void {
+    for (const child of cell.getChildren()) {
+        const names: string[] = child.style?.baseStyleNames ?? [];
+        if (DECORATIVE_STYLES.some((n) => names.includes(n))) continue;
+        if (child.style?.fillColor) continue;
+
+        graph.setCellStyles("fillColor", color, [child]);
+        if (isLaneVertex(graph, child)) {
+            graph.setCellStyles("swimlaneFillColor", color, [child]);
+        }
+        applyFillToUncoloredChildren(graph, child, color);
+    }
+}
 
 export function makeDefaultHandlers(): Record<VertexActionId, VertexActionHandler> {
     return {
@@ -68,6 +91,14 @@ export function makeDefaultHandlers(): Record<VertexActionId, VertexActionHandle
                             cell = cell.parent;
                     }
                     graph.setCellStyles("fillColor", color, [cell]);
+                    if (isLaneVertex(graph, cell)) {
+                        // "fillColor" ne peint que le bandeau de titre d'une lane (shape
+                        // "swimlane" de maxgraph) : il faut aussi "swimlaneFillColor" pour
+                        // couvrir tout son contenu, et propager aux enfants qui n'ont pas
+                        // leur propre couleur.
+                        graph.setCellStyles("swimlaneFillColor", color, [cell]);
+                        applyFillToUncoloredChildren(graph, cell, color);
+                    }
                 }
             } finally {
                 model.endUpdate();

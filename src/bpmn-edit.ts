@@ -9,7 +9,7 @@ import {
 } from '@maxgraph/core';
 import { applyGraphStyles } from './graph-styles';
 import { downloadSvg, embedFontInSvg, exportGraphToSvg } from "./bpmn-svg";
-import { addBPMNAnnotation, addBPMNGateway, addBPMNState, addBPMNTask } from "./bpmn-helpers";
+import { addBPMNAnnotation, addBPMNGateway, addBPMNLane, addBPMNState, addBPMNTask } from "./bpmn-helpers";
 import { BPMN_FONT_DATA_URI, BPMN_FONT_FAMILY } from './assets';
 
 export interface BpmnEditorContext {
@@ -41,7 +41,7 @@ interface DropConfig {
 }
 
 function insertLane(graph: Graph, parent: Cell, x: number, y: number): void {
-    const v = graph.insertVertex({ parent, value: 'Lane', position: [x, y], size: [600, 150], style: { baseStyleNames: ['lane'] } });
+    const v = addBPMNLane(graph, parent, { x, y, width: 600, height: 150, value: 'Lane' });
     graph.orderCells(true, [v]);
 }
 
@@ -178,7 +178,7 @@ export function initBpmnEditor(
 
     const graph = new Graph(container);
 
-    graph.gridSize    = 10;
+    graph.gridSize    = 1;
     graph.gridEnabled = true;
 
     applyGraphStyles(graph);
@@ -378,7 +378,7 @@ export function hideMenu(menuEl: HTMLElement | null | undefined): void {
 export function enableArrowKeyMovement(
     graph: Graph,
     hooks: InitBpmnEditorHooks = {},
-    step = 10
+    step = 1
 ): () => void {
     const onKeyDown = (event: KeyboardEvent) => {
         if (graph.isEditing()) return;

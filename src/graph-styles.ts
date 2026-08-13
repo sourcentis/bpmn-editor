@@ -92,6 +92,14 @@ export function applyGraphStyles(graph: Graph) {
 
             strokeColor: "#000000",
 
+            // 40 et non les 22 hérités de baseVertex : à 22px, un nom de participant/lane
+            // un peu long qui se retrouve enroulé sur 2 lignes voit sa seconde ligne
+            // débordée hors du bandeau de titre (bpmn-import.ts calcule un titleSize plus
+            // large dès qu'il a des lanes à partir desquelles se caler ; cette valeur ne
+            // sert que de repli quand aucune donnée n'est disponible, ex. un participant
+            // sans laneSet du tout).
+            startSize: 40,
+
         });
     stylesheet.putCellStyle("lane", laneStyle);
 
@@ -281,7 +289,13 @@ export function applyGraphStyles(graph: Graph) {
         align: "center",
         verticalAlign: "middle",
 
-        fontSize: 50,
+        // 42 et non 50 : au-delà, le glyphe déborde visuellement de la boîte 40×40 de
+        // l'icône alors que celle-ci a pointerEvents:false — un clic sur la partie du
+        // glyphe hors de l'ellipse réellement hit-testée du "state" retombe alors sur
+        // ce qu'il y a derrière (la lane), rendant le state impossible à saisir/déplacer
+        // quand il est dans une lane. Les appels qui ont besoin de la taille d'origine
+        // (ex. addBPMNGateway) surchargent fontSize localement.
+        fontSize: 42,
         fontColor: "#000000",
         fontFamily: "BPMN",
 
@@ -342,7 +356,7 @@ export function applyGraphStyles(graph: Graph) {
 
     const bpmnEdgeStyle = deriveStyle(baseEdge, {
         strokeColor: "#000000",
-        strokeWidth: 1,
+        strokeWidth: 2,
         fontColor: "#000000",
         endArrow: "block",
         endFill: true,

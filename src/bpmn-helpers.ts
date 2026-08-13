@@ -76,7 +76,10 @@ export function addBPMNGateway(graph: Graph, parent: Cell, x: number, y: number)
         value:  BPMN_ICONS.GATEWAY,
         position: [0, 0],
         size:     [45, 45],
-        style:    { baseStyleNames: ["stateIcon"] },
+        // fontSize explicite : conserve la taille d'origine du glyphe losange, qui n'a
+        // pas besoin du même correctif que "stateIcon" (voir son commentaire) puisque le
+        // gateway n'est pas concerné par le bug de déplacement rapporté.
+        style:    { baseStyleNames: ["stateIcon"], fontSize: 50 },
     });
 
     const g = icon.getGeometry();
@@ -86,6 +89,41 @@ export function addBPMNGateway(graph: Graph, parent: Cell, x: number, y: number)
         g.y        = 0.5;
         g.offset   = { x: -23, y: -23 } as any;
         icon.setGeometry(g);
+    }
+
+    return vertex;
+}
+
+export interface AddBPMNLaneOptions {
+    id?: string;
+    value?: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    /**
+     * Largeur du bandeau de titre (style "startSize"). À fournir quand la lane contient
+     * elle-même des sous-lanes, calculée comme le décalage réel de la première sous-lane
+     * par rapport à ce conteneur — sinon un espace vide apparaît entre le titre (dessiné à
+     * la largeur par défaut du style "lane") et le début des sous-lanes. Omis : le style
+     * par défaut s'applique.
+     */
+    titleSize?: number;
+}
+
+export function addBPMNLane(graph: Graph, parent: Cell, options: AddBPMNLaneOptions): Cell {
+    const { id, value, x, y, width, height, titleSize } = options;
+    const vertex = graph.insertVertex({
+        parent,
+        value: value ?? '',
+        id,
+        position: [x, y],
+        size:     [width, height],
+        style:    { baseStyleNames: ["lane"] },
+    });
+
+    if (titleSize !== undefined && titleSize > 0) {
+        graph.setCellStyles("startSize", titleSize, [vertex]);
     }
 
     return vertex;
