@@ -110,10 +110,9 @@ and <a href="https://github.com/sourcentis/bpmn-editor/blob/main/examples/viewer
 <p>From the package root:</p>
 <pre><code class="language-bash">npm install
 npm run build      # produces dist/bpmn-editor.js
-cd examples
-python3 -m http.server 8000
+npm run serve      # start http server at http://localhost:8000
 </code></pre>
-<p>Then open <code>http://localhost:8000/editor.html</code>. Browsers block ES module
+<p>Then open <code>http://localhost:8000/examples/editor.html</code>. Browsers block ES module
 imports from <code>file://</code> URLs, so a static server (any will do — the Python
 one above needs nothing installed beyond Python itself) is required even
 though there's no actual backend involved.</p>
