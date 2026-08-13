@@ -3,19 +3,23 @@ import { Cell, Geometry, Graph, InternalEvent, Point } from "@maxgraph/core";
 
 export function setAnnotationArrow(graph: Graph, edge: Cell): void {
     graph.batchUpdate(() => {
-        graph.setCellStyles("dashed",     true,                [edge]);
-        graph.setCellStyles("edgeStyle",  "straightEdgeStyle", [edge]);
-        graph.setCellStyles("startArrow", "none",              [edge]);
-        graph.setCellStyles("endArrow",   "none",              [edge]);
+        graph.setCellStyles("dashed",      true,                [edge]);
+        // Pointillé fin (1/1) plutôt que le tiret par défaut de maxgraph.
+        graph.setCellStyles("dashPattern", "1 1",               [edge]);
+        graph.setCellStyles("edgeStyle",   "straightEdgeStyle", [edge]);
+        graph.setCellStyles("startArrow",  "none",              [edge]);
+        graph.setCellStyles("endArrow",    "none",              [edge]);
     });
 }
 
 export function setAnnotationDirectionalArrow(graph: Graph, edge: Cell): void {
     graph.batchUpdate(() => {
-        graph.setCellStyles("dashed",     true,                [edge]);
-        graph.setCellStyles("edgeStyle",  "straightEdgeStyle", [edge]);
-        graph.setCellStyles("startArrow", "none",              [edge]);
-        graph.setCellStyles("endArrow",   "classic",           [edge]);
+        graph.setCellStyles("dashed",      true,                [edge]);
+        // Pointillé fin (1/1) plutôt que le tiret par défaut de maxgraph.
+        graph.setCellStyles("dashPattern", "1 1",               [edge]);
+        graph.setCellStyles("edgeStyle",   "straightEdgeStyle", [edge]);
+        graph.setCellStyles("startArrow",  "none",              [edge]);
+        graph.setCellStyles("endArrow",    "classic",           [edge]);
     });
 }
 
