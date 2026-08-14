@@ -143,19 +143,31 @@ function colorAttrs(cell: Cell): string[] {
 // s'exporte en "task" générique, un event en "startEvent", etc.).
 let fallbackCounter = 0;
 
+// Un id BPMN est un xsd:ID (donc un NCName XML) : il doit commencer par une
+// lettre ou un underscore. cell.getId() renvoie l'id interne de maxgraph
+// (auto-attribué, purement numérique — "4", "18"...) pour toute cellule
+// dessinée à la main plutôt qu'importée, ce qui produit un XML rejeté par
+// tout autre outil BPMN ("illegal ID <4>"). On le rend valide en le
+// préfixant par son type ; un id déjà valide (import réel) traverse tel
+// quel.
+function sanitizeId(id: string, prefix: string): string {
+    return /^[A-Za-z_]/.test(id) ? id : `${prefix}_${id}`;
+}
+
 function inferVertexMeta(cell: Cell): BpmnMeta {
     const baseNames: string[] = (cell.style as any)?.baseStyleNames ?? [];
-    const bpmnId = cell.getId() || `Node_${fallbackCounter++}`;
-    if (baseNames.includes('lane')) return { bpmnId, kind: 'lane' };
-    if (baseNames.includes('state')) return { bpmnId, kind: 'startEvent' };
-    if (baseNames.includes('gateway')) return { bpmnId, kind: 'exclusiveGateway' };
-    if (baseNames.includes('annotation')) return { bpmnId, kind: 'textAnnotation' };
-    return { bpmnId, kind: 'task' };
+    const rawId = cell.getId() || `${fallbackCounter++}`;
+    if (baseNames.includes('lane')) return { bpmnId: sanitizeId(rawId, 'Lane'), kind: 'lane' };
+    if (baseNames.includes('state')) return { bpmnId: sanitizeId(rawId, 'Event'), kind: 'startEvent' };
+    if (baseNames.includes('gateway')) return { bpmnId: sanitizeId(rawId, 'Gateway'), kind: 'exclusiveGateway' };
+    if (baseNames.includes('annotation')) return { bpmnId: sanitizeId(rawId, 'Annotation'), kind: 'textAnnotation' };
+    return { bpmnId: sanitizeId(rawId, 'Task'), kind: 'task' };
 }
 
 function inferEdgeMeta(cell: Cell): BpmnMeta {
     const style: any = cell.style ?? {};
-    const bpmnId = cell.getId() || `Flow_${fallbackCounter++}`;
+    const rawId = cell.getId() || `${fallbackCounter++}`;
+    const bpmnId = sanitizeId(rawId, 'Flow');
     if (style.startArrow === 'bpmnMessage') return { bpmnId, kind: 'messageFlow' };
     if (style.dashed === true) return { bpmnId, kind: 'association' };
     return { bpmnId, kind: 'sequenceFlow' };
@@ -316,19 +328,37 @@ function collectModel(graph: Graph): ExportModel {
         }
     }
 
+    // ids de tout ce qui a effectivement été retenu comme noeud du modèle
+    // (flowNode ou annotation) — sert de garde-fou ci-dessous : une arête
+    // dont l'extrémité est une cellule orpheline (détachée de l'arbre du
+    // defaultParent, ex. reliquat de copier/coller, mais toujours référencée
+    // comme terminal par maxgraph) obtiendrait sinon un sourceRef/targetRef
+    // qui ne correspond à aucun élément émis, ce qu'aucun parseur BPMN
+    // n'accepte ("unresolved reference").
+    const knownNodeIds = new Set<string>();
+    for (const p of processes) {
+        for (const n of p.flowNodes) knownNodeIds.add(n.meta.bpmnId);
+    }
+    for (const a of annotations) knownNodeIds.add(a.meta.bpmnId);
+
     const associations: FlowEntry[] = [];
     const messageFlows: FlowEntry[] = [];
     const edgeById = new Map<string, Cell>();
 
     for (const e of allEdges) {
         const meta = metaOfEdge(e);
-        edgeById.set(meta.bpmnId, e);
         const source = e.getTerminal?.(true) as Cell | null;
         const target = e.getTerminal?.(false) as Cell | null;
         if (!source || !target) continue;
 
         const sourceMeta = metaOfVertex(source);
         const targetMeta = metaOfVertex(target);
+        if (!knownNodeIds.has(sourceMeta.bpmnId) || !knownNodeIds.has(targetMeta.bpmnId)) {
+            console.warn(`⚠️ Export BPMN : arête ${meta.bpmnId} ignorée (extrémité orpheline hors du modèle)`);
+            continue;
+        }
+        edgeById.set(meta.bpmnId, e);
+
         const entry: FlowEntry = {
             id: meta.bpmnId,
             name: String(e.getValue?.() ?? ''),
