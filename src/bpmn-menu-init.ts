@@ -20,6 +20,24 @@ export function initVertexMenuActions(
         return Array.isArray(names) ? names : [];
     }
 
+    // Un clic sur un "state"/"gateway" touche quasi toujours son icône
+    // interne (stateIcon), qui recouvre entièrement le sommet parent — voir
+    // Graph.prototype.click dans maxgraph, qui pose `cell` sur le résultat
+    // brut du hit-test (me.getCell()), sans jamais remonter vers un
+    // ancêtre sélectionnable. Sans ce recentrage, currentCell (donc la
+    // source/cible passée à addBPMNConnection par les actions "connect" /
+    // "add-*") pointerait sur l'icône plutôt que sur le sommet BPMN réel :
+    // l'icône n'a pas de BpmnMeta propre, et l'arête ainsi créée est alors
+    // rejetée par bpmn-export.ts comme orpheline hors du modèle. Même
+    // recentrage que celui déjà fait par le handler "color" (bpmn-menu-handler.ts).
+    function resolveMenuCell(cell: Cell): Cell {
+        const names = getBaseStyleNames(cell);
+        if ((names.includes("stateIcon") || names.includes("bpmnBadge")) && cell.parent) {
+            return cell.parent as Cell;
+        }
+        return cell;
+    }
+
     function setActionVisible(action: string, visible: boolean) {
         const btn = menuEl.querySelector<HTMLElement>(`[data-action="${action}"]`);
         if (!btn) return;
@@ -166,6 +184,24 @@ export function initVertexMenuActions(
 
         recomputeMenuBreaks();
     }
+
+    // Vrai entre la fin d'un geste "connect" (edge créée par
+    // ConnectionHandler.connect(), voir bpmn-menu-handler.ts) et le clic
+    // suivant traité par onGraphClick — les deux sont le même clic natif :
+    // ConnectionHandler.mouseUp() fire InternalEvent.CONNECT de façon
+    // synchrone AVANT de consommer l'événement et de rendre la main à
+    // Graph.click(), qui fire tout de même InternalEvent.CLICK (juste marqué
+    // consommé). Ce drapeau, et lui seul, permet de distinguer ce clic
+    // "fin de connexion" d'un clic de sélection ordinaire : SelectionHandler
+    // consomme LUI AUSSI systématiquement le mouseUp dès qu'une cellule a été
+    // cliquée (cellWasClicked), donc `evt.isConsumed()` seul est vrai pour
+    // quasi tous les clics et ne peut pas servir de test ici.
+    let justConnected = false;
+    const connectionHandler = ((graph as any).connectionHandler ?? graph.getPlugin("ConnectionHandler")) as any;
+    const onConnectionMade = () => {
+        justConnected = true;
+    };
+    connectionHandler?.addListener?.(InternalEvent.CONNECT, onConnectionMade);
 
     let currentCell: Cell | null = null;
 
@@ -317,11 +353,22 @@ export function initVertexMenuActions(
     };
 
     const updateFromSelection = () => {
+        // ConnectionHandler.connect() sélectionne la nouvelle arête juste
+        // après l'avoir créée (voir bpmn-menu-handler.ts / le commentaire de
+        // `justConnected`), ce qui déclenche ce listener de sélection avant
+        // même que le clic qui a terminé la connexion n'atteigne
+        // onGraphClick. Sans ce garde-fou, choisir la destination d'une
+        // flèche rouvrirait le menu contextuel sur cette arête tout juste
+        // créée — non désiré : seul un clic explicite sur une cellule déjà
+        // existante doit ouvrir le menu. On ne consomme pas `justConnected`
+        // ici : c'est onGraphClick, plus tard dans le même clic, qui le fait.
+        if (justConnected) return;
+
         const cells = graph.getSelectionCells() as Cell[];
 
         if (requireSingle) {
             if (cells.length !== 1 || !isMenuCell(cells[0])) return hide();
-            currentCell = cells[0];
+            currentCell = resolveMenuCell(cells[0]);
 
             // Tant que le bouton est enfoncé, on ne (re)positionne pas le menu:
             // SelectionHandler sélectionne la cellule dès le mousedown, avant
@@ -344,7 +391,7 @@ export function initVertexMenuActions(
 
         const first = cells.find((c) => isMenuCell(c));
         if (!first) return hide();
-        currentCell = first;
+        currentCell = resolveMenuCell(first);
 
         if (lastAnchor) {
             ensureMenuInContainer();
@@ -439,13 +486,28 @@ export function initVertexMenuActions(
             menuEl,
             event: e,
         });
+
+        // "connect"/"add-state"/"add-task"/"add-gateway"/"add-annotations"
+        // masquent le menu elles-mêmes en manipulant directement
+        // menuEl.classList (bpmn-menu-handler.ts), sans passer par hide() —
+        // qui, seul, remet aussi currentCell/lastAnchor à null. Sans cette
+        // resynchronisation, lastAnchor reste posé sur la cellule source :
+        // quand ConnectionHandler.connect() sélectionne ensuite la nouvelle
+        // arête, updateFromSelection() réutilise cet ancien lastAnchor et
+        // rouvre le menu à la position de la source plutôt que de la
+        // recalculer pour la nouvelle cible. "rotate" (qui ne masque jamais
+        // le menu) ne déclenche pas cette branche : la condition ne porte que
+        // sur ce que l'action a réellement fait, pas sur une liste d'actions.
+        if (menuEl.classList.contains("bpmn-editor-hidden")) {
+            hide();
+        }
     };
 
     menuEl.addEventListener("click", onMenuClick);
 
     // 4) click dans le graph: 🔥 on affiche le menu aussi sur les edges + près du clic
     const onGraphClick = (_sender: unknown, evt: EventObject) => {
-        const cell = evt.getProperty("cell") as Cell | null;
+        const rawCell = evt.getProperty("cell") as Cell | null;
         const me = evt.getProperty("event") as MouseEvent | null; // MouseEvent natif
 
         // Si la souris a bougé entre le mousedown et le relâchement, il
@@ -454,13 +516,24 @@ export function initVertexMenuActions(
         const moved = wasCellMoved(me);
         mouseDownPoint = null;
 
-        if (!cell || !isMenuCell(cell)) {
+        // Ce clic vient de terminer un geste "connect" (voir le commentaire de
+        // `justConnected` ci-dessus) : ConnectionHandler.connect() a déjà
+        // sélectionné la nouvelle arête, ce qui a déjà déclenché
+        // updateFromSelection ci-dessus et positionné le menu en conséquence —
+        // ne pas l'écraser ici en le rouvrant sur l'élément de destination.
+        if (justConnected) {
+            justConnected = false;
+            return;
+        }
+
+        if (!rawCell || !isMenuCell(rawCell)) {
             hide();
             return;
         }
 
         if (moved) return;
 
+        const cell = resolveMenuCell(rawCell);
         currentCell = cell;
 
         // Priorité au clic exact
@@ -490,6 +563,7 @@ export function initVertexMenuActions(
         graph.view.removeListener(onViewChanged as any);
         graph.removeListener(onGraphClick as any);
         graph.removeMouseListener(mouseListener);
+        connectionHandler?.removeListener?.(onConnectionMade);
 
         menuEl.removeEventListener("click", onMenuClick);
         menuEl.removeEventListener("mousedown", stop, true);
@@ -501,9 +575,10 @@ export function initVertexMenuActions(
         getCurrentCell: () => currentCell,
         showForCell: (cell: Cell) => {
             if (!isMenuCell(cell)) return;
-            currentCell = cell;
+            const resolved = resolveMenuCell(cell);
+            currentCell = resolved;
             lastAnchor = null;
-            showForCellFallback(cell);
+            showForCellFallback(resolved);
         },
         hide,
     };
