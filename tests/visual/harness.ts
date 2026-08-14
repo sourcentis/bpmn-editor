@@ -6,7 +6,9 @@
 // window.parseBpmn (tests structurels). Rien ici n'a d'équivalent dans
 // src/ : ce fichier est le seul endroit qui a besoin de ces signaux.
 import { createBpmnEditor } from '../../src/index';
-import { parseBPMN } from '../../src/bpmn-import';
+import { drawDiagram, parseBPMN } from '../../src/bpmn-import';
+import { exportBPMN } from '../../src/bpmn-export';
+import { initBpmnEditor } from '../../src/bpmn-edit';
 // tests/helpers/window.d.ts augmente globalement `Window` (renderBpmn,
 // parseBpmn, __BPMN_RENDERED__) — inclus par tests/tsconfig.json, pas besoin
 // d'import explicite ici pour que le typage s'applique.
@@ -57,4 +59,38 @@ window.parseBpmn = (xml: string) => {
     // on ne renvoie que la partie JSON-safe utilisée par les tests structurels.
     const { elements, positions, labelPositions, colors } = data;
     return { elements, positions, labelPositions, colors };
+};
+
+// Exporte l'état actuellement affiché par renderBpmn(). N'a pas d'équivalent
+// dans src/ : l'éditeur `ui: 'none'` monté par renderBpmn() n'expose pas sa
+// Graph interne via BpmnEditorInstance, donc on reconstruit un graphe
+// équivalent hors écran à partir du dernier XML rendu (même parseBPMN +
+// drawDiagram que renderBpmn(), donc un état de cellules identique), on
+// l'exporte, puis on le détruit aussitôt.
+let lastRenderedXml: string | null = null;
+const originalRenderBpmn = window.renderBpmn;
+window.renderBpmn = async (xml: string): Promise<void> => {
+    lastRenderedXml = xml;
+    await originalRenderBpmn(xml);
+};
+
+window.exportBpmn = (): string => {
+    if (lastRenderedXml === null) {
+        throw new Error('exportBpmn : aucun renderBpmn() préalable');
+    }
+    const offscreen = document.createElement('div');
+    offscreen.style.position = 'absolute';
+    offscreen.style.left = '-10000px';
+    offscreen.style.width = '2000px';
+    offscreen.style.height = '2000px';
+    document.body.appendChild(offscreen);
+
+    const { graph, dispose } = initBpmnEditor(offscreen, {});
+    try {
+        drawDiagram(graph, parseBPMN(lastRenderedXml));
+        return exportBPMN(graph);
+    } finally {
+        dispose();
+        offscreen.remove();
+    }
 };

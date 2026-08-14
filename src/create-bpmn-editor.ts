@@ -17,6 +17,7 @@ import { renderEditorDom } from './ui/dom';
 import { downloadXml, getXMLGraph, loadGraphXml } from './xml';
 import { enableArrowKeyMovement, exportGraphAsSvgFile, initBpmnEditor, showStatus, wireEditorUi } from './bpmn-edit';
 import { bindBpmnFileInput, drawDiagram, parseBPMN } from './bpmn-import';
+import { exportBPMN } from './bpmn-export';
 import { initVertexMenuActions } from './bpmn-menu-init';
 import { setupBpmnMenuSelect } from './bpmn-menu-select';
 import { installEdgeRules } from './bpmn-arrows';
@@ -133,6 +134,22 @@ export function createBpmnEditor(container: HTMLElement, options: BpmnEditorOpti
         }
 
         if (dom.toolbar) {
+            const exportBtn = dom.toolbar.querySelector<HTMLElement>('[data-action="export-bpmn"]');
+            const onExportBpmn = () => {
+                let xml: string;
+                try {
+                    xml = exportBPMN(graph);
+                } catch (err) {
+                    showStatus(dom.statusEl, messages.exportError);
+                    emitter.emit('error', err instanceof Error ? err : new Error(String(err)));
+                    return;
+                }
+                downloadXml(xml, 'export.bpmn');
+                showStatus(dom.statusEl, messages.exportBpmnSuccess);
+            };
+            exportBtn?.addEventListener('click', onExportBpmn);
+            disposers.push(() => exportBtn?.removeEventListener('click', onExportBpmn));
+
             const saveBtn = dom.toolbar.querySelector<HTMLElement>('[data-action="save"]');
             const onSave = () => {
                 void (async () => {
@@ -217,6 +234,15 @@ export function createBpmnEditor(container: HTMLElement, options: BpmnEditorOpti
                 drawDiagram(graph, data);
                 emitter.emit('change', undefined);
                 if (readOnly) setTimeout(adjustReadOnlyContainerHeight, 150);
+            } catch (err) {
+                emitter.emit('error', err instanceof Error ? err : new Error(String(err)));
+                throw err;
+            }
+        },
+
+        exportBpmnXml(): string {
+            try {
+                return exportBPMN(graph);
             } catch (err) {
                 emitter.emit('error', err instanceof Error ? err : new Error(String(err)));
                 throw err;

@@ -14,7 +14,7 @@ import { expect, test } from '../helpers/console-guard';
 const FIXTURES_DIR = join(dirname(fileURLToPath(import.meta.url)), '../visual/fixtures');
 
 const COMPLEX_FIXTURES = [
-    't20-collaboration-lanes-subprocess.bpmn',
+    't20-process.bpmn',
     't21-collaboration-multi-pool.bpmn',
     't22-call-activity.bpmn',
 ];

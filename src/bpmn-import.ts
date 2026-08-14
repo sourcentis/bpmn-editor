@@ -232,6 +232,46 @@ export interface BpmnData {
     xmlDoc: Document;
 }
 
+// Descripteur BPMN posé sur chaque Cell créée par drawDiagram() — additif, ne modifie
+// aucun comportement d'import existant (rien ne le lit ici). Porte ce que le modèle
+// graphe/style ne permet pas de reconstruire sans perte ou ambiguïté à l'export : id
+// BPMN d'origine (perdu par défaut pour tout ce qui n'est pas lane/process/participant,
+// seul addBPMNLane reçoit un id explicite), sous-type exact (le distingo task/userTask/
+// serviceTask/... ou startEvent/boundaryEvent/... ne survit pas à la seule icône posée,
+// dont le mapping type -> icône est plusieurs-vers-un via les replis de eventIcon()),
+// nature d'event, caractère interruptif, rattachement d'un boundaryEvent (perdu — un
+// boundaryEvent est dessiné comme une cellule autonome dans sa lane, sans lien structurel
+// vers l'activité attachedToRef), repli/expansion d'un sous-processus, et le processRef
+// d'un participant (le process référencé n'a pas sa propre cellule).
+export interface BpmnMeta {
+    bpmnId: string;
+    kind: string;
+    definition?: string;
+    interrupting?: boolean;
+    attachedToRef?: string;
+    parallelMultiple?: boolean;
+    collapsed?: boolean;
+    processRef?: string;
+    direction?: string;
+    // Bounds BPMNLabel d'origine (coordonnées absolues), capturées telles
+    // quelles plutôt que reconstruites par inversion de la formule d'offset
+    // de applyLabelPosition : cette formule dépend de résolutions de style
+    // (verticalLabelPosition, spacing…) et surtout perd labelPos.height en
+    // route pour certaines branches (vlp='bottom'/'middle' ne le réutilisent
+    // jamais) — la capture directe est sans perte et beaucoup plus simple.
+    labelBounds?: { x: number; y: number; width: number; height: number };
+}
+
+type CellWithMeta = Cell & { bpmnMeta?: BpmnMeta };
+
+export function getBpmnMeta(cell: Cell): BpmnMeta | undefined {
+    return (cell as CellWithMeta).bpmnMeta;
+}
+
+function setBpmnMeta(cell: Cell, meta: BpmnMeta): void {
+    (cell as CellWithMeta).bpmnMeta = meta;
+}
+
 let currentBpmnData: BpmnData | null = null;
 
 export function getCurrentBpmnData(): BpmnData | null {
@@ -796,6 +836,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
 
             vertexMap[process.id] = processVertex;
             applyColors(processVertex, process.id);
+            setBpmnMeta(processVertex, { bpmnId: process.id, kind: 'process' });
 
             // Créer les lanes directement dans le process (sans niveau laneSet)
             allProcessLanes.forEach((lane: any) => {
@@ -828,6 +869,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                 // les lanes couvrent tout le contenu du process, leur fond blanc par
                 // défaut masquerait entièrement la couleur du process.
                 applyColors(laneVertex, lane.id, process.id);
+                setBpmnMeta(laneVertex, { bpmnId: lane.id, kind: 'lane' });
             });
 
             // Mettre le process en arrière-plan
@@ -853,6 +895,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
 
             vertexMap[lane.id] = vertex;
             applyColors(vertex, lane.id);
+            setBpmnMeta(vertex, { bpmnId: lane.id, kind: 'lane' });
 
             // Mettre en arrière plan
             graph.orderCells(true, [vertex]);
@@ -901,6 +944,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
 
                     vertexMap[p.id] = participantVertex;
                     applyColors(participantVertex, p.id);
+                    setBpmnMeta(participantVertex, { bpmnId: p.id, kind: 'participant', processRef: referencedProcess.id });
 
                     // Créer les lanes directement dans le participant
                     allProcessLanes.forEach((lane: any) => {
@@ -933,6 +977,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                         // sinon, comme les lanes couvrent tout le contenu du participant,
                         // leur fond blanc par défaut masquerait entièrement sa couleur.
                         applyColors(laneVertex, lane.id, p.id);
+                        setBpmnMeta(laneVertex, { bpmnId: lane.id, kind: 'lane' });
                     });
 
                     // Mettre le participant en arrière-plan
@@ -950,6 +995,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                     });
                     vertexMap[p.id] = simpleVertex;
                     applyColors(simpleVertex, p.id);
+                    setBpmnMeta(simpleVertex, { bpmnId: p.id, kind: 'participant', processRef: p.processRef });
                 }
             } else {
                 // Participant sans processRef, créer une lane simple
@@ -964,6 +1010,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                 });
                 vertexMap[p.id] = simpleVertex;
                 applyColors(simpleVertex, p.id);
+                setBpmnMeta(simpleVertex, { bpmnId: p.id, kind: 'participant' });
             }
         });
 
@@ -1238,6 +1285,15 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
             vertexMap[event.id] = vertex;
             vertex.setValue(event.name || '');
             applyColors(vertex, event.id);
+            setBpmnMeta(vertex, {
+                bpmnId: event.id,
+                kind: event.type,
+                definition: event.definition,
+                interrupting: event.interrupting,
+                attachedToRef: event.attachedToRef,
+                parallelMultiple: event.parallelMultiple,
+                labelBounds: labelPositions[event.id],
+            });
 
             // Définir la taille selon le XML
             const geometry = vertex.getGeometry();
@@ -1272,6 +1328,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
             vertexMap[t.id] = vertex;
             vertex.setValue(t.name || '');
             applyColors(vertex, t.id);
+            setBpmnMeta(vertex, { bpmnId: t.id, kind: t.type, collapsed: t.collapsed, labelBounds: labelPositions[t.id] });
 
             // Définir la taille selon le XML
             const geometry = vertex.getGeometry();
@@ -1345,6 +1402,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
             vertexMap[g.id] = vertex;
             vertex.setValue(g.name || '');
             applyColors(vertex, g.id);
+            setBpmnMeta(vertex, { bpmnId: g.id, kind: g.type, labelBounds: labelPositions[g.id] });
 
             // Définir la taille selon le XML
             const geometry = vertex.getGeometry();
@@ -1391,6 +1449,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
             vertexMap[a.id] = vertex;
             vertex.setValue(a.text || '');
             applyColors(vertex, a.id);
+            setBpmnMeta(vertex, { bpmnId: a.id, kind: 'textAnnotation', labelBounds: labelPositions[a.id] });
 
             // Définir la taille selon le XML
             const geometry = vertex.getGeometry();
@@ -1415,6 +1474,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
 
                 edge.setValue(flow.name || '');
                 applyColors(edge, flow.id);
+                setBpmnMeta(edge, { bpmnId: flow.id, kind: 'sequenceFlow', labelBounds: labelPositions[flow.id] });
 
                 // Utiliser les waypoints pour définir la géométrie complète de l'edge
                 if (flow.waypoints && flow.waypoints.length >= 2) {
@@ -1549,6 +1609,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                 const edge = addBPMNConnection(graph, sourceCell, targetCell);
                 setMessageFlow(graph, edge);
                 applyColors(edge, flow.id);
+                setBpmnMeta(edge, { bpmnId: flow.id, kind: 'messageFlow', labelBounds: labelPositions[flow.id] });
 
                 // Utiliser les waypoints pour définir la géométrie complète de l'edge
                 if (flow.waypoints && flow.waypoints.length >= 2) {
@@ -1685,6 +1746,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
             }
 
             const edge = addBPMNConnection(graph, sourceCell, targetCell);
+            setBpmnMeta(edge, { bpmnId: assoc.id, kind: 'association', direction: assoc.direction });
             if (assoc.direction === 'One') {
                 setAnnotationDirectionalArrow(graph, edge);
             } else if (assoc.direction === 'Both') {

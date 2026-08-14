@@ -7,6 +7,7 @@ export const DEFAULT_MESSAGES: Required<BpmnEditorMessages> = {
     saveError:          'Erreur lors de la sauvegarde du graphe.',
     saveNameRequired:   'Le nom du graphe est obligatoire.',
     exportError:        '✗ Impossible de générer le BPMN',
+    exportBpmnSuccess:  '✓ Fichier BPMN exporté',
     loadSuccess:        '✓ Fichier chargé avec succès',
     loadError:          '✗ Erreur lors du chargement du fichier',
     xmlParseError:      'Erreur de parsing XML',

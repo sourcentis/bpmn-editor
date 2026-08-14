@@ -41,10 +41,10 @@ interface BpmnEditorOptions {
 
 | Option | Type | Default | Notes |
 |---|---|---|---|
-| `ui` | `'default' \| 'none'` | `'default'` | `'default'` builds a toolbar (drag palette, zoom/undo/redo/save/import/export-SVG) and a status bar inside `container`. `'none'` builds only the canvas — the contextual per-element menu is still built in both modes, since it's core editing UX, not toolbar chrome. |
+| `ui` | `'default' \| 'none'` | `'default'` | `'default'` builds a toolbar (drag palette, zoom/undo/redo/save/import/export-BPMN/export-SVG) and a status bar inside `container`. `'none'` builds only the canvas — the contextual per-element menu is still built in both modes, since it's core editing UX, not toolbar chrome. |
 | `readOnly` | `boolean` | `false` | Disables editing; enables mouse-wheel zoom, cursor-becomes-pointer + click-to-navigate over elements with a `url`, and auto-resizes the container's height to fit the loaded diagram after `loadXml()`. With `ui: 'default'` this suppresses the toolbar/palette/file-input (there's nothing to edit with) but a status bar is still built. |
 | `provider` | `BpmnObjectProvider` | — | See [Ports](#ports). Absent → the "insert cartography object" search action in the contextual menu is hidden and disabled; everything else works normally. |
-| `persistence` | `BpmnPersistence` | — | See [Ports](#ports). Only consumed by the built-in `ui: 'default'` "Save" toolbar button — absent there, "Save" downloads a local `.bpmn` file instead. Has **no effect at all** in `ui: 'none'` mode (there's no built-in Save button to call it); a `ui: 'none'` host wanting persistence should call its own `BpmnPersistence` implementation directly from its own button. |
+| `persistence` | `BpmnPersistence` | — | See [Ports](#ports). Only consumed by the built-in `ui: 'default'` "Save" toolbar button — absent there, "Save" downloads a local `.maxgraph` file instead (the editor's own `getXml()` format — see [the XML formats note](#a-note-on-xml-formats); use the separate **Export** button for real BPMN 2.0 XML). Has **no effect at all** in `ui: 'none'` mode (there's no built-in Save button to call it); a `ui: 'none'` host wanting persistence should call its own `BpmnPersistence` implementation directly from its own button. |
 | `onNavigate` | `(url: string) => void` | — | Called (alongside the `navigate` event) when an element carrying a `url` is clicked in `readOnly` mode. Absent → clicking such an element is a no-op besides the event still firing (you can rely on `on('navigate', …)` alone if you prefer). |
 | `paletteRoot` | `HTMLElement \| null` | — | Only meaningful with `ui: 'none'`. Point it at a container whose descendants carry `data-node-type` attributes to reuse the built-in drag-to-insert mechanism with your own palette markup. Ignored with `ui: 'default'` (the built-in palette is used instead). Valid `data-node-type` values: `task-node`, `state-node`, `gateway-node`, `data-node`, `lane-node`, `activities-node`, `annotation-node`, `conversation-node`. |
 | `messages` | `BpmnEditorMessages` | bundled French | See [Messages](#bpmneditormessages-i18n) below and the [i18n guide](guides/i18n.md). |
@@ -59,6 +59,7 @@ interface BpmnEditorInstance {
   loadXml(xml: string): void;
   getXml(): string;
   importBpmnXml(xml: string): void;
+  exportBpmnXml(): string;
   setEnabled(enabled: boolean): void;
   exportSvg(filename?: string): Promise<void>;
   zoomIn(): void;
@@ -95,6 +96,20 @@ internally, exposed so a `ui: 'none'` host (or any other caller — a drag-and-d
 zone, a URL parameter, …) can trigger the same import programmatically.
 Fires `change` on success. Throws (and emits `error`) if `xml` can't be
 parsed — the graph is left unchanged in that case.
+
+### `exportBpmnXml(): string`
+
+Serializes the current graph as standard BPMN 2.0 XML — the counterpart of
+`importBpmnXml()`, producing the `<definitions>`/`<process>` (or
+`<collaboration>`) / `<bpmndi:BPMNShape>`/`<bpmndi:BPMNEdge>` shape a real
+BPMN modeling tool would read, not `getXml()`'s own format (see
+[the XML formats note](#a-note-on-xml-formats)). This is what the built-in
+`ui: 'default'` toolbar's **Export** button (right next to **Import**) calls
+internally to produce the downloaded `.bpmn` file, exposed so a `ui: 'none'`
+host can wire its own button to it the same way it would `exportSvg()`.
+Never throws in practice (an empty graph exports to an empty-but-valid
+document); a genuine failure still throws and emits `error`, matching every
+other method here.
 
 ### `setEnabled(enabled: boolean): void`
 
@@ -147,7 +162,7 @@ interface BpmnEditorEventMap {
 | `select` | `Cell \| null` (a `@maxgraph/core` `Cell`) | The selection changes. `null` when nothing, or more than one thing, is selected. |
 | `save` | `BpmnPersistencePayload` (`{ id, name, type, content }`) | Right before the built-in `ui: 'default'` Save button calls `persistence.save(payload)` — an observation hook, not a place to short-circuit the save. |
 | `navigate` | `url: string` | A `readOnly`-mode click lands on an element carrying a `url` — fires alongside (not instead of) `onNavigate`. |
-| `error` | `Error` | An XML parse failure, a rejected `provider`/`persistence` call, or an `exportSvg()` failure. |
+| `error` | `Error` | An XML parse failure, a rejected `provider`/`persistence` call, or an `exportSvg()`/`exportBpmnXml()` failure. |
 
 ```ts
 editor.on('select', (cell) => {
@@ -244,7 +259,8 @@ See the [i18n guide](./guides/i18n.md) for a full English override example.
 | `saveError` | `Erreur lors de la sauvegarde du graphe.` | Status message when `persistence.save()` rejects. |
 | `loadSuccess` | `✓ Fichier chargé avec succès` | Status message after successfully importing a file via the toolbar's file input. |
 | `loadError` | `✗ Erreur lors du chargement du fichier` | Status message when importing a file fails. |
-| `exportError` | `✗ Impossible de générer le BPMN` | Status message when `getXml()` fails or returns empty during Save. |
+| `exportError` | `✗ Impossible de générer le BPMN` | Status message when `getXml()` fails or returns empty during Save, or when the toolbar's **Export** button's `exportBpmnXml()` call fails. |
+| `exportBpmnSuccess` | `✓ Fichier BPMN exporté` | Status message after the toolbar's **Export** button successfully downloads a `.bpmn` file. |
 | `filterPlaceholder` | `Filter...` | Placeholder text of the "insert cartography object" search input. |
 | `filterAriaLabel` | `Filter elements` | `aria-label` of that same input. |
 | `noMatch` | `No match.` | Shown in the object picker when the filter matches nothing. |
@@ -260,17 +276,22 @@ methods:
   serialization — the format Mercator stores diagrams in, and the format
   [`examples/sample.maxgraph`](https://github.com/sourcentis/bpmn-editor/blob/main/examples/sample.maxgraph)
   is written in.
-- `importBpmnXml()` parses actual BPMN 2.0 XML — `<definitions>`,
-  `<process>`, `<startEvent>`, `<sequenceFlow>`, `<bpmndi:BPMNShape>`
-  positions, etc. — the format real BPMN modeling tools export, and converts
-  it into the editor's own shapes. This is also what the built-in
-  `ui: 'default'` toolbar's file-input **Import** button calls internally, and
-  what [`examples/editor.html`](https://github.com/sourcentis/bpmn-editor/blob/main/examples/editor.html)
+- `importBpmnXml()` / `exportBpmnXml()` read and write actual BPMN 2.0 XML —
+  `<definitions>`, `<process>` (or `<collaboration>` when there's more than
+  one pool), `<startEvent>`, `<sequenceFlow>`, `<bpmndi:BPMNShape>`/
+  `<bpmndi:BPMNEdge>` positions, etc. — the format real BPMN modeling tools
+  read and write. `importBpmnXml()` is what the built-in `ui: 'default'`
+  toolbar's file-input **Import** button calls internally, and what
+  [`examples/editor.html`](https://github.com/sourcentis/bpmn-editor/blob/main/examples/editor.html)
   uses to load [`examples/sample.bpmn`](https://github.com/sourcentis/bpmn-editor/blob/main/examples/sample.bpmn)
-  on startup.
-  There is no matching `exportBpmnXml()` — round-trip through
-  `getXml()`/`loadXml()` instead, or use `exportSvg()` for a portable
-  rendered output.
+  on startup; `exportBpmnXml()` is its exact counterpart, called by the
+  toolbar's **Export** button right next to it. A round-trip through the two
+  (import, then export with no edits in between) reproduces the same
+  diagram — same elements, same positions, same colors — though not
+  necessarily byte-identical XML (ids not carried by the graph model may be
+  regenerated; see [`bpmn-export.ts`](https://github.com/sourcentis/bpmn-editor/blob/main/src/bpmn-export.ts)'s
+  header comment for exactly what's preserved). `exportSvg()` remains the
+  option for a portable *rendered* (non-editable) output.
 
 If you're generating diagrams programmatically to feed to `loadXml()`
 (rather than importing an existing BPMN 2.0 file with `importBpmnXml()`),

@@ -55,6 +55,7 @@ const ACTION_BUTTONS: ReadonlyArray<{ action: string; icon: string; title: strin
     { action: 'undo',         icon: ICONS.undo,        title: 'Undo' },
     { action: 'redo',         icon: ICONS.redo,        title: 'Redo' },
     { action: 'import',       icon: ICONS.import,      title: 'Import a BPMN/XML file' },
+    { action: 'export-bpmn',  icon: ICONS.exportBpmn,  title: 'Export as BPMN 2.0 XML' },
     { action: 'download-svg', icon: ICONS.downloadSvg, title: 'Export as SVG' },
     { action: 'save',         icon: ICONS.save,        title: 'Save' },
 ];

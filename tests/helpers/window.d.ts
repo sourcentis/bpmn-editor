@@ -27,6 +27,13 @@ declare global {
          * JSON-safe du résultat (sans le `Document` XML sous-jacent).
          */
         parseBpmn(xml: string): BpmnParseResult;
+        /**
+         * Exporte en BPMN 2.0 XML l'état correspondant au dernier
+         * `renderBpmn()` appelé (throw si aucun). Voir le commentaire de
+         * `window.exportBpmn` dans harness.ts pour le détail de la
+         * reconstruction hors écran.
+         */
+        exportBpmn(): string;
         __BPMN_RENDERED__?: boolean;
     }
 }

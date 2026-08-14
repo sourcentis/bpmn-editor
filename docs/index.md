@@ -95,7 +95,7 @@ in the repository.
 
 Full toolbar, drag-and-drop palette, undo/redo, import/export — everything
 enabled. No `provider` and no `persistence` configured, so **Save**
-downloads a local `.bpmn` file. Try dragging a shape from the palette, or
+downloads a local `.maxgraph` file. Try dragging a shape from the palette, or
 use Import/Export in the toolbar.
 
 <div id="doc-editor" style="height: 560px; border: 1px solid #e1e4e5; border-radius: 4px; margin: 16px 0;"></div>
@@ -147,7 +147,7 @@ anything about it — both entirely optional, and covered in detail in the
 - **`BpmnObjectProvider`** — powers the "insert cartography object" search
   inside the contextual menu. Without it, that action is simply hidden.
 - **`BpmnPersistence`** — powers the `ui: 'default'` toolbar's "Save"
-  action. Without it, "Save" downloads a local `.bpmn` file instead.
+  action. Without it, "Save" downloads a local `.maxgraph` file instead.
 
 ## Instance API
 
@@ -160,6 +160,7 @@ const editor = createBpmnEditor(container, options);
 | `loadXml(xml)` | Replaces the current graph with the given editor-format XML. |
 | `getXml()` | Serializes the current graph. |
 | `importBpmnXml(xml)` | Replaces the graph by parsing standard BPMN 2.0 XML. |
+| `exportBpmnXml()` | Serializes the graph as standard BPMN 2.0 XML — the counterpart of `importBpmnXml()`. |
 | `setEnabled(enabled)` | Toggles editing on/off at runtime. |
 | `exportSvg(filename?)` | Exports to SVG and triggers a download. |
 | `zoomIn()` / `zoomOut()` / `fit()` | Viewport controls. |

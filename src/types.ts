@@ -47,6 +47,7 @@ export interface BpmnEditorMessages {
     saveError?: string;
     saveNameRequired?: string;
     exportError?: string;
+    exportBpmnSuccess?: string;
     loadSuccess?: string;
     loadError?: string;
     xmlParseError?: string;
@@ -109,6 +110,14 @@ export interface BpmnEditorInstance {
      * 2.0 XML" — round-trip through `getXml()`/`loadXml()` instead.
      */
     importBpmnXml(xml: string): void;
+    /**
+     * Serializes the current graph as standard BPMN 2.0 XML — the format
+     * `importBpmnXml` reads, and what a real BPMN modeling tool would produce.
+     * Symmetric to `importBpmnXml`: round-trips through the same
+     * `<definitions>`/`<process>`/`<bpmndi:BPMNShape>` shape, not the editor's
+     * own `loadXml()`/`getXml()` format.
+     */
+    exportBpmnXml(): string;
     setEnabled(enabled: boolean): void;
     on<K extends BpmnEditorEventName>(
         event: K,

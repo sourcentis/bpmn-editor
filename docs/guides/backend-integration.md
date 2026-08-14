@@ -67,7 +67,7 @@ const persistence: BpmnPersistence = {
 createBpmnEditor(container, { persistence });
 ```
 
-Leave `persistence` out and Save downloads a local `.bpmn` file instead —
+Leave `persistence` out and Save downloads a local `.maxgraph` file instead —
 useful for prototyping before a save endpoint exists.
 
 ### If you're using `ui: 'none'`

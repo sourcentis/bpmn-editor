@@ -18,15 +18,29 @@ npm run dev         # vite dev server
 
 Non-regression tests live under `tests/` (never under `src/`) and run on
 [Playwright Test](https://playwright.dev/). They cover BPMN import
-(`importBpmnXml` / `parseBPMN`) from three angles:
+(`importBpmnXml` / `parseBPMN`) and export (`exportBpmnXml` / `exportBPMN`)
+from four angles:
 
 - **Visual** (`tests/visual/`): imports each `tests/visual/fixtures/tNN-*.bpmn`
   file into a UI-less, read-only editor instance and compares the rendered
   canvas against a reference PNG in `tests/visual/__baselines__/`.
+- **Visual round-trip** (`tests/visual/bpmn-roundtrip.spec.ts`): for each
+  fixture, imports it, exports it back to BPMN 2.0 XML, re-imports *that*
+  export, and compares the result against the **same** baseline PNG used by
+  the plain import test above — proving export→re-import reproduces the
+  original rendering exactly (positions, colors, waypoints, labels), not
+  just a visually-similar one.
 - **Structural** (`tests/structural/`): asserts on `parseBPMN`'s output
   directly (participants, lanes, event definitions, colors…) — insensitive
   to fonts/antialiasing, so it pinpoints a parser regression that a visual
   diff would only report as "the image changed".
+- **Structural round-trip** (`tests/structural/bpmn-roundtrip.spec.ts`): for
+  each fixture, asserts that `parseBPMN(exportBPMN(graph))` describes the
+  same diagram as `parseBPMN(original fixture)` — same participant/lane/
+  event/task/gateway/flow ids, same event `definition`/`interrupting`/
+  `attachedToRef`, same colors, same DI positions to within rounding. Does
+  **not** compare raw XML strings — attribute/element order isn't
+  significant, only what `parseBPMN` derives from it.
 - **Console guard** (`tests/helpers/console-guard.ts`): applied to every
   visual and structural test — fails if the page logs a `console.error` or
   an unhandled `pageerror` during the test, even if the primary assertion
@@ -79,7 +93,10 @@ rather than on an arbitrary local machine with different fonts.
   used by existing fixtures), run `npm run test:visual` to generate its
   baseline, review the PNG, then commit the fixture and the baseline
   together. For a structural assertion, add the corresponding case in
-  `tests/structural/bpmn-parse.spec.ts`.
+  `tests/structural/bpmn-parse.spec.ts`. Both round-trip specs discover
+  fixtures the same way the plain import specs do (every `tNN-*.bpmn` in
+  `tests/visual/fixtures/`), so a new fixture gets round-trip coverage for
+  free — nothing to add there.
 
 ## Trying your changes
 

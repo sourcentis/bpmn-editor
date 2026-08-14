@@ -34,8 +34,8 @@ test.describe('parseBPMN — structure des données', () => {
 
         const laneA = lanes.find((l: any) => l.id === 'Lane_A');
         const laneB = lanes.find((l: any) => l.id === 'Lane_B');
-        expect(laneA.flowNodeRefs).toEqual(['Start_1', 'Task_1']);
-        expect(laneB.flowNodeRefs).toEqual(['Task_2', 'End_1']);
+        expect(laneA.flowNodeRefs).toEqual(['Start_1', 'Task_1', 'Activity_111bgkh']);
+        expect(laneB.flowNodeRefs).toEqual(['End_1', 'Task_2']);
     });
 
     test('t06-message-flow : 2 participants, au moins 1 messageFlow', async ({ page }) => {

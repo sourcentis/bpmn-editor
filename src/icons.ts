@@ -5,6 +5,7 @@
 import zoomIn from '../assets/icons/zoom-in.svg?inline';
 import zoomOut from '../assets/icons/zoom-out.svg?inline';
 import boxArrowInDown from '../assets/icons/box-arrow-in-down.svg?inline';
+import boxArrowUp from '../assets/icons/box-arrow-up.svg?inline';
 import cardImage from '../assets/icons/card-image.svg?inline';
 import floppyFill from '../assets/icons/floppy-fill.svg?inline';
 import hexagon from '../assets/icons/hexagon.svg?inline';
@@ -27,6 +28,7 @@ export const ICONS = {
     undo: arrowCounterclockwise,
     redo: arrowClockwise,
     import: boxArrowInDown,
+    exportBpmn: boxArrowUp,
     downloadSvg: cardImage,
     save: floppyFill,
     conversation: hexagon,

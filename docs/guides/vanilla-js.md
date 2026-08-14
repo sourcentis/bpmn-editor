@@ -76,6 +76,18 @@ See the [API reference's note on XML formats](../api-reference.md#a-note-on-xml-
 `getXml()` produces), not raw BPMN 2.0 XML. The toolbar's **Import** button
 is the one that reads actual BPMN 2.0 files from other tools.
 
+## Exporting to BPMN 2.0
+
+```js
+const bpmnXml = editor.exportBpmnXml();
+```
+
+The counterpart of `importBpmnXml()` — produces standard BPMN 2.0 XML
+readable by other BPMN tools, not `getXml()`'s own format. This is exactly
+what the toolbar's **Export** button (right next to **Import**) calls to
+produce the downloaded `.bpmn` file; call it directly to get the XML string
+without triggering a download (e.g. to send it to your own backend).
+
 ## Read-only viewer
 
 ```js
