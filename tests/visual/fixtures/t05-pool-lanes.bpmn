@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" id="Definitions_t05" targetNamespace="http://bpmn-editor.test/t05" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="18.24.0">
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_t05" targetNamespace="http://bpmn-editor.test/t05" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="18.24.0">
   <collaboration id="Collaboration_t05">
     <participant id="Participant_1" name="Pool" processRef="Process_t05" />
   </collaboration>
@@ -51,25 +51,25 @@
       <bpmndi:BPMNShape id="Lane_A_di" bpmnElement="Lane_A" isHorizontal="true">
         <omgdc:Bounds x="185" y="85" width="550" height="150" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0tzyw0o_di" bpmnElement="End_1" bioc:stroke="#831311" bioc:fill="#ffcdd2" color:background-color="#ffcdd2" color:border-color="#831311">
+      <bpmndi:BPMNShape id="Event_0tzyw0o_di" bpmnElement="End_1">
         <omgdc:Bounds x="657" y="287" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <omgdc:Bounds x="665" y="328" width="20" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1bgwwf2_di" bpmnElement="Start_1" bioc:stroke="#205022" bioc:fill="#c8e6c9" color:background-color="#c8e6c9" color:border-color="#205022">
+      <bpmndi:BPMNShape id="Event_1bgwwf2_di" bpmnElement="Start_1">
         <omgdc:Bounds x="225" y="143" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <omgdc:Bounds x="231" y="179" width="24" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0459fcb_di" bpmnElement="Task_1" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00">
+      <bpmndi:BPMNShape id="Activity_0459fcb_di" bpmnElement="Task_1">
         <omgdc:Bounds x="315" y="120" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0nsc3i0_di" bpmnElement="Activity_111bgkh" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00">
+      <bpmndi:BPMNShape id="Activity_0nsc3i0_di" bpmnElement="Activity_111bgkh">
         <omgdc:Bounds x="475" y="120" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0j78i1m_di" bpmnElement="Task_2" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00">
+      <bpmndi:BPMNShape id="Activity_0j78i1m_di" bpmnElement="Task_2">
         <omgdc:Bounds x="475" y="265" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
