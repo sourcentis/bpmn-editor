@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_t01" targetNamespace="http://bpmn-editor.test/t01">
+  <process id="Process_t01" isExecutable="false">
+    <startEvent id="Start_1" name="Start">
+      <outgoing>Flow_1</outgoing>
+    </startEvent>
+    <endEvent id="End_1" name="End">
+      <incoming>Flow_1</incoming>
+    </endEvent>
+    <sequenceFlow id="Flow_1" sourceRef="Start_1" targetRef="End_1" />
+  </process>
+  <bpmndi:BPMNDiagram id="Diagram_t01">
+    <bpmndi:BPMNPlane id="Plane_t01" bpmnElement="Process_t01">
+      <bpmndi:BPMNShape id="Start_1_di" bpmnElement="Start_1">
+        <omgdc:Bounds x="150" y="142" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_1_di" bpmnElement="End_1">
+        <omgdc:Bounds x="350" y="142" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <omgdi:waypoint x="186" y="160" />
+        <omgdi:waypoint x="350" y="160" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

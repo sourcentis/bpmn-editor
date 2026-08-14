@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_t06" targetNamespace="http://bpmn-editor.test/t06">
+  <collaboration id="Collaboration_t06">
+    <participant id="Participant_A" name="Requester" processRef="Process_A" />
+    <participant id="Participant_B" name="Responder" processRef="Process_B" />
+    <messageFlow id="MessageFlow_1" sourceRef="Task_A" targetRef="Task_B" />
+  </collaboration>
+  <process id="Process_A" isExecutable="false">
+    <startEvent id="Start_A" name="Start">
+      <outgoing>Flow_A1</outgoing>
+    </startEvent>
+    <task id="Task_A" name="Send request">
+      <incoming>Flow_A1</incoming>
+      <outgoing>Flow_A2</outgoing>
+    </task>
+    <endEvent id="End_A" name="End">
+      <incoming>Flow_A2</incoming>
+    </endEvent>
+    <sequenceFlow id="Flow_A1" sourceRef="Start_A" targetRef="Task_A" />
+    <sequenceFlow id="Flow_A2" sourceRef="Task_A" targetRef="End_A" />
+  </process>
+  <process id="Process_B" isExecutable="false">
+    <startEvent id="Start_B" name="Start">
+      <outgoing>Flow_B1</outgoing>
+    </startEvent>
+    <task id="Task_B" name="Handle request">
+      <incoming>Flow_B1</incoming>
+      <outgoing>Flow_B2</outgoing>
+    </task>
+    <endEvent id="End_B" name="End">
+      <incoming>Flow_B2</incoming>
+    </endEvent>
+    <sequenceFlow id="Flow_B1" sourceRef="Start_B" targetRef="Task_B" />
+    <sequenceFlow id="Flow_B2" sourceRef="Task_B" targetRef="End_B" />
+  </process>
+  <bpmndi:BPMNDiagram id="Diagram_t06">
+    <bpmndi:BPMNPlane id="Plane_t06" bpmnElement="Collaboration_t06">
+      <bpmndi:BPMNShape id="Participant_A_di" bpmnElement="Participant_A" isHorizontal="true">
+        <omgdc:Bounds x="60" y="60" width="600" height="180" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_B_di" bpmnElement="Participant_B" isHorizontal="true">
+        <omgdc:Bounds x="60" y="280" width="600" height="180" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_A_di" bpmnElement="Start_A">
+        <omgdc:Bounds x="110" y="122" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_A_di" bpmnElement="Task_A">
+        <omgdc:Bounds x="220" y="100" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_A_di" bpmnElement="End_A">
+        <omgdc:Bounds x="420" y="122" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_B_di" bpmnElement="Start_B">
+        <omgdc:Bounds x="110" y="342" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_B_di" bpmnElement="Task_B">
+        <omgdc:Bounds x="220" y="320" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_B_di" bpmnElement="End_B">
+        <omgdc:Bounds x="420" y="342" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_A1_di" bpmnElement="Flow_A1">
+        <omgdi:waypoint x="146" y="140" />
+        <omgdi:waypoint x="220" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_A2_di" bpmnElement="Flow_A2">
+        <omgdi:waypoint x="320" y="140" />
+        <omgdi:waypoint x="420" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_B1_di" bpmnElement="Flow_B1">
+        <omgdi:waypoint x="146" y="360" />
+        <omgdi:waypoint x="220" y="360" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_B2_di" bpmnElement="Flow_B2">
+        <omgdi:waypoint x="320" y="360" />
+        <omgdi:waypoint x="420" y="360" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MessageFlow_1_di" bpmnElement="MessageFlow_1">
+        <omgdi:waypoint x="270" y="180" />
+        <omgdi:waypoint x="270" y="320" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" id="Definitions_t09" targetNamespace="http://bpmn-editor.test/t09">
+  <process id="Process_t09" isExecutable="false">
+    <startEvent id="Start_1" name="Start">
+      <outgoing>Flow_1</outgoing>
+    </startEvent>
+    <task id="Task_Omg" name="OMG colored">
+      <incoming>Flow_1</incoming>
+      <outgoing>Flow_2</outgoing>
+    </task>
+    <task id="Task_Bioc" name="Bioc colored">
+      <incoming>Flow_2</incoming>
+      <outgoing>Flow_3</outgoing>
+    </task>
+    <task id="Task_Plain" name="No color">
+      <incoming>Flow_3</incoming>
+      <outgoing>Flow_4</outgoing>
+    </task>
+    <endEvent id="End_1" name="End">
+      <incoming>Flow_4</incoming>
+    </endEvent>
+    <sequenceFlow id="Flow_1" sourceRef="Start_1" targetRef="Task_Omg" />
+    <sequenceFlow id="Flow_2" sourceRef="Task_Omg" targetRef="Task_Bioc" />
+    <sequenceFlow id="Flow_3" sourceRef="Task_Bioc" targetRef="Task_Plain" />
+    <sequenceFlow id="Flow_4" sourceRef="Task_Plain" targetRef="End_1" />
+  </process>
+  <bpmndi:BPMNDiagram id="Diagram_t09">
+    <bpmndi:BPMNPlane id="Plane_t09" bpmnElement="Process_t09">
+      <bpmndi:BPMNShape id="Start_1_di" bpmnElement="Start_1">
+        <omgdc:Bounds x="80" y="142" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Omg_di" bpmnElement="Task_Omg" color:background-color="#fde68a" color:border-color="#92700c">
+        <omgdc:Bounds x="180" y="120" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Bioc_di" bpmnElement="Task_Bioc" bioc:fill="#bbf7d0" bioc:stroke="#065f46">
+        <omgdc:Bounds x="340" y="120" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Plain_di" bpmnElement="Task_Plain">
+        <omgdc:Bounds x="500" y="120" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_1_di" bpmnElement="End_1">
+        <omgdc:Bounds x="660" y="142" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <omgdi:waypoint x="116" y="160" />
+        <omgdi:waypoint x="180" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <omgdi:waypoint x="280" y="160" />
+        <omgdi:waypoint x="340" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <omgdi:waypoint x="440" y="160" />
+        <omgdi:waypoint x="500" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <omgdi:waypoint x="600" y="160" />
+        <omgdi:waypoint x="660" y="160" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

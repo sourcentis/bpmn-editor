@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_t07" targetNamespace="http://bpmn-editor.test/t07">
+  <process id="Process_t07" isExecutable="false">
+    <startEvent id="Start_1" name="Start">
+      <outgoing>Flow_1</outgoing>
+    </startEvent>
+    <task id="Task_1" name="Long task">
+      <incoming>Flow_1</incoming>
+      <outgoing>Flow_2</outgoing>
+    </task>
+    <endEvent id="End_1" name="Done">
+      <incoming>Flow_2</incoming>
+    </endEvent>
+    <boundaryEvent id="Boundary_Msg" name="Cancelled" attachedToRef="Task_1">
+      <outgoing>Flow_Interrupt</outgoing>
+      <messageEventDefinition id="MessageEventDefinition_1" />
+    </boundaryEvent>
+    <endEvent id="End_Interrupt" name="Cancelled end">
+      <incoming>Flow_Interrupt</incoming>
+    </endEvent>
+    <boundaryEvent id="Boundary_Timer" name="Reminder" attachedToRef="Task_1" cancelActivity="false">
+      <outgoing>Flow_NonInterrupt</outgoing>
+      <timerEventDefinition id="TimerEventDefinition_1" />
+    </boundaryEvent>
+    <endEvent id="End_NonInterrupt" name="Reminder sent">
+      <incoming>Flow_NonInterrupt</incoming>
+    </endEvent>
+    <sequenceFlow id="Flow_1" sourceRef="Start_1" targetRef="Task_1" />
+    <sequenceFlow id="Flow_2" sourceRef="Task_1" targetRef="End_1" />
+    <sequenceFlow id="Flow_Interrupt" sourceRef="Boundary_Msg" targetRef="End_Interrupt" />
+    <sequenceFlow id="Flow_NonInterrupt" sourceRef="Boundary_Timer" targetRef="End_NonInterrupt" />
+  </process>
+  <bpmndi:BPMNDiagram id="Diagram_t07">
+    <bpmndi:BPMNPlane id="Plane_t07" bpmnElement="Process_t07">
+      <bpmndi:BPMNShape id="Start_1_di" bpmnElement="Start_1">
+        <omgdc:Bounds x="100" y="122" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_1_di" bpmnElement="Task_1">
+        <omgdc:Bounds x="250" y="100" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_1_di" bpmnElement="End_1">
+        <omgdc:Bounds x="500" y="122" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Boundary_Msg_di" bpmnElement="Boundary_Msg">
+        <omgdc:Bounds x="282" y="162" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Interrupt_di" bpmnElement="End_Interrupt">
+        <omgdc:Bounds x="282" y="280" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Boundary_Timer_di" bpmnElement="Boundary_Timer">
+        <omgdc:Bounds x="282" y="82" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_NonInterrupt_di" bpmnElement="End_NonInterrupt">
+        <omgdc:Bounds x="282" y="18" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <omgdi:waypoint x="136" y="140" />
+        <omgdi:waypoint x="250" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <omgdi:waypoint x="350" y="140" />
+        <omgdi:waypoint x="500" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Interrupt_di" bpmnElement="Flow_Interrupt">
+        <omgdi:waypoint x="300" y="198" />
+        <omgdi:waypoint x="300" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_NonInterrupt_di" bpmnElement="Flow_NonInterrupt">
+        <omgdi:waypoint x="300" y="82" />
+        <omgdi:waypoint x="300" y="54" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

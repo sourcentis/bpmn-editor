@@ -23,13 +23,19 @@
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build",
-    "serve": "python3 -m http.server 8000"
+    "serve": "python3 -m http.server 8000",
+    "test": "playwright test",
+    "test:visual": "playwright test tests/visual",
+    "test:structural": "playwright test tests/structural",
+    "test:visual:update": "playwright test tests/visual --update-snapshots"
   },
   "peerDependencies": {
     "@maxgraph/core": "^0.21.0"
   },
   "devDependencies": {
     "@maxgraph/core": "^0.21.0",
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^20.19.43",
     "typescript": "^6.0.3",
     "vite": "^8.0.16",
     "vite-plugin-dts": "^4.5.0"

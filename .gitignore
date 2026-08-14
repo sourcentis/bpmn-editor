@@ -5,3 +5,10 @@ site/
 .DS_Store
 .idea/
 .vscode/
+
+# Playwright — artefacts régénérés à chaque run ; les baselines visuelles
+# (tests/visual/__baselines__/) restent versionnées.
+test-results/
+playwright-report/
+blob-report/
+.playwright/

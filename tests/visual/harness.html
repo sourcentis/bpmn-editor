@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Harnais de rendu BPMN (tests)</title>
+  <style>
+    /* Fond opaque explicite : évite toute transparence dans les captures,
+       y compris sous les coins arrondis de .bpmn-editor-root. */
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+    }
+    /* Conteneur de taille fixe passé tel quel à createBpmnEditor — la
+       reproductibilité pixel des baselines dépend de cette taille figée. */
+    #bpmn-canvas {
+      width: 1200px;
+      height: 640px;
+      background: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <div id="bpmn-canvas"></div>
+  <script type="module" src="./harness.ts"></script>
+</body>
+</html>

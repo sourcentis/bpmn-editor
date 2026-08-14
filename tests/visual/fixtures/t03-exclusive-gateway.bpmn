@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_t03" targetNamespace="http://bpmn-editor.test/t03">
+  <process id="Process_t03" isExecutable="false">
+    <startEvent id="Start_1" name="Start">
+      <outgoing>Flow_1</outgoing>
+    </startEvent>
+    <exclusiveGateway id="Gateway_Split" name="Split?">
+      <incoming>Flow_1</incoming>
+      <outgoing>Flow_Yes</outgoing>
+      <outgoing>Flow_No</outgoing>
+    </exclusiveGateway>
+    <task id="Task_Yes" name="Yes branch">
+      <incoming>Flow_Yes</incoming>
+      <outgoing>Flow_3</outgoing>
+    </task>
+    <task id="Task_No" name="No branch">
+      <incoming>Flow_No</incoming>
+      <outgoing>Flow_4</outgoing>
+    </task>
+    <exclusiveGateway id="Gateway_Join" name="Join">
+      <incoming>Flow_3</incoming>
+      <incoming>Flow_4</incoming>
+      <outgoing>Flow_5</outgoing>
+    </exclusiveGateway>
+    <endEvent id="End_1" name="End">
+      <incoming>Flow_5</incoming>
+    </endEvent>
+    <sequenceFlow id="Flow_1" sourceRef="Start_1" targetRef="Gateway_Split" />
+    <sequenceFlow id="Flow_Yes" name="Yes" sourceRef="Gateway_Split" targetRef="Task_Yes" />
+    <sequenceFlow id="Flow_No" name="No" sourceRef="Gateway_Split" targetRef="Task_No" />
+    <sequenceFlow id="Flow_3" sourceRef="Task_Yes" targetRef="Gateway_Join" />
+    <sequenceFlow id="Flow_4" sourceRef="Task_No" targetRef="Gateway_Join" />
+    <sequenceFlow id="Flow_5" sourceRef="Gateway_Join" targetRef="End_1" />
+  </process>
+  <bpmndi:BPMNDiagram id="Diagram_t03">
+    <bpmndi:BPMNPlane id="Plane_t03" bpmnElement="Process_t03">
+      <bpmndi:BPMNShape id="Start_1_di" bpmnElement="Start_1">
+        <omgdc:Bounds x="150" y="142" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Split_di" bpmnElement="Gateway_Split" isMarkerVisible="true">
+        <omgdc:Bounds x="250" y="135" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Yes_di" bpmnElement="Task_Yes">
+        <omgdc:Bounds x="400" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_No_di" bpmnElement="Task_No">
+        <omgdc:Bounds x="400" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Join_di" bpmnElement="Gateway_Join" isMarkerVisible="true">
+        <omgdc:Bounds x="600" y="135" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_1_di" bpmnElement="End_1">
+        <omgdc:Bounds x="700" y="142" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <omgdi:waypoint x="186" y="160" />
+        <omgdi:waypoint x="250" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Yes_di" bpmnElement="Flow_Yes">
+        <omgdi:waypoint x="275" y="135" />
+        <omgdi:waypoint x="275" y="120" />
+        <omgdi:waypoint x="400" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_No_di" bpmnElement="Flow_No">
+        <omgdi:waypoint x="275" y="185" />
+        <omgdi:waypoint x="275" y="260" />
+        <omgdi:waypoint x="400" y="260" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <omgdi:waypoint x="500" y="120" />
+        <omgdi:waypoint x="625" y="120" />
+        <omgdi:waypoint x="625" y="135" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <omgdi:waypoint x="500" y="260" />
+        <omgdi:waypoint x="625" y="260" />
+        <omgdi:waypoint x="625" y="185" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <omgdi:waypoint x="650" y="160" />
+        <omgdi:waypoint x="700" y="160" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
