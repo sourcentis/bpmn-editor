@@ -21,6 +21,7 @@ export function addBPMNState(graph: Graph, parent: Cell, x: number, y: number): 
         size:     [40, 40],
         style:    { baseStyleNames: ["stateIcon"] },
     });
+    icon.setConnectable(false);
 
     const g = icon.getGeometry();
     if (g) {
@@ -81,6 +82,7 @@ export function addBPMNGateway(graph: Graph, parent: Cell, x: number, y: number)
         // gateway n'est pas concerné par le bug de déplacement rapporté.
         style:    { baseStyleNames: ["stateIcon"], fontSize: 50 },
     });
+    icon.setConnectable(false);
 
     const g = icon.getGeometry();
     if (g) {
@@ -143,7 +145,27 @@ export function addBPMNAnnotation(graph: Graph, parent: Cell, x: number, y: numb
     return vertex;
 }
 
+// Icône/badge interne (voir addBPMNState/bpmn-badge.ts) : recouvre entièrement
+// son sommet parent, donc le hit-test de ConnectionHandler lors d'un
+// glisser-déposer l'attrape aussi bien comme source que comme cible — sans ce
+// recentrage, l'arête créée pointerait sur une cellule sans BpmnMeta propre,
+// que bpmn-export.ts rejette ensuite comme orpheline hors du modèle (même
+// correctif que resolveMenuCell dans bpmn-menu-init.ts, mais nécessaire ici
+// aussi car ConnectionHandler résout sa cible indépendamment du menu).
+const DECORATIVE_STYLES = ["stateIcon", "bpmnIcon", "bpmnBadge"];
+
+export function resolveConnectable(cell: Cell): Cell {
+    const names: string[] = (cell?.style as any)?.baseStyleNames ?? [];
+    if (DECORATIVE_STYLES.some((n) => names.includes(n)) && cell.parent) {
+        return cell.parent as Cell;
+    }
+    return cell;
+}
+
 export function addBPMNConnection(graph: Graph, source: Cell, target: Cell): Cell {
+    source = resolveConnectable(source);
+    target = resolveConnectable(target);
+
     const edge = graph.insertEdge({
         parent: graph.getDefaultParent(),
         source,

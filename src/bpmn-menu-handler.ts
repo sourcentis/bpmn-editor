@@ -51,9 +51,12 @@ export function makeDefaultHandlers(): Record<VertexActionId, VertexActionHandle
                 return edge;
             };
 
-            // (optionnel mais conseillé) restore après UNE connexion
+            // Restore après UNE connexion : sans ce reset, graph.setConnectable(true) reste
+            // actif pour le reste de la session et permet un glisser-connecter natif qui ne
+            // passe pas par addBPMNConnection/resolveConnectable (voir bpmn-helpers.ts).
             const restore = () => {
                 ch.factoryMethod = prevFactory;
+                graph.setConnectable(false);
                 ch.removeListener?.(restoreListener);
             };
             const restoreListener = () => restore();

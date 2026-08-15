@@ -7,6 +7,7 @@
 // interrupting/attachedToRef, processRef d'un participant).
 import type { Cell, Graph } from '@maxgraph/core';
 import { getBpmnMeta, type BpmnMeta } from './bpmn-import';
+import { resolveConnectable } from './bpmn-helpers';
 
 // ── Échappement / formatage déterministe ────────────────────────────────────────
 
@@ -347,9 +348,14 @@ function collectModel(graph: Graph): ExportModel {
 
     for (const e of allEdges) {
         const meta = metaOfEdge(e);
-        const source = e.getTerminal?.(true) as Cell | null;
-        const target = e.getTerminal?.(false) as Cell | null;
-        if (!source || !target) continue;
+        // Filet de sécurité pour les diagrammes déjà enregistrés avec une arête
+        // ancrée sur l'icône décorative (state/gateway) plutôt que sur son
+        // parent — voir DECORATIVE_STYLES/resolveConnectable dans bpmn-helpers.ts.
+        const rawSource = e.getTerminal?.(true) as Cell | null;
+        const rawTarget = e.getTerminal?.(false) as Cell | null;
+        if (!rawSource || !rawTarget) continue;
+        const source = resolveConnectable(rawSource);
+        const target = resolveConnectable(rawTarget);
 
         const sourceMeta = metaOfVertex(source);
         const targetMeta = metaOfVertex(target);
