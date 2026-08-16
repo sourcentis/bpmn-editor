@@ -18,6 +18,6 @@ This document tracks the current state and planned work for `@sourcentis/bpmn-ed
 
 _Ideas and future improvements land here before being scheduled._
 
-## Bug
+## Known bugs
 
-- Render data does not work (v1.7)
+- N/A
