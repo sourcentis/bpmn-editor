@@ -208,8 +208,10 @@ export function createBpmnEditor(container: HTMLElement, options: BpmnEditorOpti
     // Auto-fit the container's height to the loaded content in readOnly mode
     // — matches the previous standalone "show" bootstrap's behavior, so an
     // embedded read-only diagram doesn't need a fixed/guessed height from the
-    // host page. The timeout mirrors the original: MaxGraph needs a tick to
-    // finish laying out the newly-imported cells before bounds are accurate.
+    // host page. Synchronous (no setTimeout): called right after the view has
+    // been (re)validated, so graph.getGraphBounds() is already current — see
+    // the comment on drawDiagram()'s own centering in bpmn-import.ts for why a
+    // delayed correction is what caused a visible jump/"double draw" on load.
     const adjustReadOnlyContainerHeight = (): void => {
         const bounds = graph.getGraphBounds();
         if (!bounds) return;
@@ -223,12 +225,14 @@ export function createBpmnEditor(container: HTMLElement, options: BpmnEditorOpti
             try {
                 loadGraphXml(graph, xml);
                 emitter.emit('change', undefined);
-                // Même comportement que importBpmnXml (voir le setTimeout(…, 100) de
-                // drawDiagram dans bpmn-import.ts) : centrer une fois la mise à jour du
-                // modèle passée, pour que loadXml() et importBpmnXml() cadrent le
-                // contenu de la même façon quelle que soit l'origine du diagramme.
-                setTimeout(() => centerGraphView(graph), 100);
-                if (readOnly) setTimeout(adjustReadOnlyContainerHeight, 150);
+                // Pas de recentrage automatique (voir bpmn-import.ts/drawDiagram pour
+                // l'historique) — seul instance.fit() / le bouton "Fit" du toolbar
+                // déplacent la vue. On rafraîchit quand même les bounds mis en cache
+                // par la vue pour que adjustReadOnlyContainerHeight() lise une valeur
+                // à jour, sans pour autant recentrer.
+                graph.view.invalidate();
+                graph.view.validate();
+                if (readOnly) adjustReadOnlyContainerHeight();
             } catch (err) {
                 emitter.emit('error', err instanceof Error ? err : new Error(String(err)));
                 throw err;
@@ -244,7 +248,7 @@ export function createBpmnEditor(container: HTMLElement, options: BpmnEditorOpti
                 const data = parseBPMN(xml);
                 drawDiagram(graph, data);
                 emitter.emit('change', undefined);
-                if (readOnly) setTimeout(adjustReadOnlyContainerHeight, 150);
+                if (readOnly) adjustReadOnlyContainerHeight();
             } catch (err) {
                 emitter.emit('error', err instanceof Error ? err : new Error(String(err)));
                 throw err;

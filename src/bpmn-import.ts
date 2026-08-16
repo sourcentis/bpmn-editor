@@ -10,7 +10,6 @@ import {
     addBPMNState,
     addBPMNData,
     addBPMNTask,
-    centerGraphView,
     isLaneVertex,
     setCallActivityVertex,
     setDatabaseVertex,
@@ -2044,10 +2043,18 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
 
     console.log('✅ Diagramme dessiné avec succès');
 
-    setTimeout(() => {
-        centerGraphView(graph);
-        console.log('📐 Vue centrée');
-    }, 100);
+    // Pas de recentrage automatique ici (voir git blame — un setTimeout(…, 100)
+    // puis un appel synchrone à centerGraphView() ont successivement existé et
+    // provoqué un saut de vue visible/intempestif au chargement) : c'est
+    // maintenant à l'appelant de centrer explicitement s'il le souhaite (bouton
+    // "Fit" du toolbar, ou instance.fit()). graph.view.getGraphBounds() est une
+    // propriété mise en cache par validate() (voir GraphView dans
+    // @maxgraph/core), pas recalculée à la volée : on la rafraîchit quand même
+    // ici pour que tout appelant qui lit les bounds juste après drawDiagram()
+    // (ex. adjustReadOnlyContainerHeight dans create-bpmn-editor.ts) les ait à
+    // jour, sans pour autant déplacer la vue.
+    graph.view.invalidate();
+    graph.view.validate();
 }
 
 export interface BindBpmnFileInputOptions {

@@ -39,17 +39,23 @@ window.renderBpmn = async (xml: string): Promise<void> => {
     editor?.destroy();
     editor = createBpmnEditor(container, { ui: 'none', readOnly: true });
     editor.importBpmnXml(xml);
+    // La bibliothèque ne recentre plus la vue automatiquement (un recentrage
+    // différé/automatique provoquait un saut visible au chargement dans un
+    // vrai navigateur — voir bpmn-import.ts/drawDiagram) : c'est maintenant à
+    // l'appelant de le faire explicitement, comme un vrai consommateur le
+    // ferait via le bouton "Fit" ou instance.fit(). Les baselines de ce
+    // harnais dépendent d'un cadrage centré reproductible, donc on l'appelle
+    // ici — pas un comportement par défaut de la lib.
+    editor.fit();
 
     await document.fonts.ready;
     await nextPaint();
 
-    // drawDiagram() recentre la vue via un setTimeout(…, 100) fixe et
-    // inconditionnel, et (readOnly) adjustReadOnlyContainerHeight mute
-    // ENSUITE la taille du conteneur via un second setTimeout(…, 150) — cf.
-    // bpmn-import.ts / create-bpmn-editor.ts. Marge doublée (400ms, pas
-    // seulement 200) : sous charge (suite complète, plusieurs workers), un
-    // écart plus court laisse parfois passer une capture entre les deux
-    // callbacks, un rendu instable capturé une fois sur plusieurs dizaines.
+    // (readOnly) adjustReadOnlyContainerHeight mute la taille du conteneur
+    // via un setTimeout(…, 150) — cf. create-bpmn-editor.ts. Marge doublée
+    // (400ms, pas seulement 200) : sous charge (suite complète, plusieurs
+    // workers), un écart plus court laisse parfois passer une capture avant
+    // ce callback, un rendu instable capturé une fois sur plusieurs dizaines.
     await wait(400);
     await nextPaint();
 
@@ -108,12 +114,13 @@ window.renderMaxgraph = async (xml: string): Promise<void> => {
     editor?.destroy();
     editor = createBpmnEditor(container, { ui: 'none', readOnly: true });
     editor.loadXml(xml);
+    // Voir le commentaire équivalent dans renderBpmn() ci-dessus : loadXml()
+    // ne recentre plus automatiquement, fit() explicite pour ce harnais.
+    editor.fit();
 
     await document.fonts.ready;
     await nextPaint();
-    // Même marge que renderBpmn — loadXml() recentre elle aussi désormais
-    // (voir centerGraphView dans create-bpmn-editor.ts) via un setTimeout
-    // similaire.
+    // Même marge que renderBpmn.
     await wait(400);
     await nextPaint();
 
