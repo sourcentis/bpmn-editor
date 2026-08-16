@@ -1,6 +1,6 @@
 {
   "name": "@sourcentis/bpmn-editor",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "BPMN diagram editor, agnostic of UI framework and backend, built on @maxgraph/core",
   "type": "module",
   "main": "./dist/bpmn-editor.umd.cjs",
