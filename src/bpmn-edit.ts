@@ -8,6 +8,7 @@ import {
     UndoManager,
 } from '@maxgraph/core';
 import { applyGraphStyles } from './graph-styles';
+import { RightClickPanningHandler } from './bpmn-panning';
 import { downloadSvg, embedFontInSvg, exportGraphToSvg } from "./bpmn-svg";
 import { addBPMNAnnotation, addBPMNData, addBPMNGateway, addBPMNLane, addBPMNState, addBPMNTask, centerGraphView } from "./bpmn-helpers";
 import { BPMN_FONT_DATA_URI, BPMN_FONT_FAMILY } from './assets';
@@ -183,7 +184,41 @@ export function initBpmnEditor(
     applyGraphStyles(graph);
 
     graph.setDropEnabled(true);
-    graph.setPanning(true);
+
+    // Panning au clic DROIT (bouton enfoncé), pas au clic gauche : le clic
+    // gauche doit rester exclusivement réservé au déplacement de cellule
+    // (setCellsMovable) et à la sélection — le brancher aussi sur le panning
+    // (même limité au fond, sans cellule sous le curseur) empêchait de facto
+    // le drag des éléments du graphe. Le clic droit ne sert à rien d'autre
+    // ici (notre menu contextuel, dans bpmn-menu-init.ts, écoute
+    // InternalEvent.CLICK — un clic gauche simple sur une cellule — pas
+    // "contextmenu"), donc aucun conflit à craindre. Le menu contextuel natif
+    // du navigateur est supprimé via preventDefault sur "contextmenu"
+    // ci-dessous, ce qui rend le clic droit maintenu fiable pour un glisser
+    // continu (auparavant peu fiable tant que ce menu apparaissait par-dessus
+    // et interférait avec la diffusion des mousemove, sur Firefox et Chrome).
+    // On désactive donc le PanningHandler par défaut de maxGraph et on le
+    // remplace par RightClickPanningHandler (bpmn-panning.ts).
+    graph.setPanning(false);
+    const rightClickPanning = new RightClickPanningHandler(graph);
+    rightClickPanning.panningEnabled = true;
+
+    // Pas de `graph.useScrollbarsForPanning = false` ici (essayé puis retiré) :
+    // ce drapeau est aussi lu par SelectionHandler après CHAQUE déplacement de
+    // cellule (scrollCellToVisible/scrollOnMove) — le désactiver réparait le
+    // panning mais translatait alors toute la vue à chaque drag de cellule,
+    // rendant le déplacement individuel des éléments impossible. Voir le
+    // commentaire dans RightClickPanningHandler.mouseMove (bpmn-panning.ts)
+    // pour la façon dont le panning contourne ce drapeau sans y toucher.
+
+    // Filet de sécurité : même écarté comme déclencheur de panning, le clic
+    // droit reste le déclencheur par défaut du PopupMenuHandler natif de
+    // maxGraph (jamais utilisé — notre propre menu contextuel, dans
+    // bpmn-menu-init.ts, écoute InternalEvent.CLICK, pas "contextmenu") et
+    // ouvrirait sinon le menu contextuel natif du navigateur par-dessus.
+    const onContextMenu = (evt: Event) => evt.preventDefault();
+    container.addEventListener('contextmenu', onContextMenu);
+
     graph.setConnectable(false);
     graph.setCellsEditable(true);
     graph.setCellsResizable(true);
@@ -259,6 +294,12 @@ export function initBpmnEditor(
         undoManager,
         dispose(): void {
             disposeDropHandlers();
+            container.removeEventListener('contextmenu', onContextMenu);
+            // graph.destroy() (appelé par create-bpmn-editor.ts après ces disposers)
+            // n'appelle onDestroy() que sur les plugins connus de son constructeur —
+            // un handler ajouté ad hoc comme celui-ci (même pattern que
+            // `new RubberBandHandler(graph)` ci-dessus) doit se désinscrire lui-même.
+            rightClickPanning.onDestroy();
             graph.getDataModel().removeListener(undoListener);
             graph.getView().removeListener(undoListener);
             graph.removeListener(onDoubleClick);
