@@ -44,10 +44,13 @@ window.renderBpmn = async (xml: string): Promise<void> => {
     await nextPaint();
 
     // drawDiagram() recentre la vue via un setTimeout(…, 100) fixe et
-    // inconditionnel (pas de mise en page force/physique — juste ce recentrage
-    // asynchrone, cf. bpmn-import.ts) : on l'attend explicitement avant de
-    // considérer le rendu comme stable, avec une marge de sécurité.
-    await wait(200);
+    // inconditionnel, et (readOnly) adjustReadOnlyContainerHeight mute
+    // ENSUITE la taille du conteneur via un second setTimeout(…, 150) — cf.
+    // bpmn-import.ts / create-bpmn-editor.ts. Marge doublée (400ms, pas
+    // seulement 200) : sous charge (suite complète, plusieurs workers), un
+    // écart plus court laisse parfois passer une capture entre les deux
+    // callbacks, un rendu instable capturé une fois sur plusieurs dizaines.
+    await wait(400);
     await nextPaint();
 
     window.__BPMN_RENDERED__ = true;
@@ -93,4 +96,37 @@ window.exportBpmn = (): string => {
         dispose();
         offscreen.remove();
     }
+};
+
+// Charge `xml` (format natif GraphDataModel de loadXml/getXml — pas du BPMN
+// 2.0) via editor.loadXml() sur l'éditeur monté sur #bpmn-canvas. Utilisé par
+// les tests de non-régression tests/*/mercator-*.spec.ts qui rejouent des
+// schémas réels exportés de la base Mercator (voir tests/visual/fixtures-mercator).
+window.renderMaxgraph = async (xml: string): Promise<void> => {
+    window.__BPMN_RENDERED__ = false;
+
+    editor?.destroy();
+    editor = createBpmnEditor(container, { ui: 'none', readOnly: true });
+    editor.loadXml(xml);
+
+    await document.fonts.ready;
+    await nextPaint();
+    // Même marge que renderBpmn — loadXml() recentre elle aussi désormais
+    // (voir centerGraphView dans create-bpmn-editor.ts) via un setTimeout
+    // similaire.
+    await wait(400);
+    await nextPaint();
+
+    window.__BPMN_RENDERED__ = true;
+};
+
+// Exporte en BPMN 2.0 XML l'état correspondant au dernier renderMaxgraph()
+// appelé, via l'API publique exportBpmnXml() de l'éditeur actuellement monté
+// (contrairement à exportBpmn() ci-dessus, pas besoin de reconstruction hors
+// écran : editor.exportBpmnXml() lit directement le graphe affiché).
+window.exportMaxgraphAsBpmn = (): string => {
+    if (!editor) {
+        throw new Error('exportMaxgraphAsBpmn : aucun renderMaxgraph() préalable');
+    }
+    return editor.exportBpmnXml();
 };

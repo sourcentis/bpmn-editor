@@ -1,0 +1,118 @@
+<GraphDataModel>
+  <root>
+    <Cell id="0">
+      <Object as="style" />
+    </Cell>
+    <Cell id="1" parent="0">
+      <Object as="style" />
+    </Cell>
+    <Cell id="2" value="" vertex="1" parent="1">
+      <Geometry _x="120" _y="60" _width="45" _height="45" as="geometry" />
+      <Object fillColor="#99cbed" as="style">
+        <Array as="baseStyleNames">
+          <add value="gateway" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="3" value="" vertex="1" parent="2">
+      <Geometry _x="0.5" _y="0.5" _width="45" _height="45" relative="1" as="geometry">
+        <Object x="-23" y="-23" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="stateIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="4" value="" vertex="1" parent="1">
+      <Geometry _x="180" _y="59" _width="45" _height="45" as="geometry" />
+      <Object fillColor="#ffcc9f" as="style">
+        <Array as="baseStyleNames">
+          <add value="gateway" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="5" value="" vertex="1" parent="4">
+      <Geometry _x="0.5" _y="0.5" _width="45" _height="45" relative="1" as="geometry">
+        <Object x="-23" y="-23" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="stateIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="8" value="" vertex="1" parent="1">
+      <Geometry _x="300" _y="60" _width="45" _height="45" as="geometry" />
+      <Object fillColor="#eded9e" as="style">
+        <Array as="baseStyleNames">
+          <add value="gateway" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="9" value="" vertex="1" parent="8">
+      <Geometry _x="0.5" _y="0.5" _width="45" _height="45" relative="1" as="geometry">
+        <Object x="-23" y="-23" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="stateIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="10" value="" vertex="1" parent="1">
+      <Geometry _x="360" _y="60" _width="45" _height="45" as="geometry" />
+      <Object fillColor="#9aecf4" as="style">
+        <Array as="baseStyleNames">
+          <add value="gateway" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="11" value="" vertex="1" parent="10">
+      <Geometry _x="0.5" _y="0.5" _width="45" _height="45" relative="1" as="geometry">
+        <Object x="-23" y="-23" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="stateIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="6" value="" vertex="1" parent="1">
+      <Geometry _x="240" _y="60" _width="45" _height="45" as="geometry" />
+      <Object fillColor="#9fe59f" as="style">
+        <Array as="baseStyleNames">
+          <add value="gateway" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="7" value="" vertex="1" parent="6">
+      <Geometry _x="0.5" _y="0.5" _width="45" _height="45" relative="1" as="geometry">
+        <Object x="-23" y="-23" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="stateIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="12" value="" vertex="1" parent="1">
+      <Geometry _x="420" _y="60" _width="45" _height="45" as="geometry" />
+      <Object fillColor="#efa8a8" as="style">
+        <Array as="baseStyleNames">
+          <add value="gateway" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="13" value="" vertex="1" parent="12">
+      <Geometry _x="0.5" _y="0.5" _width="45" _height="45" relative="1" as="geometry">
+        <Object x="-23" y="-23" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="stateIcon" />
+        </Array>
+      </Object>
+    </Cell>
+  </root>
+</GraphDataModel>

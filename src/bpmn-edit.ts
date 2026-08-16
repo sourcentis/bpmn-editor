@@ -9,7 +9,7 @@ import {
 } from '@maxgraph/core';
 import { applyGraphStyles } from './graph-styles';
 import { downloadSvg, embedFontInSvg, exportGraphToSvg } from "./bpmn-svg";
-import { addBPMNAnnotation, addBPMNGateway, addBPMNLane, addBPMNState, addBPMNTask } from "./bpmn-helpers";
+import { addBPMNAnnotation, addBPMNData, addBPMNGateway, addBPMNLane, addBPMNState, addBPMNTask, centerGraphView } from "./bpmn-helpers";
 import { BPMN_FONT_DATA_URI, BPMN_FONT_FAMILY } from './assets';
 
 export interface BpmnEditorContext {
@@ -50,8 +50,7 @@ function insertActivities(graph: Graph, parent: Cell, x: number, y: number): voi
 }
 
 function insertData(graph: Graph, parent: Cell, x: number, y: number): void {
-    const v = graph.insertVertex({ parent, value: '', position: [x, y], size: [60, 80], style: { baseStyleNames: ['data'] } });
-    graph.insertVertex({ parent: v, value: '', position: [0, 0], size: [26, 26], style: { baseStyleNames: ['bpmnIcon'] } });
+    addBPMNData(graph, parent, x, y);
 }
 
 function insertConversation(graph: Graph, parent: Cell, x: number, y: number): void {
@@ -362,7 +361,7 @@ export function wireEditorUi(
 
         bind('zoom-in',  () => graph.zoomIn());
         bind('zoom-out', () => graph.zoomOut());
-        bind('fit',      () => graph.center());
+        bind('fit',      () => centerGraphView(graph));
         bind('undo',     () => { if (undoManager.canUndo()) undoManager.undo(); });
         bind('redo',     () => { if (undoManager.canRedo()) undoManager.redo(); });
     }

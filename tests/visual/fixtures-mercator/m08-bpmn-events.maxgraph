@@ -1,0 +1,100 @@
+<GraphDataModel>
+  <root>
+    <Cell id="0">
+      <Object as="style" />
+    </Cell>
+    <Cell id="1" parent="0">
+      <Object as="style" />
+    </Cell>
+    <Cell id="2" value="" vertex="1" parent="1">
+      <Geometry _x="100" _y="80" _width="40" _height="40" as="geometry" />
+      <Object fillColor="#9fe59f" as="style">
+        <Array as="baseStyleNames">
+          <add value="state" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="3" value="" vertex="1" parent="2">
+      <Geometry _x="0.5" _y="0.5" _width="40" _height="40" relative="1" as="geometry">
+        <Object x="-20" y="-20" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="stateIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="8" value="" vertex="1" parent="1">
+      <Geometry _x="280" _y="80" _width="40" _height="40" as="geometry" />
+      <Object fillColor="#ffcc9f" as="style">
+        <Array as="baseStyleNames">
+          <add value="state" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="9" value="" vertex="1" parent="8">
+      <Geometry _x="0.5" _y="0.5" _width="40" _height="40" relative="1" as="geometry">
+        <Object x="-20" y="-20" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="stateIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="10" value="" vertex="1" parent="1">
+      <Geometry _x="340" _y="80" _width="40" _height="40" as="geometry" />
+      <Object fillColor="#efa8a8" as="style">
+        <Array as="baseStyleNames">
+          <add value="state" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="11" value="" vertex="1" parent="10">
+      <Geometry _x="0.5" _y="0.5" _width="40" _height="40" relative="1" as="geometry">
+        <Object x="-20" y="-20" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="stateIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="6" value="" vertex="1" parent="1">
+      <Geometry _x="220" _y="80" _width="40" _height="40" as="geometry" />
+      <Object fillColor="#eded9e" as="style">
+        <Array as="baseStyleNames">
+          <add value="state" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="7" value="" vertex="1" parent="6">
+      <Geometry _x="0.5" _y="0.5" _width="40" _height="40" relative="1" as="geometry">
+        <Object x="-20" y="-20" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="stateIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="4" value="" vertex="1" parent="1">
+      <Geometry _x="160" _y="80" _width="40" _height="40" as="geometry" />
+      <Object fillColor="#dfe9f6" as="style">
+        <Array as="baseStyleNames">
+          <add value="state" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="5" value="" vertex="1" parent="4">
+      <Geometry _x="0.5" _y="0.5" _width="40" _height="40" relative="1" as="geometry">
+        <Object x="-20" y="-20" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="stateIcon" />
+        </Array>
+      </Object>
+    </Cell>
+  </root>
+</GraphDataModel>

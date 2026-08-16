@@ -1,0 +1,170 @@
+<GraphDataModel>
+  <root>
+    <Cell id="0">
+      <Object as="style" />
+    </Cell>
+    <Cell id="1" parent="0">
+      <Object as="style" />
+    </Cell>
+    <Cell id="5" value="Patient" vertex="1" parent="1">
+      <Geometry _x="410" _y="100" _width="130" _height="120" as="geometry" />
+      <Object horizontal="1" fillColor="#99cbed" as="style">
+        <Array as="baseStyleNames">
+          <add value="lane" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="6" value="Pharmacie" vertex="1" parent="1">
+      <Geometry _x="420" _y="280" _width="130" _height="120" as="geometry" />
+      <Object horizontal="1" fillColor="#e9e9e9" as="style">
+        <Array as="baseStyleNames">
+          <add value="lane" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="8" value="Laboratoir" vertex="1" parent="1">
+      <Geometry _x="694" _y="100" _width="130" _height="120" as="geometry" />
+      <Object horizontal="1" fillColor="#9fe59f" as="style">
+        <Array as="baseStyleNames">
+          <add value="lane" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="9" value="Hopital" vertex="1" parent="1">
+      <Geometry _x="694" _y="390" _width="130" _height="120" as="geometry" />
+      <Object horizontal="1" fillColor="#efa8a8" as="style">
+        <Array as="baseStyleNames">
+          <add value="lane" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="25" edge="1" parent="1" source="23" target="9">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnConversationLink" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="22" edge="1" parent="1" source="20" target="9">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnConversationLink" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="21" edge="1" parent="1" source="20" target="8">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnConversationLink" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="19" edge="1" parent="1" source="11" target="8">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnConversationLink" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="18" edge="1" parent="1" source="11" target="5">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnConversationLink" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="17" edge="1" parent="1" source="2" target="5">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnConversationLink" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="15" edge="1" parent="1" source="7" target="6">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnConversationLink" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="14" edge="1" parent="1" source="10" target="6">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnConversationLink" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="13" edge="1" parent="1" source="11" target="10">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnConversationLink" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="12" edge="1" parent="1" source="2" target="7">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnConversationLink" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="2" value="" vertex="1" parent="1">
+      <Geometry _x="310" _y="140" _width="40" _height="40" as="geometry" />
+      <Object fillColor="#dfe9f6" as="style">
+        <Array as="baseStyleNames">
+          <add value="conversation" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="7" value="" vertex="1" parent="1">
+      <Geometry _x="310" _y="320" _width="40" _height="40" as="geometry" />
+      <Object fillColor="#e8dfee" as="style">
+        <Array as="baseStyleNames">
+          <add value="conversation" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="10" value="" vertex="1" parent="1">
+      <Geometry _x="590" _y="320" _width="40" _height="40" as="geometry" />
+      <Object fillColor="#fce2ed" as="style">
+        <Array as="baseStyleNames">
+          <add value="conversation" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="11" value="" vertex="1" parent="1">
+      <Geometry _x="590" _y="140" _width="40" _height="40" as="geometry" />
+      <Object fillColor="#d8f0f5" as="style">
+        <Array as="baseStyleNames">
+          <add value="conversation" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="20" value="" vertex="1" parent="1">
+      <Geometry _x="739" _y="280" _width="40" _height="40" as="geometry" />
+      <Object fillColor="#ffcc9f" as="style">
+        <Array as="baseStyleNames">
+          <add value="conversation" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="23" value="" vertex="1" parent="1">
+      <Geometry _x="169" _y="430" _width="40" _height="40" as="geometry" />
+      <Object fillColor="#d4c2e5" as="style">
+        <Array as="baseStyleNames">
+          <add value="conversation" />
+        </Array>
+      </Object>
+    </Cell>
+  </root>
+</GraphDataModel>

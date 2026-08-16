@@ -1,0 +1,254 @@
+<GraphDataModel>
+  <root>
+    <Cell id="0">
+      <Object as="style" />
+    </Cell>
+    <Cell id="1" parent="0">
+      <Object as="style" />
+    </Cell>
+    <Cell id="32" value="Lane" vertex="1" parent="1">
+      <Geometry _x="30" _y="270" _width="1190" _height="200" as="geometry" />
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="lane" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="22" value="Lane" vertex="1" parent="1">
+      <Geometry _x="28" _y="26" _width="1190" _height="230" as="geometry" />
+      <Object fillColor="#ffe0b2" as="style">
+        <Array as="baseStyleNames">
+          <add value="lane" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="Activity_1iyhp1a" value="Task 2" vertex="1" parent="22">
+      <Geometry _x="325" _y="66.73" _width="100" _height="80" as="geometry" />
+      <Object fillColor="#bbdefb" as="style">
+        <Array as="baseStyleNames">
+          <add value="process" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="Activity_1vqved6" value="Task 3" vertex="1" parent="22">
+      <Geometry _x="480" _y="64.73" _width="100" _height="80" as="geometry" />
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="process" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="Activity_0z2t55d" value="Task 4" vertex="1" parent="22">
+      <Geometry _x="750" _y="20" _width="100" _height="80" as="geometry" />
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="process" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="Activity_1ngr1e0" value="Task 5" vertex="1" parent="22">
+      <Geometry _x="750" _y="130" _width="100" _height="80" as="geometry" />
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="process" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="Activity_1oswwwe" value="Task 6" vertex="1" parent="22">
+      <Geometry _x="945" _y="20" _width="100" _height="80" as="geometry" />
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="process" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="Flow_1f1jgtj" value="" edge="1" parent="22" source="Activity_1iyhp1a" target="Activity_1vqved6">
+      <Geometry relative="1" as="geometry" />
+      <String as="style">
+        <add value="s" />
+        <add value="t" />
+        <add value="r" />
+        <add value="o" />
+        <add value="k" />
+        <add value="e" />
+        <add value="C" />
+        <add value="o" />
+        <add value="l" />
+        <add value="o" />
+        <add value="r" />
+        <add value="=" />
+        <add value="#" />
+        <add value="6" />
+        <add value="6" />
+        <add value="6" />
+        <add value=";" />
+        <add value="s" />
+        <add value="t" />
+        <add value="r" />
+        <add value="o" />
+        <add value="k" />
+        <add value="e" />
+        <add value="W" />
+        <add value="i" />
+        <add value="d" />
+        <add value="t" />
+        <add value="h" />
+        <add value="=" />
+        <add value="2" />
+        <add value=";" />
+      </String>
+    </Cell>
+    <Cell id="Flow_04wukg7" value="" edge="1" parent="22" source="Activity_0z2t55d" target="Activity_1oswwwe">
+      <Geometry relative="1" as="geometry" />
+      <String as="style">
+        <add value="s" />
+        <add value="t" />
+        <add value="r" />
+        <add value="o" />
+        <add value="k" />
+        <add value="e" />
+        <add value="C" />
+        <add value="o" />
+        <add value="l" />
+        <add value="o" />
+        <add value="r" />
+        <add value="=" />
+        <add value="#" />
+        <add value="6" />
+        <add value="6" />
+        <add value="6" />
+        <add value=";" />
+        <add value="s" />
+        <add value="t" />
+        <add value="r" />
+        <add value="o" />
+        <add value="k" />
+        <add value="e" />
+        <add value="W" />
+        <add value="i" />
+        <add value="d" />
+        <add value="t" />
+        <add value="h" />
+        <add value="=" />
+        <add value="2" />
+        <add value=";" />
+      </String>
+    </Cell>
+    <Cell id="13" value="Start" vertex="1" parent="22">
+      <Geometry _x="70" _y="84.73" _width="45" _height="45" as="geometry" />
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="state" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="14" value="" vertex="1" parent="13">
+      <Geometry _x="0.5" _y="0.5" _width="45" _height="45" relative="1" as="geometry">
+        <Object x="-22" y="-29" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="stateIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="17" value="" vertex="1" parent="22">
+      <Geometry _x="1140" _y="20" _width="40" _height="40" as="geometry" />
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="state" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="19" value="End" vertex="1" parent="22">
+      <Geometry _x="1105" _y="40.5" _width="45" _height="45" as="geometry" />
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="state" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="20" value="" vertex="1" parent="19">
+      <Geometry _x="0.5" _y="0.5" _width="45" _height="45" relative="1" as="geometry">
+        <Object x="-22" y="-29" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="stateIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="21" edge="1" parent="22" source="Activity_1oswwwe" target="20">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" as="style" />
+    </Cell>
+    <Cell id="23" value="" vertex="1" parent="22">
+      <Geometry _x="180" _y="67" _width="100" _height="80" as="geometry" />
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="process" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="24" value="" vertex="1" parent="23">
+      <Geometry _width="26" _height="26" relative="1" as="geometry">
+        <Object x="0" y="-2" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="" edge="1" parent="22" source="13" target="23">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style" />
+    </Cell>
+    <Cell id="25" edge="1" parent="22" source="23" target="Activity_1iyhp1a">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style" />
+    </Cell>
+    <Cell id="26" value="" vertex="1" parent="22">
+      <Geometry _x="639" _y="83" _width="45" _height="45" as="geometry" />
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="gateway" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="27" value="" vertex="1" parent="26">
+      <Geometry _x="0.5" _y="0.5" _width="45" _height="45" relative="1" as="geometry">
+        <Object x="-23" y="-23" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="stateIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="28" edge="1" parent="22" source="Activity_1vqved6" target="27">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style" />
+    </Cell>
+    <Cell id="29" edge="1" parent="22" source="26" target="Activity_0z2t55d">
+      <Geometry relative="1" as="geometry">
+        <Array as="points">
+          <Point _x="662" _y="60" />
+        </Array>
+      </Geometry>
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style" />
+    </Cell>
+    <Cell id="30" edge="1" parent="22" source="26" target="Activity_1ngr1e0">
+      <Geometry relative="1" as="geometry">
+        <Array as="points">
+          <Point _x="662" _y="174" />
+        </Array>
+      </Geometry>
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style" />
+    </Cell>
+    <Cell id="31" edge="1" parent="22" source="Activity_1ngr1e0" target="Activity_1oswwwe">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style" />
+    </Cell>
+  </root>
+</GraphDataModel>

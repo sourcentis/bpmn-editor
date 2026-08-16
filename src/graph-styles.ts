@@ -6,7 +6,7 @@ import {
 } from "@maxgraph/core";
 import { cloneUtils, Perimeter } from "@maxgraph/core";
 import { RectangleShape, ShapeRegistry } from "@maxgraph/core";
-import { BpmnDataObjectShape } from "./bpmn-shapes";
+import { BpmnDataObjectShape, BpmnDoubleBorderRectangleShape } from "./bpmn-shapes";
 import { DoubleLineConnectorShape } from "./bpmn-double-line";
 
 type StyleKey = keyof CellStyle;
@@ -124,6 +124,12 @@ export function applyGraphStyles(graph: Graph) {
     );
 
     stylesheet.putCellStyle("process", processStyle);
+
+    // Call activity / Transaction : mêmes dimensions/label qu'un "process"
+    // normal, seule la bordure change (voir setCallActivityVertex/
+    // setTransactionVertex dans bpmn-helpers.ts) — pas de style nommé dédié,
+    // juste un shape enregistré pour la variante double-bordure.
+    ShapeRegistry.add("bpmnTransactionShape", BpmnDoubleBorderRectangleShape);
 
     //=============================================================
     // Activities

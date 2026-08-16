@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_t11" targetNamespace="http://bpmn-editor.test/t11">
+  <process id="Process_t11" isExecutable="false">
+    <task id="task_1" name="Task" />
+    <userTask id="userTask_2" name="User task" />
+    <sequenceFlow id="Flow_3" sourceRef="task_1" targetRef="userTask_2" />
+    <manualTask id="manualTask_4" name="Manual task" />
+    <sequenceFlow id="Flow_5" sourceRef="userTask_2" targetRef="manualTask_4" />
+    <serviceTask id="serviceTask_6" name="Service task" />
+    <sequenceFlow id="Flow_7" sourceRef="manualTask_4" targetRef="serviceTask_6" />
+    <scriptTask id="scriptTask_8" name="Script task" />
+    <sequenceFlow id="Flow_9" sourceRef="serviceTask_6" targetRef="scriptTask_8" />
+    <businessRuleTask id="businessRuleTask_10" name="Business rule task" />
+    <sequenceFlow id="Flow_11" sourceRef="scriptTask_8" targetRef="businessRuleTask_10" />
+    <sendTask id="sendTask_12" name="Send task" />
+    <receiveTask id="receiveTask_13" name="Receive task" />
+    <sequenceFlow id="Flow_14" sourceRef="sendTask_12" targetRef="receiveTask_13" />
+    <callActivity id="callActivity_15" name="Call activity" />
+    <sequenceFlow id="Flow_16" sourceRef="receiveTask_13" targetRef="callActivity_15" />
+    <subProcess id="subProcess_17" name="Sub-process" />
+    <sequenceFlow id="Flow_18" sourceRef="callActivity_15" targetRef="subProcess_17" />
+    <transaction id="transaction_19" name="Transaction" />
+    <sequenceFlow id="Flow_20" sourceRef="subProcess_17" targetRef="transaction_19" />
+    <adHocSubProcess id="adHocSubProcess_21" name="Ad-hoc sub-process" />
+    <sequenceFlow id="Flow_22" sourceRef="transaction_19" targetRef="adHocSubProcess_21" />
+  </process>
+  <bpmndi:BPMNDiagram id="Diagram_t11">
+    <bpmndi:BPMNPlane id="Plane_t11" bpmnElement="Process_t11">
+      <bpmndi:BPMNShape id="task_1_di" bpmnElement="task_1">
+        <omgdc:Bounds x="30" y="30" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="userTask_2_di" bpmnElement="userTask_2">
+        <omgdc:Bounds x="170" y="30" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="manualTask_4_di" bpmnElement="manualTask_4">
+        <omgdc:Bounds x="310" y="30" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="serviceTask_6_di" bpmnElement="serviceTask_6">
+        <omgdc:Bounds x="450" y="30" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="scriptTask_8_di" bpmnElement="scriptTask_8">
+        <omgdc:Bounds x="590" y="30" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="businessRuleTask_10_di" bpmnElement="businessRuleTask_10">
+        <omgdc:Bounds x="730" y="30" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="sendTask_12_di" bpmnElement="sendTask_12">
+        <omgdc:Bounds x="30" y="150" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="receiveTask_13_di" bpmnElement="receiveTask_13">
+        <omgdc:Bounds x="170" y="150" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="callActivity_15_di" bpmnElement="callActivity_15">
+        <omgdc:Bounds x="310" y="150" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="subProcess_17_di" bpmnElement="subProcess_17">
+        <omgdc:Bounds x="450" y="150" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="transaction_19_di" bpmnElement="transaction_19">
+        <omgdc:Bounds x="590" y="150" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="adHocSubProcess_21_di" bpmnElement="adHocSubProcess_21">
+        <omgdc:Bounds x="730" y="150" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <omgdi:waypoint x="130" y="70" />
+        <omgdi:waypoint x="170" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <omgdi:waypoint x="270" y="70" />
+        <omgdi:waypoint x="310" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <omgdi:waypoint x="410" y="70" />
+        <omgdi:waypoint x="450" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <omgdi:waypoint x="550" y="70" />
+        <omgdi:waypoint x="590" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <omgdi:waypoint x="690" y="70" />
+        <omgdi:waypoint x="730" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14_di" bpmnElement="Flow_14">
+        <omgdi:waypoint x="130" y="190" />
+        <omgdi:waypoint x="170" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16_di" bpmnElement="Flow_16">
+        <omgdi:waypoint x="270" y="190" />
+        <omgdi:waypoint x="310" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18_di" bpmnElement="Flow_18">
+        <omgdi:waypoint x="410" y="190" />
+        <omgdi:waypoint x="450" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_20_di" bpmnElement="Flow_20">
+        <omgdi:waypoint x="550" y="190" />
+        <omgdi:waypoint x="590" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_22_di" bpmnElement="Flow_22">
+        <omgdi:waypoint x="690" y="190" />
+        <omgdi:waypoint x="730" y="190" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

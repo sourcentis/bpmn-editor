@@ -1,0 +1,92 @@
+<GraphDataModel>
+  <root>
+    <Cell id="0">
+      <Object as="style" />
+    </Cell>
+    <Cell id="1" parent="0">
+      <Geometry _width="1563" _height="610" as="geometry" />
+      <Object as="style" />
+    </Cell>
+    <Cell id="9" value="TOTO" vertex="1" parent="1">
+      <Geometry _x="310" _y="300" _width="40" _height="40" as="geometry" />
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="state" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="Participant_0yzu78i" value="Test Lane" style="swimlane;startSize=30;fillColor=#f0f0f0;strokeColor=#666;" vertex="1" parent="1">
+      <Geometry _width="668" _height="440" as="geometry">
+        <Rectangle _width="668" _height="70" as="alternateBounds" />
+      </Geometry>
+    </Cell>
+    <Cell id="2" value="LANE1" vertex="1" parent="Participant_0yzu78i">
+      <Geometry _x="22" _width="646" _height="190" as="geometry">
+        <Rectangle _x="22" _width="646" _height="40" as="alternateBounds" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="lane" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="Task_1hcentk" value="choose recipes" vertex="1" parent="2">
+      <Geometry _x="245" _y="60" _width="100" _height="80" as="geometry" />
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="process" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="StartEvent_1y45yut" value="hunger   &#xa;noticed" vertex="1" parent="2">
+      <Geometry _x="127" _y="71" _width="58" _height="58" as="geometry" />
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="state" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="SequenceFlow_0h21x7r" value="" edge="1" parent="2" source="StartEvent_1y45yut" target="Task_1hcentk">
+      <Geometry relative="1" as="geometry" />
+      <Object as="style" />
+    </Cell>
+    <Cell id="ExclusiveGateway_15hu1pt" value="Desired dish?" vertex="1" parent="2">
+      <Geometry _x="420" _y="75" _width="50" _height="50" as="geometry" />
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="condition" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="SequenceFlow_0wnb4ke" value="" edge="1" parent="2" source="Task_1hcentk" target="ExclusiveGateway_15hu1pt">
+      <Geometry relative="1" as="geometry" />
+      <Object as="style" />
+    </Cell>
+    <Cell id="6" value="LANE2" vertex="1" parent="Participant_0yzu78i">
+      <Geometry _x="22" _y="190" _width="646" _height="250" as="geometry">
+        <Rectangle _x="22" _y="190" _width="646" _height="40" as="alternateBounds" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="lane" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="4" value="Start" vertex="1" parent="6">
+      <Geometry _x="148" _y="80" _width="40" _height="40" as="geometry" />
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="state" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="7" value="Lane" vertex="1" parent="1">
+      <Geometry _y="440" _width="668" _height="170" as="geometry" />
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="lane" />
+        </Array>
+      </Object>
+    </Cell>
+  </root>
+</GraphDataModel>

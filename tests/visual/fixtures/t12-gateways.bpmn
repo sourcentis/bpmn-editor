@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_t12" targetNamespace="http://bpmn-editor.test/t12">
+  <process id="Process_t12" isExecutable="false">
+    <exclusiveGateway id="exclusiveGateway_1" name="Exclusive" />
+    <parallelGateway id="parallelGateway_2" name="Parallel" />
+    <sequenceFlow id="Flow_3" sourceRef="exclusiveGateway_1" targetRef="parallelGateway_2" />
+    <inclusiveGateway id="inclusiveGateway_4" name="Inclusive" />
+    <sequenceFlow id="Flow_5" sourceRef="parallelGateway_2" targetRef="inclusiveGateway_4" />
+    <eventBasedGateway id="eventBasedGateway_6" name="Event-based" />
+    <sequenceFlow id="Flow_7" sourceRef="inclusiveGateway_4" targetRef="eventBasedGateway_6" />
+    <complexGateway id="complexGateway_8" name="Complex" />
+    <sequenceFlow id="Flow_9" sourceRef="eventBasedGateway_6" targetRef="complexGateway_8" />
+  </process>
+  <bpmndi:BPMNDiagram id="Diagram_t12">
+    <bpmndi:BPMNPlane id="Plane_t12" bpmnElement="Process_t12">
+      <bpmndi:BPMNShape id="exclusiveGateway_1_di" bpmnElement="exclusiveGateway_1" isMarkerVisible="true">
+        <omgdc:Bounds x="30" y="60" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="parallelGateway_2_di" bpmnElement="parallelGateway_2" isMarkerVisible="true">
+        <omgdc:Bounds x="190" y="60" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="inclusiveGateway_4_di" bpmnElement="inclusiveGateway_4" isMarkerVisible="true">
+        <omgdc:Bounds x="350" y="60" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="eventBasedGateway_6_di" bpmnElement="eventBasedGateway_6" isMarkerVisible="true">
+        <omgdc:Bounds x="510" y="60" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="complexGateway_8_di" bpmnElement="complexGateway_8" isMarkerVisible="true">
+        <omgdc:Bounds x="670" y="60" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <omgdi:waypoint x="80" y="85" />
+        <omgdi:waypoint x="190" y="85" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <omgdi:waypoint x="240" y="85" />
+        <omgdi:waypoint x="350" y="85" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <omgdi:waypoint x="400" y="85" />
+        <omgdi:waypoint x="510" y="85" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <omgdi:waypoint x="560" y="85" />
+        <omgdi:waypoint x="670" y="85" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

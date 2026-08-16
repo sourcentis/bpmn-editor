@@ -34,6 +34,19 @@ declare global {
          * reconstruction hors écran.
          */
         exportBpmn(): string;
+        /**
+         * Charge `xml` (format natif GraphDataModel — celui de loadXml/getXml,
+         * pas du BPMN 2.0) sur l'éditeur monté sur `#bpmn-canvas`, avec les
+         * mêmes garanties de stabilisation que `renderBpmn`. Utilisé par les
+         * tests `mercator-*` (schémas réels rejoués depuis la base Mercator).
+         */
+        renderMaxgraph(xml: string): Promise<void>;
+        /**
+         * Exporte en BPMN 2.0 XML l'état correspondant au dernier
+         * `renderMaxgraph()` appelé (throw si aucun), via l'API publique
+         * `exportBpmnXml()` de l'éditeur actuellement monté.
+         */
+        exportMaxgraphAsBpmn(): string;
         __BPMN_RENDERED__?: boolean;
     }
 }

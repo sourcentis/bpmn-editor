@@ -20,11 +20,14 @@ import {
     isLaneVertex,
     isProcessVertex,
     isStateVertex,
+    resetActivityBorder,
+    setCallActivityVertex,
     setDatabaseVertex,
     setDataVertex,
     setIconCellValue,
     setInputDataVertex,
-    setOutputDataVertex
+    setOutputDataVertex,
+    setTransactionVertex
 } from "./bpmn-helpers";
 import type { BpmnElementDef, BpmnEditorMessages, BpmnObjectProvider } from "./types";
 import { DEFAULT_MESSAGES } from "./messages";
@@ -61,6 +64,11 @@ const PROCESS_ELEMENTS: BpmnElementDef[] = [
     {id: "service-task", name: "Service task", glyph: BPMN_ICONS.SERVICE_TASK},
     {id: "business-task", name: "Business task", glyph: BPMN_ICONS.BUSINESS_TASK},
     {id: "script-task", name: "Script task", glyph: BPMN_ICONS.SCRIPT_TASK},
+    // Bordure spécifique plutôt qu'une icône (voir applySelection) — pas de
+    // glyphe dédié dans la police BPMN, on réutilise l'icône Task générique
+    // pour la vignette du menu.
+    {id: "call-activity", name: "Call activity", glyph: BPMN_ICONS.TASK},
+    {id: "transaction", name: "Transaction", glyph: BPMN_ICONS.TASK},
     // Markers
     {id: "loop-marker", name: "Loop", glyph: BPMN_ICONS.LOOP_MARKER},
     {id: "parallel-marker", name: "Parallel", glyph: BPMN_ICONS.PARALLEL_MARKER},
@@ -597,7 +605,31 @@ export function setupBpmnMenuSelect(
                     });
                     break;
             }
+        } else if (el.id === "call-activity") {
+            // Bordure 3px plutôt qu'une icône — pas de baseStyleNames dédié,
+            // le vertex reste un isProcessVertex normal (voir setCallActivityVertex).
+            setCallActivityVertex(graph, processVertex);
+            setIconCellValue(graph, processVertex, "");
+            graph.clearSelection();
+        } else if (el.id === "transaction") {
+            // Double bordure plutôt qu'une icône (voir setTransactionVertex).
+            setTransactionVertex(graph, processVertex);
+            setIconCellValue(graph, processVertex, "");
+            graph.clearSelection();
         } else {
+            // Un cell précédemment mis en Call activity/Transaction porte un
+            // override de shape/strokeWidth par-cellule (voir setCallActivityVertex/
+            // setTransactionVertex) qui, sinon, survivrait au changement de type — mais
+            // uniquement pertinent pour un isProcessVertex (PROCESS_ELEMENTS) : cette
+            // branche sert aussi les DATA_ELEMENTS (Data/Database/...), où forcer
+            // shape="rectangle" ici écraserait en permanence le shape "bpmnDataObjectShape"/
+            // "cylinder" posé juste après par setDataVertex/setDatabaseVertex — ces
+            // derniers ne remplacent que baseStyleNames, pas un override shape déjà
+            // présent sur la cellule.
+            if (isProcessVertex(graph, processVertex)) {
+                resetActivityBorder(graph, processVertex);
+            }
+
             // Set the icon with the glyph
             if (el.glyph == BPMN_ICONS.TASK)
                 // Task shown as empty in activity

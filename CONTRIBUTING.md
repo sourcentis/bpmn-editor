@@ -41,6 +41,22 @@ from four angles:
   `attachedToRef`, same colors, same DI positions to within rounding. Does
   **not** compare raw XML strings — attribute/element order isn't
   significant, only what `parseBPMN` derives from it.
+- **Mercator non-regression** (`tests/visual/fixtures-mercator/mNN-*.maxgraph`,
+  `tests/visual/mercator-roundtrip.spec.ts`,
+  `tests/structural/mercator-bpmn-roundtrip.spec.ts`): real diagrams sourced
+  from Mercator's production `graphs` table, in the editor's **own**
+  serialization format (`loadXml`/`getXml`, see "Two XML formats" in
+  `CLAUDE.md`) rather than hand-authored BPMN 2.0 XML — exercises code paths
+  the `tNN-*.bpmn` fixtures above don't, because they're already
+  canonically-styled BPMN. Two checks per fixture: the native `loadXml`
+  render is visually stable (own baseline), and `exportBpmnXml` →
+  `importBpmnXml` is *also* visually stable (separate baseline) — not
+  compared against the native render, since content with Mercator-specific
+  decorative styling (icons, cartography glyphs) is legitimately normalized
+  to canonical BPMN shapes on that round-trip. Data fidelity of that
+  round-trip (ids/positions/colors/flow topology, not pixels) is asserted
+  separately by `mercator-bpmn-roundtrip.spec.ts`, structurally, the same way
+  `bpmn-roundtrip.spec.ts` does for the hand-authored fixtures.
 - **Console guard** (`tests/helpers/console-guard.ts`): applied to every
   visual and structural test — fails if the page logs a `console.error` or
   an unhandled `pageerror` during the test, even if the primary assertion

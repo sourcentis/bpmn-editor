@@ -1,0 +1,296 @@
+<GraphDataModel>
+  <root>
+    <Cell id="0">
+      <Object as="style" />
+    </Cell>
+    <Cell id="1" parent="0">
+      <Object as="style" />
+    </Cell>
+    <Cell id="4" value="Fournisseur" vertex="1" parent="1" url="/admin/actors/10">
+      <Geometry _x="360" _y="30" _width="160" _height="590" as="geometry" />
+      <Object horizontal="1" as="style">
+        <Array as="baseStyleNames">
+          <add value="lane" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="7" value="" vertex="1" parent="4">
+      <Geometry _x="0.5" _y="22" _width="30" _height="28" relative="1" as="geometry">
+        <Point _x="-15" _y="-28" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnBadge" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="22" value="Correction" vertex="1" parent="4">
+      <Geometry _x="30" _y="320" _width="100" _height="80" as="geometry" />
+      <Object fillColor="#dfe9f6" as="style">
+        <Array as="baseStyleNames">
+          <add value="process" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="23" value="" vertex="1" parent="22">
+      <Geometry _width="26" _height="26" relative="1" as="geometry">
+        <Object x="0" y="-2" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="32" value="" vertex="1" connectable="0" parent="22">
+      <Geometry _x="0.5" _y="1" _width="30" _height="28" relative="1" as="geometry">
+        <Point _x="-15" _y="-28" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnBadge" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="3" value="Agent administratis" vertex="1" parent="1" url="/admin/actors/11">
+      <Geometry _x="200" _y="30" _width="160" _height="590" as="geometry" />
+      <Object horizontal="1" as="style">
+        <Array as="baseStyleNames">
+          <add value="lane" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="6" value="" vertex="1" parent="3">
+      <Geometry _x="0.5" _y="22" _width="30" _height="28" relative="1" as="geometry">
+        <Point _x="-15" _y="-28" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnBadge" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="13" value="Admission" vertex="1" parent="3" url="/admin/activities/9">
+      <Geometry _x="22" _y="120" _width="100" _height="80" as="geometry" />
+      <Object fillColor="#e8dfee" as="style">
+        <Array as="baseStyleNames">
+          <add value="process" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="14" value="" vertex="1" parent="13">
+      <Geometry _width="26" _height="26" relative="1" as="geometry">
+        <Object x="0" y="-2" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="33" value="" vertex="1" connectable="0" parent="13">
+      <Geometry _x="0.5" _y="1" _width="30" _height="28" relative="1" as="geometry">
+        <Point _x="-15" _y="-28" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnBadge" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="16" value="" vertex="1" parent="3">
+      <Geometry _x="49" _y="237.5" _width="45" _height="45" as="geometry" />
+      <Object fillColor="#9aecf4" as="style">
+        <Array as="baseStyleNames">
+          <add value="gateway" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="17" value="" vertex="1" parent="16">
+      <Geometry _x="0.5" _y="0.5" _width="45" _height="45" relative="1" as="geometry">
+        <Object x="-23" y="-23" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="stateIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="18" edge="1" parent="3" source="13" target="16">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmn-edge" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="19" value="Demande suport" vertex="1" parent="3">
+      <Geometry _x="21" _y="320" _width="100" _height="80" as="geometry" />
+      <Object fillColor="#e9e9e9" as="style">
+        <Array as="baseStyleNames">
+          <add value="process" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="20" value="" vertex="1" parent="19">
+      <Geometry _width="26" _height="26" relative="1" as="geometry">
+        <Object x="0" y="-2" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="21" edge="1" parent="3" source="16" target="19">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmn-edge" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="2" value="Agent Helpdesk" vertex="1" parent="1" url="/admin/actors/7">
+      <Geometry _x="40" _y="30" _width="160" _height="590" as="geometry" />
+      <Object horizontal="1" as="style">
+        <Array as="baseStyleNames">
+          <add value="lane" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="5" value="" vertex="1" parent="2">
+      <Geometry _x="0.5" _y="22" _width="30" _height="28" relative="1" as="geometry">
+        <Point _x="-15" _y="-28" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnBadge" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="8" value="" vertex="1" parent="2">
+      <Geometry _x="60" _y="40" _width="40" _height="40" as="geometry" />
+      <Object fillColor="#9fe59f" as="style">
+        <Array as="baseStyleNames">
+          <add value="state" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="9" value="" vertex="1" parent="8">
+      <Geometry _x="0.5" _y="0.5" _width="40" _height="40" relative="1" as="geometry">
+        <Object x="-20" y="-20" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="stateIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="10" value="Analyse" vertex="1" parent="2">
+      <Geometry _x="30" _y="120" _width="100" _height="80" as="geometry" />
+      <Object fillColor="#99cbed" as="style">
+        <Array as="baseStyleNames">
+          <add value="process" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="11" value="" vertex="1" parent="10">
+      <Geometry _width="26" _height="26" relative="1" as="geometry">
+        <Object x="0" y="-2" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="12" edge="1" parent="2" source="9" target="10">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmn-edge" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="25" value="Réponse" vertex="1" parent="2">
+      <Geometry _x="30" _y="380" _width="100" _height="80" as="geometry" />
+      <Object fillColor="#f1f1d1" as="style">
+        <Array as="baseStyleNames">
+          <add value="process" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="26" value="" vertex="1" parent="25">
+      <Geometry _width="26" _height="26" relative="1" as="geometry">
+        <Object x="0" y="-2" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="28" value="Fin" vertex="1" parent="2">
+      <Geometry _x="60" _y="500" _width="40" _height="40" as="geometry" />
+      <Object fillColor="#efa8a8" as="style">
+        <Array as="baseStyleNames">
+          <add value="state" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="29" value="" vertex="1" parent="28">
+      <Geometry _x="0.5" _y="0.5" _width="40" _height="40" relative="1" as="geometry">
+        <Object x="-20" y="-20" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="stateIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="30" edge="1" parent="2" source="25" target="28">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmn-edge" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="15" edge="1" parent="1" source="10" target="13">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmn-edge" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="31" edge="1" parent="1" source="17" target="25">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmn-edge" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="27" edge="1" parent="1" source="22" target="25">
+      <Geometry relative="1" as="geometry">
+        <Array as="points">
+          <Point _x="440" _y="460" />
+        </Array>
+      </Geometry>
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmn-edge" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="24" edge="1" parent="1" source="19" target="22">
+      <Geometry relative="1" as="geometry" />
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmn-edge" />
+        </Array>
+      </Object>
+    </Cell>
+  </root>
+</GraphDataModel>

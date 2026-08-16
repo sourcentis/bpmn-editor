@@ -106,8 +106,7 @@ export interface BpmnEditorInstance {
      * Replaces the graph by parsing standard BPMN 2.0 XML (`<definitions>`,
      * `<process>`, `<bpmndi:BPMNShape>` positions, …) — the format real BPMN
      * modeling tools export, and what the built-in `ui: 'default'` toolbar's
-     * file-input Import button reads. There is no matching "export as BPMN
-     * 2.0 XML" — round-trip through `getXml()`/`loadXml()` instead.
+     * file-input Import button reads. Symmetric counterpart: `exportBpmnXml`.
      */
     importBpmnXml(xml: string): void;
     /**

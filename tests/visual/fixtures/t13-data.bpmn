@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_t13" targetNamespace="http://bpmn-editor.test/t13">
+  <process id="Process_t13" isExecutable="false">
+    <dataObjectReference id="dataObjectReference_1" name="Data" />
+    <dataInput id="dataInput_2" name="Data input" />
+    <sequenceFlow id="Flow_3" sourceRef="dataObjectReference_1" targetRef="dataInput_2" />
+    <dataOutput id="dataOutput_4" name="Data output" />
+    <sequenceFlow id="Flow_5" sourceRef="dataInput_2" targetRef="dataOutput_4" />
+    <dataStoreReference id="dataStoreReference_6" name="Datastore" />
+    <sequenceFlow id="Flow_7" sourceRef="dataOutput_4" targetRef="dataStoreReference_6" />
+  </process>
+  <bpmndi:BPMNDiagram id="Diagram_t13">
+    <bpmndi:BPMNPlane id="Plane_t13" bpmnElement="Process_t13">
+      <bpmndi:BPMNShape id="dataObjectReference_1_di" bpmnElement="dataObjectReference_1">
+        <omgdc:Bounds x="30" y="60" width="60" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="dataInput_2_di" bpmnElement="dataInput_2">
+        <omgdc:Bounds x="190" y="60" width="60" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="dataOutput_4_di" bpmnElement="dataOutput_4">
+        <omgdc:Bounds x="350" y="60" width="60" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="dataStoreReference_6_di" bpmnElement="dataStoreReference_6">
+        <omgdc:Bounds x="510" y="60" width="60" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <omgdi:waypoint x="90" y="100" />
+        <omgdi:waypoint x="190" y="100" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <omgdi:waypoint x="250" y="100" />
+        <omgdi:waypoint x="350" y="100" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <omgdi:waypoint x="410" y="100" />
+        <omgdi:waypoint x="510" y="100" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

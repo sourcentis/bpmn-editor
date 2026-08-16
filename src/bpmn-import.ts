@@ -4,12 +4,20 @@ import {showStatus} from './bpmn-edit';
 import {
     addBPMNAnnotation,
     addBPMNConnection,
+    addBPMNConversation,
     addBPMNGateway,
     addBPMNLane,
     addBPMNState,
+    addBPMNData,
     addBPMNTask,
+    centerGraphView,
     isLaneVertex,
-    setIconCellValue
+    setCallActivityVertex,
+    setDatabaseVertex,
+    setIconCellValue,
+    setInputDataVertex,
+    setOutputDataVertex,
+    setTransactionVertex
 } from "./bpmn-helpers";
 import {setAnnotationArrow, setAnnotationDirectionalArrow, setMessageFlow} from "./bpmn-arrows";
 import {BPMN_ICONS} from "./bpmn-icons";
@@ -201,11 +209,14 @@ export interface BpmnElements {
     events: any[];
     tasks: any[];
     gateways: any[];
+    data: any[];
     flows: any[];
     messageFlow: any[];
     participants: any[];
     annotations: any[];
     associations: any[];
+    conversationNodes: any[];
+    conversationLinks: any[];
 }
 
 export interface BpmnPositions {
@@ -229,6 +240,7 @@ export interface BpmnData {
     positions: BpmnPositions;
     labelPositions: Record<string, { x: number, y: number, width: number, height: number }>;
     colors: BpmnColors;
+    laneOrientations: Record<string, boolean>;
     xmlDoc: Document;
 }
 
@@ -307,11 +319,14 @@ export function parseBPMN(xmlText: string): BpmnData {
         events: [],
         tasks: [],
         gateways: [],
+        data: [],
         flows: [],
         participants: [],
         annotations: [],
         associations: [],
-        messageFlow: []
+        messageFlow: [],
+        conversationNodes: [],
+        conversationLinks: []
     };
 
     //---------------------
@@ -483,6 +498,25 @@ export function parseBPMN(xmlText: string): BpmnData {
         });
     });
 
+    //--------------------
+    // Data (Data object / Datastore / Data input / Data output — voir DATA_ELEMENTS
+    // dans bpmn-menu-select.ts, les 4 types que le menu contextuel sait poser).
+    // dataObject/dataStore (sans "Reference") acceptés en repli : certains outils les
+    // émettent directement au lieu de la paire définition+référence du schéma BPMN.
+    const dataElements = selectByLocalName(
+        xmlDoc,
+        'dataObjectReference', 'dataObject', 'dataStoreReference', 'dataStore', 'dataInput', 'dataOutput'
+    );
+    console.log(`🗄️ Data trouvés: ${dataElements.length}`);
+    dataElements.forEach((d) => {
+        elements.data.push({
+            id: d.getAttribute('id'),
+            name: d.getAttribute('name'),
+            // Nom local uniquement : insensible au préfixe (bpmn:, bpmn2:, model:, ...).
+            type: d.localName,
+        });
+    });
+
     //---------------------
     // Flows
     const flows = xmlDoc.getElementsByTagNameNS('*', 'sequenceFlow');
@@ -549,6 +583,53 @@ export function parseBPMN(xmlText: string): BpmnData {
     }
 
     //---------------------
+    // Conversation diagrams (bpmn2:conversation / bpmn2:conversationLink,
+    // toujours au niveau d'une <collaboration> — voir aussi elements.participants,
+    // qui accueille déjà les "bandes" de participant sans processRef d'un diagramme
+    // de conversation, sans distinction particulière). subConversation/
+    // callConversation sont traités comme des conversation ordinaires : le
+    // round-trip ne conserve que la forme (hexagone), pas la distinction structurelle.
+    // 'conversationNode' est conservé pour relire les fichiers déjà exportés avec
+    // l'ancien tag non standard (tête de substitution abstraite du XSD BPMN 2.0) —
+    // selectByLocalName matche par nom local exact, donc aucun chevauchement possible
+    // entre 'conversation' et 'conversationNode'.
+    const conversationNodes = selectByLocalName(xmlDoc, 'conversation', 'conversationNode', 'subConversation', 'callConversation');
+    console.log(`💬 ConversationNodes trouvés: ${conversationNodes.length}`);
+    for (const cn of Array.from(conversationNodes)) {
+        elements.conversationNodes.push({
+            id: cn.getAttribute('id'),
+            name: cn.getAttribute('name'),
+        });
+    }
+
+    const conversationLinks = selectByLocalName(xmlDoc, 'conversationLink');
+    console.log(`💬 ConversationLinks trouvés: ${conversationLinks.length}`);
+    for (const link of Array.from(conversationLinks)) {
+        const linkId = link.getAttribute('id');
+
+        const bpmnEdges = xmlDoc.getElementsByTagNameNS('*', 'BPMNEdge');
+        let waypoints: Array<{ x: number; y: number }> = [];
+        for (const edge of Array.from(bpmnEdges)) {
+            if (edge.getAttribute('bpmnElement') === linkId) {
+                const waypointElements = edge.getElementsByTagNameNS('*', 'waypoint');
+                waypoints = Array.from(waypointElements).map(wp => ({
+                    x: parseFloat(wp.getAttribute('x') || '0'),
+                    y: parseFloat(wp.getAttribute('y') || '0')
+                }));
+                break;
+            }
+        }
+
+        elements.conversationLinks.push({
+            id: linkId,
+            name: link.getAttribute('name'),
+            source: link.getAttribute('sourceRef'),
+            target: link.getAttribute('targetRef'),
+            waypoints: waypoints
+        });
+    }
+
+    //---------------------
     // Annotations
     const annotations = selectByLocalName(xmlDoc, 'textAnnotation');
     console.log(`🏊 Annotations trouvées: ${annotations.length}`);
@@ -599,6 +680,11 @@ export function parseBPMN(xmlText: string): BpmnData {
     const positions: BpmnPositions = {};
     const labelPositions: Record<string, { x: number, y: number, width: number, height: number }> = {};
     const colors: BpmnColors = {};
+    // Orientation DI (attribut isHorizontal du BPMNShape) d'un pool/lane/participant —
+    // seuls ces éléments en tiennent compte (voir addBPMNLane / AddBPMNLaneOptions.
+    // isHorizontal), mais capturée pour tous les shapes ici, au même endroit que le
+    // reste de leur DI. Par défaut BPMN (attribut absent) = true.
+    const laneOrientations: Record<string, boolean> = {};
 
     for (const shape of Array.from(shapes)) {
         const id = shape.getAttribute('bpmnElement');
@@ -611,6 +697,7 @@ export function parseBPMN(xmlText: string): BpmnData {
                 width: parseFloat(bounds.getAttribute('width') || '0'),
                 height: parseFloat(bounds.getAttribute('height') || '0'),
             };
+            laneOrientations[id] = shape.getAttribute('isHorizontal') !== 'false';
 
             // Couleurs de remplissage/bordure (BPMN in Color ou bioc), si présentes
             const shapeColors = readDiagramColors(shape);
@@ -666,7 +753,7 @@ export function parseBPMN(xmlText: string): BpmnData {
     console.log('📝 Labels récupérés:', Object.keys(labelPositions).length);
     console.log('✅ Parsing terminé avec succès');
 
-    const data: BpmnData = { elements, positions, labelPositions, colors, xmlDoc };
+    const data: BpmnData = { elements, positions, labelPositions, colors, laneOrientations, xmlDoc };
     currentBpmnData = data;
 
     return data;
@@ -703,7 +790,7 @@ const insertEdge = (graph: Graph, options: EdgeParameters) => {
 // Dessiner le diagramme
 export function drawDiagram(graph: Graph, data: BpmnData): void {
     console.log('🎨 Début du dessin du diagramme');
-    const { elements, positions, labelPositions, colors } = data;
+    const { elements, positions, labelPositions, colors, laneOrientations } = data;
     const parent = graph.getDefaultParent();
     const vertexMap: Record<string, Cell> = {};
 
@@ -740,15 +827,33 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
     // diagramme (déduit de n'importe quel laneSet existant) plutôt que de retomber sur la
     // valeur par défaut du style — sinon les colonnes de titre ne s'alignent pas visuellement
     // entre pools d'une même collaboration.
+    // Orientation d'un pool/process/lane conteneur : son propre BPMNShape s'il en a
+    // un (un pool/participant en a toujours un ; un process nu, sans collaboration,
+    // n'en a AUCUN), sinon celle de sa première lane (censées toutes partager la
+    // même orientation — voir AddBPMNLaneOptions.isHorizontal dans bpmn-helpers.ts),
+    // sinon le défaut BPMN true.
+    const resolveContainerIsHorizontal = (containerId: string, lanes: any[]): boolean =>
+        laneOrientations[containerId] ?? laneOrientations[lanes[0]?.id] ?? true;
+
+    // Décalage entre une lane et son conteneur, projeté sur l'axe pertinent pour son
+    // bandeau de titre — X pour un pool "isHorizontal" (titre vertical à gauche, le
+    // cas courant), Y pour un pool vertical (titre horizontal en haut). Voir
+    // AddBPMNLaneOptions.isHorizontal dans bpmn-helpers.ts pour la correspondance
+    // avec le style maxGraph "horizontal" (sens inverse).
+    const laneTitleOffset = (isHorizontal: boolean, containerPos: { x: number; y: number }, lanePos: { x: number; y: number }): number =>
+        isHorizontal ? lanePos.x - containerPos.x : lanePos.y - containerPos.y;
+
     const defaultLaneTitleSize = ((): number | undefined => {
         const offsets: number[] = [];
         elements.laneSets.forEach(ls => {
             const owningParticipant = elements.participants.find(p => p.processRef === ls.processId);
-            const containerPos = positions[owningParticipant ? owningParticipant.id : ls.processId];
+            const containerId = owningParticipant ? owningParticipant.id : ls.processId;
+            const containerPos = positions[containerId];
             if (!containerPos) return;
+            const isHorizontal = resolveContainerIsHorizontal(containerId, ls.lanes);
             ls.lanes.forEach((lane: any) => {
                 const lanePos = positions[lane.id];
-                if (lanePos) offsets.push(lanePos.x - containerPos.x);
+                if (lanePos) offsets.push(laneTitleOffset(isHorizontal, containerPos, lanePos));
             });
         });
         return offsets.length > 0 ? Math.min(...offsets) : undefined;
@@ -815,12 +920,18 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                 height: maxY - minY
             };
 
+            // Le process lui-même n'a de BPMNShape propre que s'il est référencé par un
+            // participant (cas géré séparément, voir plus bas) — un process nu (pas de
+            // pool/collaboration) n'a AUCUN shape pour lire son isHorizontal, d'où le
+            // repli sur ses lanes dans resolveContainerIsHorizontal.
+            const processIsHorizontal = resolveContainerIsHorizontal(process.id, allProcessLanes);
+
             // Largeur du bandeau de titre (startSize) calée sur le début réel des lanes —
             // voir addBPMNLane / AddBPMNLaneOptions.titleSize.
             const processLaneOffsets = allProcessLanes
                 .map((lane: any) => positions[lane.id])
                 .filter(Boolean)
-                .map((lp: any) => lp.x - processPos.x);
+                .map((lp: any) => laneTitleOffset(processIsHorizontal, processPos, lp));
             const processTitleSize = processLaneOffsets.length > 0 ? Math.min(...processLaneOffsets) : defaultLaneTitleSize;
 
             // Créer la lane pour le process
@@ -832,6 +943,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                 width: processPos.width,
                 height: processPos.height,
                 titleSize: processTitleSize,
+                isHorizontal: processIsHorizontal,
             });
 
             vertexMap[process.id] = processVertex;
@@ -862,6 +974,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                     // Même largeur de titre que le process parent, pour la cohérence visuelle
                     // entre les deux bandeaux imbriqués.
                     titleSize: processTitleSize,
+                    isHorizontal: processIsHorizontal,
                 });
 
                 vertexMap[lane.id] = laneVertex;
@@ -891,6 +1004,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                 y: pos.y,
                 width: pos.width,
                 height: pos.height,
+                isHorizontal: laneOrientations[lane.id] ?? true,
             });
 
             vertexMap[lane.id] = vertex;
@@ -923,12 +1037,14 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                         allProcessLanes.push(...ls.lanes);
                     });
 
+                    const participantIsHorizontal = resolveContainerIsHorizontal(p.id, allProcessLanes);
+
                     // Largeur du bandeau de titre (startSize) calée sur le début réel des
                     // lanes — voir addBPMNLane / AddBPMNLaneOptions.titleSize.
                     const laneOffsets = allProcessLanes
                         .map((lane: any) => positions[lane.id])
                         .filter(Boolean)
-                        .map((lp: any) => lp.x - pos.x);
+                        .map((lp: any) => laneTitleOffset(participantIsHorizontal, pos, lp));
                     const titleSize = laneOffsets.length > 0 ? Math.min(...laneOffsets) : defaultLaneTitleSize;
 
                     // Le participant devient la lane principale
@@ -940,6 +1056,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                         width: pos.width,
                         height: pos.height,
                         titleSize,
+                        isHorizontal: participantIsHorizontal,
                     });
 
                     vertexMap[p.id] = participantVertex;
@@ -970,6 +1087,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                             // Même largeur de titre que le participant parent, pour la
                             // cohérence visuelle entre les deux bandeaux imbriqués.
                             titleSize,
+                            isHorizontal: participantIsHorizontal,
                         });
 
                         vertexMap[lane.id] = laneVertex;
@@ -992,13 +1110,19 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                         width: pos.width,
                         height: pos.height,
                         titleSize: defaultLaneTitleSize,
+                        isHorizontal: laneOrientations[p.id] ?? true,
                     });
                     vertexMap[p.id] = simpleVertex;
                     applyColors(simpleVertex, p.id);
                     setBpmnMeta(simpleVertex, { bpmnId: p.id, kind: 'participant', processRef: p.processRef });
                 }
             } else {
-                // Participant sans processRef, créer une lane simple
+                // Participant sans processRef : le cas courant est une "bande" de
+                // participant d'un diagramme de conversation BPMN (voir
+                // elements.conversationNodes/conversationLinks) — dessinée comme un
+                // simple rectangle étiqueté en haut, pas comme un pool/lane classique
+                // (bandeau de titre vertical à gauche) : horizontal=true l'emporte sur
+                // le horizontal=false par défaut du style "lane".
                 const simpleVertex = addBPMNLane(graph, parent, {
                     id: p.id,
                     value: p.name || 'Participant',
@@ -1008,6 +1132,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                     height: pos.height,
                     titleSize: defaultLaneTitleSize,
                 });
+                graph.setCellStyles('horizontal', true, [simpleVertex]);
                 vertexMap[p.id] = simpleVertex;
                 applyColors(simpleVertex, p.id);
                 setBpmnMeta(simpleVertex, { bpmnId: p.id, kind: 'participant' });
@@ -1316,6 +1441,30 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
         });
 
         //---------------------
+        // Conversation nodes (diagramme de conversation BPMN) — toujours au niveau
+        // racine, jamais rattachés à une lane (BPMN ne prévoit pas de laneSet dans une
+        // <collaboration> de conversation).
+        elements.conversationNodes.forEach((cn) => {
+            const pos = positions[cn.id] || { x: 300, y: 130, width: 40, height: 40 };
+            const { parent: cnParent, x, y } = getParentAndPosition(cn.id, pos);
+
+            const vertex: Cell = addBPMNConversation(graph, cnParent, x, y);
+            vertexMap[cn.id] = vertex;
+            vertex.setValue(cn.name || '');
+            applyColors(vertex, cn.id);
+            setBpmnMeta(vertex, { bpmnId: cn.id, kind: 'conversationNode', labelBounds: labelPositions[cn.id] });
+
+            const geometry = vertex.getGeometry();
+            if (geometry) {
+                geometry.width = pos.width;
+                geometry.height = pos.height;
+                vertex.setGeometry(geometry);
+            }
+
+            applyLabelPosition(vertex, cn.id, pos);
+        });
+
+        //---------------------
         // Tasks
         elements.tasks.forEach((t) => {
             console.log("Add task ", t);
@@ -1366,14 +1515,24 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                     setIconCellValue(graph, vertex, BPMN_ICONS.RECEIVE_TASK);
                     break;
                 case "callActivity":
-                    setSubProcessMarker(graph, vertex);
+                    // Bordure 4px : c'est le marqueur du call activity, pas de "+" (voir
+                    // setCallActivityVertex dans bpmn-helpers.ts).
+                    setCallActivityVertex(graph, vertex);
                     break;
                 case "subProcess":
-                case "transaction":
                     // Sous-processus étendu (conteneur avec son propre contenu visible) non
                     // rendu comme tel — hors périmètre de cet import. Seul le cas replié
                     // (isExpanded=false, cf. isCollapsedSubProcess) pose le marqueur "+" ;
                     // un sous-processus étendu s'affiche donc comme une tâche simple.
+                    if (t.collapsed) {
+                        setSubProcessMarker(graph, vertex);
+                    }
+                    break;
+                case "transaction":
+                    // Double bordure (voir setTransactionVertex) + le même marqueur "+"
+                    // replié qu'un subProcess collapsed, une transaction restant une
+                    // variante de sous-processus.
+                    setTransactionVertex(graph, vertex);
                     if (t.collapsed) {
                         setSubProcessMarker(graph, vertex);
                     }
@@ -1433,6 +1592,51 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                     break;
                 default:
                     console.log("Unknown gateway type: ", g.type, ' ', g.name);
+            }
+        });
+
+        //---------------------
+        // Data
+        elements.data.forEach((d) => {
+            console.log("Add data ", d.name);
+            const pos = positions[d.id] || { x: 300, y: 130, width: 60, height: 80 };
+
+            // Obtenir le parent correct et la position relative
+            const { parent: dataParent, x, y } = getParentAndPosition(d.id, pos);
+
+            const vertex = addBPMNData(graph, dataParent, x, y);
+            vertexMap[d.id] = vertex;
+            vertex.setValue(d.name || '');
+            applyColors(vertex, d.id);
+            setBpmnMeta(vertex, { bpmnId: d.id, kind: d.type, labelBounds: labelPositions[d.id] });
+
+            // Définir la taille selon le XML
+            const geometry = vertex.getGeometry();
+            if (geometry) {
+                geometry.width = pos.width;
+                geometry.height = pos.height;
+                vertex.setGeometry(geometry);
+            }
+
+            // Appliquer la position du label
+            applyLabelPosition(vertex, d.id, pos);
+
+            switch (d.type) {
+                case "dataObjectReference":
+                case "dataObject":
+                    break;
+                case "dataStoreReference":
+                case "dataStore":
+                    setDatabaseVertex(graph, vertex);
+                    break;
+                case "dataInput":
+                    setInputDataVertex(graph, vertex);
+                    break;
+                case "dataOutput":
+                    setOutputDataVertex(graph, vertex);
+                    break;
+                default:
+                    console.log("Unknown data type: ", d.type, ' ', d.name);
             }
         });
 
@@ -1735,6 +1939,54 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
         }
 
         //---------------------
+        // Conversation links (bpmn2:conversationLink) — relient toujours deux
+        // cellules de niveau racine (participant-bande ou conversationNode, jamais
+        // dans une lane), donc déjà en coordonnées absolues : pas besoin du calcul
+        // d'offset/swimlane des sequenceFlow/messageFlow ci-dessus.
+        // addBPMNConnection applique automatiquement le style double-trait
+        // ("bpmnConversationLink", voir isConversationVertex/setConversationFlow
+        // dans bpmn-helpers.ts) dès qu'une extrémité est une conversation.
+        for (const link of elements.conversationLinks) {
+            const sourceCell = vertexMap[link.source];
+            const targetCell = vertexMap[link.target];
+            if (!sourceCell || !targetCell) {
+                console.warn(`⚠️ ConversationLink ${link.id} : source ou cible introuvable (${link.source} -> ${link.target})`);
+                continue;
+            }
+
+            const edge = addBPMNConnection(graph, sourceCell, targetCell);
+            edge.setValue(link.name || '');
+            applyColors(edge, link.id);
+            setBpmnMeta(edge, { bpmnId: link.id, kind: 'conversationLink', labelBounds: labelPositions[link.id] });
+
+            if (link.waypoints && link.waypoints.length >= 2) {
+                const geometry = edge.getGeometry();
+                const sourceGeo = sourceCell.getGeometry();
+                const targetGeo = targetCell.getGeometry();
+                if (geometry && sourceGeo && targetGeo) {
+                    const sourcePos = getAbsolutePosition(sourceCell);
+                    const targetPos = getAbsolutePosition(targetCell);
+                    const firstWaypoint = link.waypoints[0];
+                    const lastWaypoint = link.waypoints[link.waypoints.length - 1];
+
+                    applyEdgeAnchors(
+                        edge,
+                        sourceGeo, sourcePos.x, sourcePos.y,
+                        targetGeo, targetPos.x, targetPos.y,
+                        firstWaypoint, lastWaypoint
+                    );
+
+                    geometry.sourcePoint = new Point(firstWaypoint.x - sourcePos.x, firstWaypoint.y - sourcePos.y);
+                    geometry.targetPoint = new Point(lastWaypoint.x - targetPos.x, lastWaypoint.y - targetPos.y);
+                    if (link.waypoints.length > 2) {
+                        geometry.points = link.waypoints.slice(1, -1).map((wp: { x: number; y: number }) => new Point(wp.x, wp.y));
+                    }
+                    graph.model.setGeometry(edge, geometry);
+                }
+            }
+        }
+
+        //---------------------
         // Créer les traits pointillés des associations (annotation <-> objet concerné,
         // ou plus généralement deux éléments reliés par <association>)
         for (const assoc of elements.associations) {
@@ -1776,12 +2028,11 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                     geometry.sourcePoint = new Point(firstWaypoint.x - sourceAbs.x, firstWaypoint.y - sourceAbs.y);
                     geometry.targetPoint = new Point(lastWaypoint.x - targetAbs.x, lastWaypoint.y - targetAbs.y);
 
-                    if (assoc.waypoints.length > 2) {
-                        geometry.points = assoc.waypoints.slice(1, -1).map((wp: { x: number; y: number }) =>
-                            new Point(wp.x, wp.y)
-                        );
-                    }
-
+                    // Toujours une ligne droite (annotation <-> objet annoté) : contrairement
+                    // aux sequenceFlow/messageFlow/conversationLink, on ignore délibérément les
+                    // points intermédiaires d'un BPMNEdge à plus de 2 waypoints (un outil tiers
+                    // peut avoir enregistré un tracé coudé) plutôt que de les rejouer en
+                    // `geometry.points`, ce qui casserait la ligne droite exigée par la notation.
                     graph.model.setGeometry(edge, geometry);
                 }
             }
@@ -1794,7 +2045,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
     console.log('✅ Diagramme dessiné avec succès');
 
     setTimeout(() => {
-        graph.center();
+        centerGraphView(graph);
         console.log('📐 Vue centrée');
     }, 100);
 }

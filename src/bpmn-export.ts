@@ -7,7 +7,8 @@
 // interrupting/attachedToRef, processRef d'un participant).
 import type { Cell, Graph } from '@maxgraph/core';
 import { getBpmnMeta, type BpmnMeta } from './bpmn-import';
-import { resolveConnectable } from './bpmn-helpers';
+import { DECORATIVE_STYLES, findIconChild, resolveConnectable } from './bpmn-helpers';
+import { BPMN_ICONS } from './bpmn-icons';
 
 // ── Échappement / formatage déterministe ────────────────────────────────────────
 
@@ -155,19 +156,120 @@ function sanitizeId(id: string, prefix: string): string {
     return /^[A-Za-z_]/.test(id) ? id : `${prefix}_${id}`;
 }
 
+// ── Sous-type via l'icône (contenu natif sans BpmnMeta) ───────────────────────
+// Un schéma chargé via loadXml() (ex. un schéma Mercator, jamais passé par
+// drawDiagram donc sans BpmnMeta — voir metaOfVertex) porte déjà le glyphe
+// exact posé par CETTE MÊME police d'icônes (bpmn-icons.ts) : pas besoin de
+// deviner le sous-type depuis la topologie, juste lire l'enfant bpmnIcon/
+// stateIcon (findIconChild) et retrouver quel type/definition bpmn-import.ts
+// aurait posé pour arriver à ce glyphe précis. Miroir inversé de :
+// eventIcon() pour les events, du switch "Tasks" pour les tâches, de celui
+// "Gateways" pour les gateways (tous dans bpmn-import.ts) — à garder en
+// synchronisation si l'un de ces trois bouge. Repli sur le comportement
+// précédent (startEvent/exclusiveGateway/task générique) quand l'icône est
+// absente ou ne correspond à aucune entrée connue (dessiné à la main, ou
+// glyphe générique non lié à un sous-type précis — ex. GATEWAY, le losange
+// nu sans marqueur, qu'aucun sous-type de gateway standard ne reproduit à
+// l'identique).
+const EVENT_ICON_TO_META: Partial<Record<string, { kind: string; definition?: string }>> = {
+    [BPMN_ICONS.START_EVENT]: { kind: 'startEvent' },
+    [BPMN_ICONS.INTER_EVENT]: { kind: 'intermediateThrowEvent' },
+    [BPMN_ICONS.END_EVENT]: { kind: 'endEvent' },
+    [BPMN_ICONS.MESSAGE_START_EVENT]: { kind: 'startEvent', definition: 'message' },
+    [BPMN_ICONS.MESSAGE_CATCH_EVENT]: { kind: 'intermediateCatchEvent', definition: 'message' },
+    [BPMN_ICONS.MESSAGE_THROW_EVENT]: { kind: 'intermediateThrowEvent', definition: 'message' },
+    [BPMN_ICONS.MESSAGE_END_EVENT]: { kind: 'endEvent', definition: 'message' },
+    [BPMN_ICONS.TIMER_START_EVENT]: { kind: 'startEvent', definition: 'timer' },
+    [BPMN_ICONS.TIMER_CATCH_EVENT]: { kind: 'intermediateCatchEvent', definition: 'timer' },
+    [BPMN_ICONS.SIGNAL_START_EVENT]: { kind: 'startEvent', definition: 'signal' },
+    [BPMN_ICONS.SIGNAL_CATCH_EVENT]: { kind: 'intermediateCatchEvent', definition: 'signal' },
+    [BPMN_ICONS.SIGNAL_THROW_EVENT]: { kind: 'intermediateThrowEvent', definition: 'signal' },
+    [BPMN_ICONS.SIGNAL_END_EVENT]: { kind: 'endEvent', definition: 'signal' },
+    [BPMN_ICONS.ERROR_SUB_PROCESS_START_EVENT]: { kind: 'startEvent', definition: 'error' },
+    [BPMN_ICONS.ERROR_CATCH_EVENT]: { kind: 'intermediateCatchEvent', definition: 'error' },
+    [BPMN_ICONS.ERROR_END_EVENT]: { kind: 'endEvent', definition: 'error' },
+    [BPMN_ICONS.ESCALATION_START_EVENT]: { kind: 'startEvent', definition: 'escalation' },
+    [BPMN_ICONS.ESCALATION_END_EVENT]: { kind: 'endEvent', definition: 'escalation' },
+    [BPMN_ICONS.CONDITIONAL_START_EVENT]: { kind: 'startEvent', definition: 'conditional' },
+    [BPMN_ICONS.CONDITIONAL_CATCH_EVENT]: { kind: 'intermediateCatchEvent', definition: 'conditional' },
+    [BPMN_ICONS.LINK_CATCH_EVENT]: { kind: 'intermediateCatchEvent', definition: 'link' },
+    [BPMN_ICONS.LINK_THROW_EVENT]: { kind: 'intermediateThrowEvent', definition: 'link' },
+    [BPMN_ICONS.LINK_END_EVENT]: { kind: 'endEvent', definition: 'link' },
+    [BPMN_ICONS.COMPENSATION_SUB_PROCESS_START_EVENT]: { kind: 'startEvent', definition: 'compensate' },
+    [BPMN_ICONS.COMPENSATION_THROW_EVENT]: { kind: 'intermediateThrowEvent', definition: 'compensate' },
+    [BPMN_ICONS.TERMINATION_EVENT]: { kind: 'endEvent', definition: 'terminate' },
+    [BPMN_ICONS.CANCEL_END_EVENT]: { kind: 'endEvent', definition: 'cancel' },
+    [BPMN_ICONS.MULTIPLE_PARALLEL_START_EVENT]: { kind: 'startEvent', definition: 'multiple' },
+    [BPMN_ICONS.MULTIPLE_THROW_EVENT]: { kind: 'intermediateThrowEvent', definition: 'multiple' },
+};
+
+const GATEWAY_ICON_TO_KIND: Partial<Record<string, string>> = {
+    [BPMN_ICONS.EXCLUSIVE_GATEWAY]: 'exclusiveGateway',
+    [BPMN_ICONS.PARALLEL_GATEWAY]: 'parallelGateway',
+    [BPMN_ICONS.INCLUSIVE_GATEWAY]: 'inclusiveGateway',
+    [BPMN_ICONS.EVENT_GATEWAY]: 'eventBasedGateway',
+    [BPMN_ICONS.COMPLEX_GATEWAY]: 'complexGateway',
+};
+
+const TASK_ICON_TO_KIND: Partial<Record<string, string>> = {
+    [BPMN_ICONS.MANUAL_TASK]: 'manualTask',
+    [BPMN_ICONS.SERVICE_TASK]: 'serviceTask',
+    [BPMN_ICONS.USER_TASK]: 'userTask',
+    [BPMN_ICONS.SCRIPT_TASK]: 'scriptTask',
+    [BPMN_ICONS.BUSINESS_TASK]: 'businessRuleTask',
+    [BPMN_ICONS.SEND_TASK]: 'sendTask',
+    [BPMN_ICONS.RECEIVE_TASK]: 'receiveTask',
+};
+
+function iconGlyphOf(cell: Cell): string | undefined {
+    const iconCell = findIconChild(cell);
+    const value = iconCell?.getValue?.();
+    return typeof value === 'string' && value !== '' ? value : undefined;
+}
+
 function inferVertexMeta(cell: Cell): BpmnMeta {
     const baseNames: string[] = (cell.style as any)?.baseStyleNames ?? [];
     const rawId = cell.getId() || `${fallbackCounter++}`;
     if (baseNames.includes('lane')) return { bpmnId: sanitizeId(rawId, 'Lane'), kind: 'lane' };
-    if (baseNames.includes('state')) return { bpmnId: sanitizeId(rawId, 'Event'), kind: 'startEvent' };
-    if (baseNames.includes('gateway')) return { bpmnId: sanitizeId(rawId, 'Gateway'), kind: 'exclusiveGateway' };
+    if (baseNames.includes('state')) {
+        const glyph = iconGlyphOf(cell);
+        const found = glyph !== undefined ? EVENT_ICON_TO_META[glyph] : undefined;
+        return { bpmnId: sanitizeId(rawId, 'Event'), kind: found?.kind ?? 'startEvent', definition: found?.definition };
+    }
+    if (baseNames.includes('gateway')) {
+        const glyph = iconGlyphOf(cell);
+        const kind = (glyph !== undefined ? GATEWAY_ICON_TO_KIND[glyph] : undefined) ?? 'exclusiveGateway';
+        return { bpmnId: sanitizeId(rawId, 'Gateway'), kind };
+    }
     if (baseNames.includes('annotation')) return { bpmnId: sanitizeId(rawId, 'Annotation'), kind: 'textAnnotation' };
-    return { bpmnId: sanitizeId(rawId, 'Task'), kind: 'task' };
+    if (baseNames.includes('conversation')) return { bpmnId: sanitizeId(rawId, 'Conversation'), kind: 'conversationNode' };
+    if (baseNames.includes('database')) return { bpmnId: sanitizeId(rawId, 'DataStore'), kind: 'dataStoreReference' };
+    if (baseNames.includes('data')) {
+        const glyph = iconGlyphOf(cell);
+        if (glyph === BPMN_ICONS.DATA_INPUT) return { bpmnId: sanitizeId(rawId, 'DataInput'), kind: 'dataInput' };
+        if (glyph === BPMN_ICONS.DATA_OUTPUT) return { bpmnId: sanitizeId(rawId, 'DataOutput'), kind: 'dataOutput' };
+        return { bpmnId: sanitizeId(rawId, 'DataObject'), kind: 'dataObjectReference' };
+    }
+    // Call activity / Transaction : pas d'icône dédiée, identifiables uniquement
+    // par leur bordure (voir setCallActivityVertex/setTransactionVertex dans
+    // bpmn-helpers.ts) — à tester avant le repli générique sur l'icône ci-dessous.
+    const style: any = cell.style ?? {};
+    if (style.shape === 'bpmnTransactionShape') {
+        return { bpmnId: sanitizeId(rawId, 'Transaction'), kind: 'transaction' };
+    }
+    if (baseNames.includes('process') && Number(style.strokeWidth) === 3) {
+        return { bpmnId: sanitizeId(rawId, 'CallActivity'), kind: 'callActivity' };
+    }
+    const glyph = iconGlyphOf(cell);
+    const kind = (glyph !== undefined ? TASK_ICON_TO_KIND[glyph] : undefined) ?? 'task';
+    return { bpmnId: sanitizeId(rawId, 'Task'), kind };
 }
 
 function inferEdgeMeta(cell: Cell): BpmnMeta {
     const style: any = cell.style ?? {};
     const rawId = cell.getId() || `${fallbackCounter++}`;
+    const baseNames: string[] = style.baseStyleNames ?? [];
+    if (baseNames.includes('bpmnConversationLink')) return { bpmnId: sanitizeId(rawId, 'ConversationLink'), kind: 'conversationLink' };
     const bpmnId = sanitizeId(rawId, 'Flow');
     if (style.startArrow === 'bpmnMessage') return { bpmnId, kind: 'messageFlow' };
     if (style.dashed === true) return { bpmnId, kind: 'association' };
@@ -224,6 +326,14 @@ interface ExportModel {
     annotations: AnnotationEntry[];
     associations: FlowEntry[];
     messageFlows: FlowEntry[];
+    // Diagramme de conversation BPMN (bpmn2:conversationNode/conversationLink,
+    // toujours au niveau d'une <collaboration>) : `bands` sont les participants
+    // sans laneSet/processRef (une "bande" colorée, dessinée comme une lane —
+    // voir inferVertexMeta et le commentaire sur bandCells dans collectModel),
+    // distincts de `processes[].participantId` qui référencent un vrai process.
+    conversationNodes: FlowNodeEntry[];
+    conversationLinks: FlowEntry[];
+    bands: LaneEntry[];
     edgeById: Map<string, Cell>;
 }
 
@@ -262,13 +372,34 @@ function collectModel(graph: Graph): ExportModel {
         return defaultProcess;
     };
 
-    // Ne descend que dans les lanes : une tâche/event/gateway n'est jamais
-    // l'enfant direct d'une cellule process/participant (voir
-    // getParentAndPosition dans bpmn-import.ts — le parent est toujours soit
-    // une lane, soit le defaultParent), seules les lanes le sont.
+    // Descend normalement dans les lanes (une tâche/event/gateway dessinée par
+    // CET éditeur n'est jamais l'enfant direct d'une cellule process/
+    // participant — voir getParentAndPosition dans bpmn-import.ts — seules
+    // les lanes le sont). Mais du contenu natif étranger (ex. un schéma
+    // Mercator chargé via loadXml) peut nester des cellules sous un
+    // conteneur qui n'est PAS reconnu comme une lane — cas vu en pratique :
+    // un style de swimlane posé en chaîne CSS brute ("style=\"swimlane;
+    // startSize=30;...\"") plutôt que via baseStyleNames, que maxgraph
+    // n'interprète plus (isSwimlane() renvoie false, aucune clé exploitable
+    // dans cell.style) — inferVertexMeta le classe alors en tâche générique.
+    // Sans le repli ci-dessous, TOUT son sous-arbre (lanes réelles, tâches,
+    // events…) disparaîtrait silencieusement de l'export au lieu de la seule
+    // icône/du seul type de ce conteneur. On replie donc systématiquement
+    // les enfants d'une cellule non reconnue comme lane sur le lane/process
+    // englobant, pour ne jamais perdre de contenu structurel.
     const collectUnder = (container: Cell, proc: ProcessEntry, laneId: string | undefined): void => {
         for (const child of container.getChildren?.() ?? []) {
             if (!child.isVertex?.()) continue;
+            // Icône/badge décoratif (voir DECORATIVE_STYLES dans bpmn-helpers.ts) :
+            // jamais un élément BPMN à part entière, seulement inspecté via
+            // findIconChild par inferVertexMeta sur son PARENT — sans ce garde,
+            // le repli de recursion ci-dessous (pour le contenu natif étranger,
+            // voir le commentaire au-dessus) le collecterait comme une tâche
+            // orpheline supplémentaire, y compris sur du contenu dessiné par
+            // cet éditeur (toute tâche/event avec icône a un enfant bpmnIcon/
+            // stateIcon).
+            const childBaseNames: string[] = (child.style as any)?.baseStyleNames ?? [];
+            if (DECORATIVE_STYLES.some((n) => childBaseNames.includes(n))) continue;
             const meta = metaOfVertex(child);
             if (meta.kind === 'lane') {
                 const lane: LaneEntry = { id: meta.bpmnId, name: String(child.getValue?.() ?? ''), cell: child, flowNodeRefs: [] };
@@ -288,12 +419,43 @@ function collectModel(graph: Graph): ExportModel {
                 const lane = proc.lanes.find(l => l.id === laneId);
                 lane?.flowNodeRefs.push(meta.bpmnId);
             }
+            if (child.getChildCount?.() > 0) collectUnder(child, proc, laneId);
         }
     };
 
+    // Détecte les cellules qui sont en réalité des bandes de participant d'un
+    // diagramme de conversation BPMN : rien dans leur PROPRE style ne les
+    // distingue d'une lane autonome au premier export (même style "lane",
+    // même absence de laneSet — voir m10-bpmn-conversation.maxgraph) — seule
+    // leur connexion à un bpmnConversationLink les trahit. N'exclut que
+    // l'autre bout conversationNode, PAS une valeur de kind précise (lane) :
+    // au second aller-retour, la bande réimportée porte un vrai BpmnMeta
+    // kind:'participant' (posé par drawDiagram, voir la branche "Participant
+    // sans processRef" de bpmn-import.ts) et non plus 'lane' — se limiter à
+    // 'lane' la manquerait alors, cassant la stabilité au second passage
+    // (bandCells vide -> classée participant+process synthétique -> ses
+    // conversationLink deviennent orphelins et disparaissent silencieusement).
+    // Calculé avant la boucle top-level ci-dessous, qui en a besoin pour
+    // choisir entre lane autonome / participant classique et bande de
+    // participant (collaboration, aucun process).
+    const bandCells = new Set<Cell>();
+    for (const e of allEdges) {
+        if (metaOfEdge(e).kind !== 'conversationLink') continue;
+        for (const raw of [e.getTerminal?.(true), e.getTerminal?.(false)]) {
+            if (!raw) continue;
+            const resolved = resolveConnectable(raw as Cell);
+            if (metaOfVertex(resolved).kind !== 'conversationNode') bandCells.add(resolved);
+        }
+    }
+
+    const conversationNodes: FlowNodeEntry[] = [];
+    const bands: LaneEntry[] = [];
+
     for (const v of topVertices) {
         const meta = metaOfVertex(v);
-        if (meta.kind === 'process') {
+        if (bandCells.has(v)) {
+            bands.push({ id: meta.bpmnId, name: String(v.getValue?.() ?? ''), cell: v, flowNodeRefs: [] });
+        } else if (meta.kind === 'process') {
             const proc: ProcessEntry = { id: meta.bpmnId, poolCell: v, lanes: [], flowNodes: [], sequenceFlows: [] };
             processes.push(proc);
             cellToPool.set(v, proc);
@@ -312,6 +474,8 @@ function collectModel(graph: Graph): ExportModel {
             processes.push(proc);
             cellToPool.set(v, proc);
             collectUnder(v, proc, undefined);
+        } else if (meta.kind === 'conversationNode') {
+            conversationNodes.push({ cell: v, meta });
         } else if (meta.kind === 'lane') {
             // Lane autonome (hors laneSet, hors participant) : rattachée au
             // process synthétique par défaut, qui n'a pas de cellule propre.
@@ -326,6 +490,7 @@ function collectModel(graph: Graph): ExportModel {
             const proc = getDefaultProcess();
             proc.flowNodes.push({ cell: v, meta });
             cellToPool.set(v, proc);
+            if (v.getChildCount?.() > 0) collectUnder(v, proc, undefined);
         }
     }
 
@@ -341,10 +506,26 @@ function collectModel(graph: Graph): ExportModel {
         for (const n of p.flowNodes) knownNodeIds.add(n.meta.bpmnId);
     }
     for (const a of annotations) knownNodeIds.add(a.meta.bpmnId);
+    for (const n of conversationNodes) knownNodeIds.add(n.meta.bpmnId);
+    for (const b of bands) knownNodeIds.add(b.id);
 
     const associations: FlowEntry[] = [];
     const messageFlows: FlowEntry[] = [];
+    const conversationLinks: FlowEntry[] = [];
     const edgeById = new Map<string, Cell>();
+
+    // Une arête stylée "message" (voir inferEdgeMeta) n'a de sens en tant que
+    // <bpmn2:messageFlow> que si le diagramme a une <collaboration> pour
+    // l'accueillir (BPMN l'exige entre deux participants) — déterminé une
+    // fois ici, avant la boucle, puisque `processes` est déjà complet à ce
+    // stade. Sans collaboration (diagramme à process nu, ex. un décor
+    // "message" posé sur un flux Mercator sans pool), la classifier quand
+    // même en messageFlow la rendrait orpheline : rien n'émettrait plus le
+    // <messageFlow> (pas de <collaboration> à défaut de participant), alors
+    // que son BPMNEdge de diagramme, lui, continuerait à sortir sans arrêt —
+    // périmant sa cible bpmnElement et la faisant disparaître silencieusement
+    // à la réimportation. On la traite alors comme un flux interne normal.
+    const hasCollaboration = processes.some(p => p.participantId);
 
     for (const e of allEdges) {
         const meta = metaOfEdge(e);
@@ -363,6 +544,18 @@ function collectModel(graph: Graph): ExportModel {
             console.warn(`⚠️ Export BPMN : arête ${meta.bpmnId} ignorée (extrémité orpheline hors du modèle)`);
             continue;
         }
+        // Filet de sécurité pour les arêtes sans BpmnMeta (contenu natif
+        // Mercator, jamais passé par drawDiagram) : inferEdgeMeta() ne repère
+        // une association qu'au style `dashed` de l'arête elle-même, qui peut
+        // être absent sur un lien annotation<->objet dessiné sans ce style
+        // précis. BPMN interdit à un sequenceFlow/messageFlow de toucher un
+        // textAnnotation (ce n'est pas un flow node) : dès qu'une extrémité
+        // est une annotation, l'arête ne peut structurellement être qu'une
+        // <bpmn2:association>, quel que soit son style de trait.
+        if (!getBpmnMeta(e) && meta.kind !== 'messageFlow' && meta.kind !== 'conversationLink' &&
+            (sourceMeta.kind === 'textAnnotation' || targetMeta.kind === 'textAnnotation')) {
+            meta.kind = 'association';
+        }
         edgeById.set(meta.bpmnId, e);
 
         const entry: FlowEntry = {
@@ -373,8 +566,10 @@ function collectModel(graph: Graph): ExportModel {
             direction: meta.direction,
         };
 
-        if (meta.kind === 'messageFlow') {
+        if (meta.kind === 'messageFlow' && hasCollaboration) {
             messageFlows.push(entry);
+        } else if (meta.kind === 'conversationLink') {
+            conversationLinks.push(entry);
         } else if (meta.kind === 'association') {
             associations.push(entry);
         } else {
@@ -383,7 +578,7 @@ function collectModel(graph: Graph): ExportModel {
         }
     }
 
-    return { processes, annotations, associations, messageFlows, edgeById };
+    return { processes, annotations, associations, messageFlows, conversationNodes, conversationLinks, bands, edgeById };
 }
 
 // ── Émission des éléments sémantiques ─────────────────────────────────────────────
@@ -469,6 +664,16 @@ function emitProcess(p: ProcessEntry, artifactsXml: string): string {
 
 // ── Émission DI ────────────────────────────────────────────────────────────────
 
+// Style maxGraph "horizontal" du style nommé "lane" (graph-styles.ts) -> attribut
+// BPMN DI isHorizontal d'un pool/lane, sens INVERSE — voir le commentaire de
+// AddBPMNLaneOptions.isHorizontal dans bpmn-helpers.ts pour la correspondance
+// complète. cell.style.horizontal absent (cas courant : aucun override posé par
+// addBPMNLane) vaut le défaut du style nommé "lane", horizontal:false, donc
+// isHorizontal BPMN true — d'où le `!` direct sans valeur par défaut explicite.
+function poolIsHorizontal(cell: Cell): boolean {
+    return !(cell.style as any)?.horizontal;
+}
+
 function emitShapeDI(
     cell: Cell,
     bpmnId: string,
@@ -477,7 +682,7 @@ function emitShapeDI(
 ): string {
     const abs = absoluteGeometry(cell, defaultParent);
     const attrs = [`id="Shape_${escapeXml(bpmnId)}"`, `bpmnElement="${escapeXml(bpmnId)}"`];
-    if (extra.isHorizontal) attrs.push('isHorizontal="true"');
+    if (extra.isHorizontal !== undefined) attrs.push(`isHorizontal="${extra.isHorizontal ? 'true' : 'false'}"`);
     if (extra.isExpanded !== undefined) attrs.push(`isExpanded="${extra.isExpanded ? 'true' : 'false'}"`);
     attrs.push(...colorAttrs(cell));
 
@@ -513,7 +718,12 @@ export function exportBPMN(graph: Graph): string {
     const defaultParent = graph.getDefaultParent();
     const model = collectModel(graph);
 
-    const hasCollaboration = model.processes.some(p => p.participantId);
+    // Un diagramme de conversation (bandes de participant + conversationNode)
+    // n'a pas forcément de process participant classique, mais a tout autant
+    // besoin d'une <collaboration> pour accueillir ses éléments — voir le
+    // commentaire sur `bands` dans ExportModel.
+    const hasConversation = model.conversationNodes.length > 0 || model.bands.length > 0;
+    const hasCollaboration = model.processes.some(p => p.participantId) || hasConversation;
 
     const annotationsXml = model.annotations.map(emitAnnotation).join('');
     const associationsXml = model.associations.map(emitAssociation).join('');
@@ -537,8 +747,32 @@ export function exportBPMN(graph: Graph): string {
                 return `<bpmn2:participant id="${escapeXml(p.participantId!)}"${nameAttr} processRef="${escapeXml(p.id)}"/>`;
             })
             .join('');
+        // Bandes de participant sans process (diagramme de conversation) : même
+        // élément <bpmn2:participant>, juste sans processRef.
+        const bandsXml = model.bands
+            .map(b => {
+                const nameAttr = b.name ? ` name="${escapeXml(b.name)}"` : '';
+                return `<bpmn2:participant id="${escapeXml(b.id)}"${nameAttr}/>`;
+            })
+            .join('');
+        const conversationNodesXml = model.conversationNodes
+            .map(n => {
+                const name = String(n.cell.getValue?.() ?? '');
+                const nameAttr = name ? ` name="${escapeXml(name)}"` : '';
+                return `<bpmn2:conversation id="${escapeXml(n.meta.bpmnId)}"${nameAttr}/>`;
+            })
+            .join('');
+        const conversationLinksXml = model.conversationLinks
+            .map(f => {
+                const nameAttr = f.name ? ` name="${escapeXml(f.name)}"` : '';
+                return `<bpmn2:conversationLink id="${escapeXml(f.id)}"${nameAttr} sourceRef="${escapeXml(f.sourceRef)}" targetRef="${escapeXml(f.targetRef)}"/>`;
+            })
+            .join('');
         const messageFlowsXml = model.messageFlows.map(emitMessageFlow).join('');
-        collaborationXml = `<bpmn2:collaboration id="Collaboration_1">${participantsXml}${messageFlowsXml}</bpmn2:collaboration>`;
+        // Ordre imposé par la xsd:sequence de tCollaboration : participant,
+        // messageFlow, conversationNode, conversationLink (bandsXml émet aussi
+        // des <bpmn2:participant>, donc groupé avec participantsXml en tête).
+        collaborationXml = `<bpmn2:collaboration id="Collaboration_1">${participantsXml}${bandsXml}${messageFlowsXml}${conversationNodesXml}${conversationLinksXml}</bpmn2:collaboration>`;
     }
 
     // DI : pools, puis lanes, puis noeuds, puis arêtes (l'ordre n'a aucune
@@ -552,10 +786,10 @@ export function exportBPMN(graph: Graph): string {
 
     for (const p of model.processes) {
         if (p.poolCell) {
-            poolShapes.push(emitShapeDI(p.poolCell, p.participantId ?? p.id, defaultParent, { isHorizontal: true }));
+            poolShapes.push(emitShapeDI(p.poolCell, p.participantId ?? p.id, defaultParent, { isHorizontal: poolIsHorizontal(p.poolCell) }));
         }
         for (const lane of p.lanes) {
-            laneShapes.push(emitShapeDI(lane.cell, lane.id, defaultParent, { isHorizontal: true }));
+            laneShapes.push(emitShapeDI(lane.cell, lane.id, defaultParent, { isHorizontal: poolIsHorizontal(lane.cell) }));
         }
         for (const n of p.flowNodes) {
             const isSubProcessFamily = n.meta.kind === 'subProcess' || n.meta.kind === 'transaction' || n.meta.kind === 'adHocSubProcess';
@@ -576,6 +810,16 @@ export function exportBPMN(graph: Graph): string {
         if (cell) edgeDI.push(emitEdgeDI(graph, cell, a.id, defaultParent));
     }
     for (const f of model.messageFlows) {
+        const cell = model.edgeById.get(f.id);
+        if (cell) edgeDI.push(emitEdgeDI(graph, cell, f.id, defaultParent));
+    }
+    for (const b of model.bands) {
+        laneShapes.push(emitShapeDI(b.cell, b.id, defaultParent, { isHorizontal: true }));
+    }
+    for (const n of model.conversationNodes) {
+        nodeShapes.push(emitShapeDI(n.cell, n.meta.bpmnId, defaultParent));
+    }
+    for (const f of model.conversationLinks) {
         const cell = model.edgeById.get(f.id);
         if (cell) edgeDI.push(emitEdgeDI(graph, cell, f.id, defaultParent));
     }

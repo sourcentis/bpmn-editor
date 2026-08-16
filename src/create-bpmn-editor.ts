@@ -18,6 +18,7 @@ import { downloadXml, getXMLGraph, loadGraphXml } from './xml';
 import { enableArrowKeyMovement, exportGraphAsSvgFile, initBpmnEditor, showStatus, wireEditorUi } from './bpmn-edit';
 import { bindBpmnFileInput, drawDiagram, parseBPMN } from './bpmn-import';
 import { exportBPMN } from './bpmn-export';
+import { centerGraphView } from './bpmn-helpers';
 import { initVertexMenuActions } from './bpmn-menu-init';
 import { setupBpmnMenuSelect } from './bpmn-menu-select';
 import { installEdgeRules } from './bpmn-arrows';
@@ -57,6 +58,14 @@ export function createBpmnEditor(container: HTMLElement, options: BpmnEditorOpti
     const onModelChange = () => emitter.emit('change', undefined);
     graph.getDataModel().addListener(InternalEvent.CHANGE, onModelChange);
     disposers.push(() => graph.getDataModel().removeListener(onModelChange));
+
+    // Z-order must be (re)computed on every import/load in BOTH modes — not
+    // just editable — otherwise a readOnly viewer renders raw BPMN XML
+    // insertion order: events are drawn before tasks in drawDiagram(), so a
+    // boundaryEvent ends up behind (and half-hidden by) the activity it's
+    // attached to (see bpmn-zorder.ts).
+    const disposeZOrder = initZOrder(graph);
+    disposers.push(disposeZOrder);
 
     if (readOnly) {
         graph.setEnabled(false);
@@ -103,9 +112,6 @@ export function createBpmnEditor(container: HTMLElement, options: BpmnEditorOpti
 
         const disposeArrowKeys = enableArrowKeyMovement(graph, { onHideMenu: () => menuController?.hide() });
         disposers.push(disposeArrowKeys);
-
-        const disposeZOrder = initZOrder(graph);
-        disposers.push(disposeZOrder);
 
         const disposeBringToFront = setupBringToFrontKeyBinding(graph, graph.container);
         disposers.push(disposeBringToFront);
@@ -217,6 +223,11 @@ export function createBpmnEditor(container: HTMLElement, options: BpmnEditorOpti
             try {
                 loadGraphXml(graph, xml);
                 emitter.emit('change', undefined);
+                // Même comportement que importBpmnXml (voir le setTimeout(…, 100) de
+                // drawDiagram dans bpmn-import.ts) : centrer une fois la mise à jour du
+                // modèle passée, pour que loadXml() et importBpmnXml() cadrent le
+                // contenu de la même façon quelle que soit l'origine du diagramme.
+                setTimeout(() => centerGraphView(graph), 100);
                 if (readOnly) setTimeout(adjustReadOnlyContainerHeight, 150);
             } catch (err) {
                 emitter.emit('error', err instanceof Error ? err : new Error(String(err)));
@@ -279,7 +290,7 @@ export function createBpmnEditor(container: HTMLElement, options: BpmnEditorOpti
         },
 
         fit(): void {
-            graph.center();
+            centerGraphView(graph);
         },
 
         destroy(): void {
