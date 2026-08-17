@@ -281,10 +281,17 @@ export function initBpmnEditor(
         return prevGetCursorForCell ? prevGetCursorForCell(cell) : null;
     };
 
-    // Autoriser le drop uniquement dans les lanes
+    // Autoriser le drop uniquement dans les lanes — jamais une lane DANS une autre
+    // lane : sans ce second garde-fou, glisser une lane et survoler une lane
+    // voisine (cas courant vu la disposition en bandes empilées) la ferait
+    // reparenter nativement sous cette voisine (comportement swimlane par défaut
+    // de maxGraph), désynchronisant sa géométrie de ses propres enfants qui, eux,
+    // ne bougent pas — la lane et son contenu semblent alors se disloquer au lieu
+    // de simplement se déplacer ensemble.
     graph.getDropTarget = function (cells: any[], _evt: MouseEvent, cell: any) {
-        if (cell?.style?.baseStyleNames?.includes?.("lane")) return cell;
-        return null;
+        if (!cell?.style?.baseStyleNames?.includes?.("lane")) return null;
+        if (cells.some((c: any) => c?.style?.baseStyleNames?.includes?.("lane"))) return null;
+        return cell;
     };
 
     const disposeDropHandlers = installDropHandlers(graph, container, hooks.paletteRoot ?? null);

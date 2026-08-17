@@ -842,6 +842,43 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
     const laneTitleOffset = (isHorizontal: boolean, containerPos: { x: number; y: number }, lanePos: { x: number; y: number }): number =>
         isHorizontal ? lanePos.x - containerPos.x : lanePos.y - containerPos.y;
 
+    // Un process "nu" (sans participant/pool propre — voir plus bas, aucun BPMNShape
+    // pour le process lui-même) a un conteneur dont les bounds sont la simple union
+    // de celles de ses lanes : le décalage lane/conteneur (laneTitleOffset) y est
+    // TOUJOURS nul, alors qu'un vrai pool/participant réserve naturellement de la
+    // place (voir t05-pool-lanes.bpmn : décalage réel de 30px). Sans compensation,
+    // le bandeau de titre serait posé à startSize=0 (largeur/hauteur nulle),
+    // rendant le nom du process/de la lane invisible.
+    //
+    // Le correctif ne se contente pas d'imposer un titleSize minimal : ça
+    // désynchroniserait la zone de confinement que maxgraph calcule pour les
+    // enfants du startSize RÉEL du parent (voir le commentaire de
+    // AddBPMNLaneOptions.titleSize dans bpmn-helpers.ts), et Graph.constrainChild
+    // (déclenché par insertVertex) rognerait alors le contenu existant pour le
+    // faire rentrer dans la zone réduite — un comportement non idempotent constaté
+    // en pratique (dérive de position cumulative à chaque aller-retour
+    // export/import). resolveTitleSizeAndGrow agrandit donc le conteneur
+    // lui-même, vers l'EXTÉRIEUR (jamais en rognant sur le contenu), pour réserver
+    // cette place — 30px, la largeur de bandeau que les outils BPMN usuels (ex.
+    // bpmn.io) posent par défaut sur un pool.
+    const MIN_LANE_TITLE_SIZE = 30;
+
+    function resolveTitleSizeAndGrow(
+        isHorizontal: boolean,
+        pos: { x: number; y: number; width: number; height: number },
+        rawOffset: number | undefined
+    ): number | undefined {
+        if (rawOffset === undefined || rawOffset > 0) return rawOffset;
+        if (isHorizontal) {
+            pos.x -= MIN_LANE_TITLE_SIZE;
+            pos.width += MIN_LANE_TITLE_SIZE;
+        } else {
+            pos.y -= MIN_LANE_TITLE_SIZE;
+            pos.height += MIN_LANE_TITLE_SIZE;
+        }
+        return MIN_LANE_TITLE_SIZE;
+    }
+
     const defaultLaneTitleSize = ((): number | undefined => {
         const offsets: number[] = [];
         elements.laneSets.forEach(ls => {
@@ -855,7 +892,9 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                 if (lanePos) offsets.push(laneTitleOffset(isHorizontal, containerPos, lanePos));
             });
         });
-        return offsets.length > 0 ? Math.min(...offsets) : undefined;
+        if (offsets.length === 0) return undefined;
+        const min = Math.min(...offsets);
+        return min > 0 ? min : MIN_LANE_TITLE_SIZE;
     })();
 
     graph.model.beginUpdate();
@@ -931,7 +970,11 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                 .map((lane: any) => positions[lane.id])
                 .filter(Boolean)
                 .map((lp: any) => laneTitleOffset(processIsHorizontal, processPos, lp));
-            const processTitleSize = processLaneOffsets.length > 0 ? Math.min(...processLaneOffsets) : defaultLaneTitleSize;
+            const processTitleSize = resolveTitleSizeAndGrow(
+                processIsHorizontal,
+                processPos,
+                processLaneOffsets.length > 0 ? Math.min(...processLaneOffsets) : undefined
+            ) ?? defaultLaneTitleSize;
 
             // Créer la lane pour le process
             const processVertex = addBPMNLane(graph, parent, {
@@ -1019,7 +1062,11 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
         //---------------------
         // Participants (créer des lanes pour les participants avec processRef)
         elements.participants.forEach((p) => {
-            const pos = positions[p.id] || { x: 100, y: 100, width: 600, height: 250 };
+            // Copie locale (pas une référence directe dans `positions`) : le chemin
+            // processRef ci-dessous peut agrandir ces bounds pour réserver le
+            // bandeau de titre (resolveTitleSizeAndGrow) — muter l'entrée partagée
+            // fausserait toute autre lecture de positions[p.id] plus loin.
+            const pos = { ...(positions[p.id] || { x: 100, y: 100, width: 600, height: 250 }) };
 
             // Si le participant a un processRef, il devient une lane parent pour le process
             if (p.processRef) {
@@ -1044,7 +1091,11 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                         .map((lane: any) => positions[lane.id])
                         .filter(Boolean)
                         .map((lp: any) => laneTitleOffset(participantIsHorizontal, pos, lp));
-                    const titleSize = laneOffsets.length > 0 ? Math.min(...laneOffsets) : defaultLaneTitleSize;
+                    const titleSize = resolveTitleSizeAndGrow(
+                        participantIsHorizontal,
+                        pos,
+                        laneOffsets.length > 0 ? Math.min(...laneOffsets) : undefined
+                    ) ?? defaultLaneTitleSize;
 
                     // Le participant devient la lane principale
                     const participantVertex = addBPMNLane(graph, parent, {

@@ -4,89 +4,354 @@
       <Object as="style" />
     </Cell>
     <Cell id="1" parent="0">
-      <Geometry _width="1563" _height="610" as="geometry" />
       <Object as="style" />
     </Cell>
-    <Cell id="9" value="TOTO" vertex="1" parent="1">
-      <Geometry _x="310" _y="300" _width="40" _height="40" as="geometry" />
+    <Cell id="32" edge="1" parent="1" source="8" target="20">
+      <Geometry relative="1" as="geometry">
+        <Point _x="20.170000000000016" as="sourcePoint" />
+        <Point _x="79.82999999999998" _y="80" as="targetPoint" />
+      </Geometry>
+      <Object dashed="1" dashPattern="1 1" edgeStyle="straightEdgeStyle" startArrow="none" endArrow="none" exitX="0.20170000000000016" exitY="0" entryX="0.7982999999999998" entryY="1" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmn-edge" />
+        </Array>
+      </Object>
+      <Object bpmnId="Flow_43" kind="association" direction="None" as="bpmnMeta" />
+    </Cell>
+    <Cell id="31" edge="1" parent="1" source="10" target="21">
+      <Geometry relative="1" as="geometry">
+        <Point _x="18" _y="80" as="sourcePoint" />
+        <Point _x="82" as="targetPoint" />
+      </Geometry>
+      <Object dashed="1" dashPattern="1 1" edgeStyle="straightEdgeStyle" startArrow="none" endArrow="none" exitX="0.18" exitY="1" entryX="0.82" entryY="0" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmn-edge" />
+        </Array>
+      </Object>
+      <Object bpmnId="Flow_45" kind="association" direction="None" as="bpmnMeta" />
+    </Cell>
+    <Cell id="30" value="" edge="1" parent="1" source="12" target="16">
+      <Geometry relative="1" as="geometry">
+        <Point _x="100" _y="40" as="sourcePoint" />
+        <Point _y="22.5" as="targetPoint" />
+      </Geometry>
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" exitX="1" exitY="0.5" entryX="0" entryY="0.5" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmn-edge" />
+        </Array>
+      </Object>
+      <Object bpmnId="Flow_22" kind="sequenceFlow" as="bpmnMeta" />
+    </Cell>
+    <Cell id="29" value="" edge="1" parent="1" source="16" target="8">
+      <Geometry relative="1" as="geometry">
+        <Point _x="20" _y="2.5" as="sourcePoint" />
+        <Point _y="25" as="targetPoint" />
+        <Array as="points">
+          <Point _x="358" _y="193" />
+        </Array>
+      </Geometry>
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" exitX="0.4444444444444444" exitY="0.05555555555555555" entryX="0" entryY="0.3125" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmn-edge" />
+        </Array>
+      </Object>
+      <Object bpmnId="Flow_23" kind="sequenceFlow" as="bpmnMeta" />
+    </Cell>
+    <Cell id="28" value="" edge="1" parent="1" source="16" target="10">
+      <Geometry relative="1" as="geometry">
+        <Point _x="20" _y="42.5" as="sourcePoint" />
+        <Point _y="27" as="targetPoint" />
+        <Array as="points">
+          <Point _x="358" _y="298" />
+        </Array>
+      </Geometry>
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" exitX="0.4444444444444444" exitY="0.9444444444444444" entryX="0" entryY="0.3375" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmn-edge" />
+        </Array>
+      </Object>
+      <Object bpmnId="Flow_24" kind="sequenceFlow" as="bpmnMeta" />
+    </Cell>
+    <Cell id="27" value="" edge="1" parent="1" source="2" target="12">
+      <Geometry relative="1" as="geometry">
+        <Point _x="40" _y="20" as="sourcePoint" />
+        <Point _y="40" as="targetPoint" />
+        <Array as="points">
+          <Point _x="158.5" _y="246" />
+          <Point _x="158.5" _y="247" />
+        </Array>
+      </Geometry>
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" exitX="1" exitY="0.5" entryX="0" entryY="0.5" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmn-edge" />
+        </Array>
+      </Object>
+      <Object bpmnId="Flow_25" kind="sequenceFlow" as="bpmnMeta" />
+    </Cell>
+    <Cell id="26" value="" edge="1" parent="1" source="18" target="14">
+      <Geometry relative="1" as="geometry">
+        <Point _x="22.520000000000095" _y="44.99000000000001" as="sourcePoint" />
+        <Point _x="50" as="targetPoint" />
+        <Array as="points">
+          <Point _x="692.2" _y="298.8" />
+          <Point _x="692" _y="298.8" />
+        </Array>
+      </Geometry>
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" exitX="0.5004444444444466" exitY="0.999777777777778" entryX="0.5" entryY="0" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmn-edge" />
+        </Array>
+      </Object>
+      <Object bpmnId="Flow_26" kind="sequenceFlow" as="bpmnMeta" />
+    </Cell>
+    <Cell id="25" value="" edge="1" parent="1" source="14" target="4">
+      <Geometry relative="1" as="geometry">
+        <Point _x="50" _y="80" as="sourcePoint" />
+        <Point _x="20" as="targetPoint" />
+      </Geometry>
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" exitX="0.5" exitY="1" entryX="0.5" entryY="0" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmn-edge" />
+        </Array>
+      </Object>
+      <Object bpmnId="Flow_27" kind="sequenceFlow" as="bpmnMeta" />
+    </Cell>
+    <Cell id="24" value="" edge="1" parent="1" source="18" target="6">
+      <Geometry relative="1" as="geometry">
+        <Point _x="44.960000000000036" _y="22.549999999999983" as="sourcePoint" />
+        <Point _y="20" as="targetPoint" />
+        <Array as="points">
+          <Point _x="748.9" _y="249.1" />
+          <Point _x="748.9" _y="249" />
+        </Array>
+      </Geometry>
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" exitX="0.999111111111112" exitY="0.5011111111111107" entryX="0" entryY="0.5" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmn-edge" />
+        </Array>
+      </Object>
+      <Object bpmnId="Flow_28" kind="sequenceFlow" as="bpmnMeta" />
+    </Cell>
+    <Cell id="23" value="" edge="1" parent="1" source="8" target="18">
+      <Geometry relative="1" as="geometry">
+        <Point _x="100" _y="40" as="sourcePoint" />
+        <Point _x="0.05000000000006821" _y="22.549999999999983" as="targetPoint" />
+        <Array as="points">
+          <Point _x="593.9" _y="208" />
+          <Point _x="593.9" _y="249.1" />
+        </Array>
+      </Geometry>
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" exitX="1" exitY="0.5" entryX="0.001111111111112627" entryY="0.5011111111111107" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmn-edge" />
+        </Array>
+      </Object>
+      <Object bpmnId="Flow_29" kind="sequenceFlow" as="bpmnMeta" />
+    </Cell>
+    <Cell id="22" value="" edge="1" parent="1" source="10" target="18">
+      <Geometry relative="1" as="geometry">
+        <Point _x="100" _y="40" as="sourcePoint" />
+        <Point _x="0.05000000000006821" _y="22.549999999999983" as="targetPoint" />
+        <Array as="points">
+          <Point _x="595.4" _y="311" />
+          <Point _x="595.4" _y="249.1" />
+        </Array>
+      </Geometry>
+      <Object dashed="0" edgeStyle="orthogonalEdgeStyle" startArrow="none" endArrow="classic" exitX="1" exitY="0.5" entryX="0.001111111111112627" entryY="0.5011111111111107" as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmn-edge" />
+        </Array>
+      </Object>
+      <Object bpmnId="Flow_30" kind="sequenceFlow" as="bpmnMeta" />
+    </Cell>
+    <Cell id="8" value="Envoyer le rapport" vertex="1" parent="1">
+      <Geometry _x="418" _y="168" _width="100" _height="80" as="geometry" />
+      <Object fillColor="#fde68a" as="style">
+        <Array as="baseStyleNames">
+          <add value="process" />
+        </Array>
+      </Object>
+      <Object bpmnId="Task_6" kind="userTask" as="bpmnMeta" />
+    </Cell>
+    <Cell id="9" value="" vertex="1" parent="8">
+      <Geometry _width="26" _height="26" relative="1" as="geometry">
+        <Object x="0" y="-2" as="offset" />
+      </Geometry>
       <Object as="style">
         <Array as="baseStyleNames">
-          <add value="state" />
+          <add value="bpmnIcon" />
         </Array>
       </Object>
     </Cell>
-    <Cell id="Participant_0yzu78i" value="Test Lane" style="swimlane;startSize=30;fillColor=#f0f0f0;strokeColor=#666;" vertex="1" parent="1">
-      <Geometry _width="668" _height="440" as="geometry">
-        <Rectangle _width="668" _height="70" as="alternateBounds" />
-      </Geometry>
+    <Cell id="10" value="Valider niveau N+1" vertex="1" parent="1">
+      <Geometry _x="421" _y="271" _width="100" _height="80" as="geometry" />
+      <Object fillColor="#fde68a" as="style">
+        <Array as="baseStyleNames">
+          <add value="process" />
+        </Array>
+      </Object>
+      <Object bpmnId="Task_8" kind="userTask" as="bpmnMeta" />
     </Cell>
-    <Cell id="2" value="LANE1" vertex="1" parent="Participant_0yzu78i">
-      <Geometry _x="22" _width="646" _height="190" as="geometry">
-        <Rectangle _x="22" _width="646" _height="40" as="alternateBounds" />
+    <Cell id="11" value="" vertex="1" parent="10">
+      <Geometry _width="26" _height="26" relative="1" as="geometry">
+        <Object x="0" y="-2" as="offset" />
       </Geometry>
       <Object as="style">
         <Array as="baseStyleNames">
-          <add value="lane" />
+          <add value="bpmnIcon" />
         </Array>
       </Object>
     </Cell>
-    <Cell id="Task_1hcentk" value="choose recipes" vertex="1" parent="2">
-      <Geometry _x="245" _y="60" _width="100" _height="80" as="geometry" />
+    <Cell id="12" value="Analyser la demande" vertex="1" parent="1">
+      <Geometry _x="195" _y="207" _width="100" _height="80" as="geometry" />
       <Object as="style">
         <Array as="baseStyleNames">
           <add value="process" />
         </Array>
       </Object>
+      <Object bpmnId="Task_4" kind="manualTask" as="bpmnMeta" />
     </Cell>
-    <Cell id="StartEvent_1y45yut" value="hunger   &#xa;noticed" vertex="1" parent="2">
-      <Geometry _x="127" _y="71" _width="58" _height="58" as="geometry" />
-      <Object as="style">
-        <Array as="baseStyleNames">
-          <add value="state" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="SequenceFlow_0h21x7r" value="" edge="1" parent="2" source="StartEvent_1y45yut" target="Task_1hcentk">
-      <Geometry relative="1" as="geometry" />
-      <Object as="style" />
-    </Cell>
-    <Cell id="ExclusiveGateway_15hu1pt" value="Desired dish?" vertex="1" parent="2">
-      <Geometry _x="420" _y="75" _width="50" _height="50" as="geometry" />
-      <Object as="style">
-        <Array as="baseStyleNames">
-          <add value="condition" />
-        </Array>
-      </Object>
-    </Cell>
-    <Cell id="SequenceFlow_0wnb4ke" value="" edge="1" parent="2" source="Task_1hcentk" target="ExclusiveGateway_15hu1pt">
-      <Geometry relative="1" as="geometry" />
-      <Object as="style" />
-    </Cell>
-    <Cell id="6" value="LANE2" vertex="1" parent="Participant_0yzu78i">
-      <Geometry _x="22" _y="190" _width="646" _height="250" as="geometry">
-        <Rectangle _x="22" _y="190" _width="646" _height="40" as="alternateBounds" />
+    <Cell id="13" value="" vertex="1" parent="12">
+      <Geometry _width="26" _height="26" relative="1" as="geometry">
+        <Object x="0" y="-2" as="offset" />
       </Geometry>
       <Object as="style">
         <Array as="baseStyleNames">
-          <add value="lane" />
+          <add value="bpmnIcon" />
         </Array>
       </Object>
     </Cell>
-    <Cell id="4" value="Start" vertex="1" parent="6">
-      <Geometry _x="148" _y="80" _width="40" _height="40" as="geometry" />
+    <Cell id="14" value="Annuler commande" vertex="1" parent="1">
+      <Geometry _x="642" _y="326" _width="100" _height="80" as="geometry" />
       <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="process" />
+        </Array>
+      </Object>
+      <Object bpmnId="Task_10" kind="serviceTask" as="bpmnMeta" />
+    </Cell>
+    <Cell id="15" value="" vertex="1" parent="14">
+      <Geometry _width="26" _height="26" relative="1" as="geometry">
+        <Object x="0" y="-2" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="bpmnIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="16" value="" vertex="1" parent="1">
+      <Geometry _x="338" _y="224.5" _width="45" _height="45" as="geometry" />
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="gateway" />
+        </Array>
+      </Object>
+      <Object bpmnId="Gateway_12" kind="exclusiveGateway" as="bpmnMeta" />
+    </Cell>
+    <Cell id="17" value="" vertex="1" parent="16">
+      <Geometry _x="0.5" _y="0.5" _width="45" _height="45" relative="1" as="geometry">
+        <Object x="-23" y="-23" as="offset" />
+      </Geometry>
+      <Object fontSize="50" as="style">
+        <Array as="baseStyleNames">
+          <add value="stateIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="18" value="Décision" vertex="1" parent="1">
+      <Geometry _x="669.68" _y="226.55" _width="45" _height="45" as="geometry" />
+      <Object fillColor="#fecaca" as="style">
+        <Array as="baseStyleNames">
+          <add value="gateway" />
+        </Array>
+      </Object>
+      <Object bpmnId="Gateway_14" kind="exclusiveGateway" as="bpmnMeta" />
+    </Cell>
+    <Cell id="19" value="" vertex="1" parent="18">
+      <Geometry _x="0.5" _y="0.5" _width="45" _height="45" relative="1" as="geometry">
+        <Object x="-23" y="-23" as="offset" />
+      </Geometry>
+      <Object fontSize="50" as="style">
+        <Array as="baseStyleNames">
+          <add value="stateIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="2" value="Commande à valider" vertex="1" parent="1">
+      <Geometry _x="82" _y="226" _width="40" _height="40" as="geometry" />
+      <Object fillColor="#9fe59f" as="style">
         <Array as="baseStyleNames">
           <add value="state" />
         </Array>
       </Object>
+      <Object bpmnId="Event_2" kind="startEvent" definition="none" interrupting="1" parallelMultiple="0" as="bpmnMeta" />
     </Cell>
-    <Cell id="7" value="Lane" vertex="1" parent="1">
-      <Geometry _y="440" _width="668" _height="170" as="geometry" />
+    <Cell id="3" value="" vertex="1" parent="2">
+      <Geometry _x="0.5" _y="0.5" _width="40" _height="40" relative="1" as="geometry">
+        <Object x="-20" y="-20" as="offset" />
+      </Geometry>
       <Object as="style">
         <Array as="baseStyleNames">
-          <add value="lane" />
+          <add value="stateIcon" />
         </Array>
       </Object>
     </Cell>
+    <Cell id="4" value="Commande annulée" vertex="1" parent="1">
+      <Geometry _x="672" _y="464" _width="40" _height="40" as="geometry" />
+      <Object fillColor="#efa8a8" as="style">
+        <Array as="baseStyleNames">
+          <add value="state" />
+        </Array>
+      </Object>
+      <Object bpmnId="Event_18" kind="endEvent" definition="cancel" interrupting="1" parallelMultiple="0" as="bpmnMeta" />
+    </Cell>
+    <Cell id="5" value="" vertex="1" parent="4">
+      <Geometry _x="0.5" _y="0.5" _width="40" _height="40" relative="1" as="geometry">
+        <Object x="-20" y="-20" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="stateIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="6" value="Envoyer commande" vertex="1" parent="1">
+      <Geometry _x="783" _y="229" _width="40" _height="40" as="geometry" />
+      <Object fillColor="#ffcc9f" as="style">
+        <Array as="baseStyleNames">
+          <add value="state" />
+        </Array>
+      </Object>
+      <Object bpmnId="Event_20" kind="endEvent" definition="message" interrupting="1" parallelMultiple="0" as="bpmnMeta" />
+    </Cell>
+    <Cell id="7" value="" vertex="1" parent="6">
+      <Geometry _x="0.5" _y="0.5" _width="40" _height="40" relative="1" as="geometry">
+        <Object x="-20" y="-20" as="offset" />
+      </Geometry>
+      <Object as="style">
+        <Array as="baseStyleNames">
+          <add value="stateIcon" />
+        </Array>
+      </Object>
+    </Cell>
+    <Cell id="20" value="Description goes here" vertex="1" parent="1">
+      <Geometry _x="330" _y="50" _width="100" _height="80" as="geometry" />
+      <Object fillColor="#FFFFFF" as="style">
+        <Array as="baseStyleNames">
+          <add value="annotation" />
+        </Array>
+      </Object>
+      <Object bpmnId="Annotation_42" kind="textAnnotation" as="bpmnMeta" />
+    </Cell>
+    <Cell id="21" value="Description goes here" vertex="1" parent="1">
+      <Geometry _x="341" _y="371" _width="100" _height="80" as="geometry" />
+      <Object fillColor="#FFFFFF" as="style">
+        <Array as="baseStyleNames">
+          <add value="annotation" />
+        </Array>
+      </Object>
+      <Object bpmnId="Annotation_44" kind="textAnnotation" as="bpmnMeta" />
+    </Cell>
   </root>
-</GraphDataModel>
+</GraphDataModel> 

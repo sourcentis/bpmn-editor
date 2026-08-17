@@ -43,6 +43,16 @@ export function installDropInActivitiesParent(graph: AnyGraph): () => void {
 
         if (!evt || !cells.length) return;
 
+        // Ce reparentage n'a de sens que pour un élément de flux (tâche/event/
+        // gateway/...) déposé DANS une lane/activities — jamais pour la lane (ou le
+        // groupe activities) elle-même en train d'être déplacée/réordonnée : sans ce
+        // garde-fou, glisser une lane dont le pointeur survole une autre lane (ou se
+        // retrouve, en fin de glissé, au-dessus d'elle-même) la reparente sous ce
+        // groupe, désynchronisant sa géométrie de ses propres enfants (qui, eux, ne
+        // bougent pas) — la lane et son contenu semblent alors se disloquer au lieu
+        // de se déplacer ensemble.
+        if (cells.some(isGroup)) return;
+
         const target = findGroupUnderMouse(graph, graph.getPointForEvent(evt));
         if (!target) return;
 
