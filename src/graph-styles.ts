@@ -519,6 +519,10 @@ export function applyGraphStyles(graph: Graph) {
                     "#000000";
 
                 // --- FILL (blanc)
+                // fillOpacity vaut 0 sur le style d'edge BPMN (pas de remplissage
+                // pour la ligne elle-même) : sans ce reset, le disque reste
+                // transparent et la ligne apparaît par-dessus.
+                canvas.setFillAlpha(1);
                 canvas.setFillColor("#FFFFFF");
                 canvas.begin();
                 canvas.ellipse(cx - r, cy - r, r * 2, r * 2);

@@ -294,6 +294,17 @@ export function initBpmnEditor(
         return cell;
     };
 
+    // Par défaut, maxGraph refuse une lane comme cible de connexion (ConnectionHandler /
+    // EdgeHandler) dès que le point survolé est dans son corps plutôt que son bandeau de
+    // titre (hitsSwimlaneContent) — l'idée d'origine étant qu'on cible plutôt un enfant
+    // à cet endroit. Mais quand le corps est vide à cet endroit précis, getCellAt ne
+    // trouve aucun enfant et le geste "connect" (bpmn-menu-handler.ts) échoue
+    // silencieusement, obligeant l'utilisateur à viser le titre — contre-intuitif. En
+    // désactivant toujours cette exclusion, le corps de la lane redevient une cible
+    // valide ; un enfant présent au point cliqué reste prioritaire car getCellAt le
+    // trouve avant même que cette méthode soit consultée.
+    graph.hitsSwimlaneContent = () => false;
+
     const disposeDropHandlers = installDropHandlers(graph, container, hooks.paletteRoot ?? null);
 
     return {

@@ -162,7 +162,6 @@ export function initVertexMenuActions(
             actions.delete("add-state");
             actions.delete("add-task");
             actions.delete("add-gateway");
-            actions.delete("connect");
             actions.delete("config");
         }
         else if (baseStyles.includes("process")) {

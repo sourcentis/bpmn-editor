@@ -41,6 +41,7 @@ export function setMessageFlow(graph: Graph, edge: Cell): void {
         graph.setCellStyles("startSize",       "12",          [edge]);
         graph.setCellStyles("endFillColor",    "#000000",     [edge]);
         graph.setCellStyles("dashed",          true,          [edge]);
+        graph.orderCells(false, [edge]);
     });
 }
 
@@ -72,6 +73,7 @@ export function setConditionalFlow(graph: Graph, edge: Cell): void {
         graph.setCellStyles("startSize",       "1",       [edge]);
         graph.setCellStyles("dashed",          false,     [edge]);
         graph.setCellStyles("endFillColor",    "#FFFFFF", [edge]);
+        graph.orderCells(false, [edge]);
     });
 }
 
