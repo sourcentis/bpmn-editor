@@ -57,14 +57,20 @@ function absoluteGeometry(cell: Cell, defaultParent: Cell): { x: number; y: numb
 // une arête entre deux cellules d'une même lane devient enfant de cette
 // lane ; une arête qui traverse deux lanes devient enfant de leur pool
 // commun — jamais du defaultParent malgré le `parent` passé à
-// addBPMNConnection). C'est ce que l'import compense déjà via son calcul
-// d'offsetX/offsetY (en remontant edge.getParent() jusqu'à defaultParent) et
-// son décompte swimlaneCount*20 — on l'inverse ici à l'identique pour les
-// points intermédiaires de geometry.points.
+// addBPMNConnection ; voir aussi reparentEdgeToWaypointLane côté import, qui
+// rattache explicitement à une lane une arête inter-lanes dont les points
+// intermédiaires y tombent tous). C'est ce que l'import compense déjà via
+// son calcul d'offsetX/offsetY (en remontant edge.getParent() jusqu'à
+// defaultParent) — on l'inverse ici à l'identique pour les points
+// intermédiaires de geometry.points. Pur delta, SANS ajustement de largeur de
+// bandeau de titre de lane : une cellule enfant d'une lane est positionnée
+// par maxgraph relativement à l'origine ABSOLUE de son parent (bandeau de
+// titre inclus), exactement comme absoluteGeometry() ci-dessus pour un
+// vertex — un ancien "swimlaneCount*20" ici décalait de 20px par niveau de
+// lane les positions recalculées, symétrique du même bug côté import.
 function edgeParentOffset(edge: Cell, defaultParent: Cell): { offsetX: number; offsetY: number } {
     let offsetX = 0;
     let offsetY = 0;
-    let swimlaneCount = 0;
     let current = edge.getParent?.();
     while (current && current !== defaultParent) {
         const geo: any = current.getGeometry?.();
@@ -72,11 +78,8 @@ function edgeParentOffset(edge: Cell, defaultParent: Cell): { offsetX: number; o
             offsetX += geo.x ?? 0;
             offsetY += geo.y ?? 0;
         }
-        const baseNames: string[] = (current.style as any)?.baseStyleNames ?? [];
-        if (baseNames.includes('lane')) swimlaneCount++;
         current = current.getParent?.();
     }
-    offsetX -= swimlaneCount * 20;
     return { offsetX, offsetY };
 }
 

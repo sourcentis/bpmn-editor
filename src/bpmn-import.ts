@@ -1784,10 +1784,20 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                         // Le parent de l'edge est le parent commun le plus profond
                         const edgeParent = edge.getParent();
 
-                        // Calculer l'offset absolu du parent de l'edge
+                        // Offset absolu du parent de l'edge — pur delta, SANS ajustement de
+                        // largeur de bandeau de titre : une cellule enfant d'une lane (vertex
+                        // OU, ici, les points intermédiaires d'une arête) est positionnée par
+                        // maxgraph relativement à l'origine ABSOLUE de son parent, bandeau de
+                        // titre inclus — exactement comme getParentAndPosition ci-dessus pour
+                        // les tasks/gateways/data/annotations/events, qui n'applique lui non
+                        // plus aucune correction de ce type. Un ancien "swimlaneCount*20" ici
+                        // décalait les points intermédiaires de 20px vers la droite à chaque
+                        // niveau de lane (bug rapporté), visible en pratique comme un crochet
+                        // parasite sur les arêtes à coudes réattachées à une lane (voir
+                        // reparentEdgeToWaypointLane) — supprimé, cf. bpmn-export.ts
+                        // (edgeParentOffset) pour le miroir symétrique côté export.
                         let offsetX = 0;
                         let offsetY = 0;
-                        let swimlaneCount = 0;
 
                         // Remonter la hiérarchie pour calculer l'offset
                         let current = edgeParent;
@@ -1797,18 +1807,8 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                                 offsetX += geo.x;
                                 offsetY += geo.y;
                             }
-
-                            // Compter les swimlanes pour l'ajustement
-                            const style = current.getStyle();
-                            if (style && style.baseStyleNames && style.baseStyleNames.includes('lane')) {
-                                swimlaneCount++;
-                            }
-
                             current = current.getParent();
                         }
-
-                        // Soustraire l'ajustement fait aux objets (20px par niveau de swimlane)
-                        offsetX -= (swimlaneCount * 20);
 
                         // Obtenir les positions des cellules source et target
                         const sourceGeo = sourceCell.getGeometry();
@@ -1893,7 +1893,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                             edge.setGeometry(edgeGeom);
                         }
 
-                        console.log(`Flow ${flow.source} -> ${flow.target}: offset = (${offsetX}, ${offsetY}), swimlanes = ${swimlaneCount}`);
+                        console.log(`Flow ${flow.source} -> ${flow.target}: offset = (${offsetX}, ${offsetY})`);
                     }
                 }
             }
@@ -1921,10 +1921,20 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                         // Le parent de l'edge est le parent commun le plus profond
                         const edgeParent = edge.getParent();
 
-                        // Calculer l'offset absolu du parent de l'edge
+                        // Offset absolu du parent de l'edge — pur delta, SANS ajustement de
+                        // largeur de bandeau de titre : une cellule enfant d'une lane (vertex
+                        // OU, ici, les points intermédiaires d'une arête) est positionnée par
+                        // maxgraph relativement à l'origine ABSOLUE de son parent, bandeau de
+                        // titre inclus — exactement comme getParentAndPosition ci-dessus pour
+                        // les tasks/gateways/data/annotations/events, qui n'applique lui non
+                        // plus aucune correction de ce type. Un ancien "swimlaneCount*20" ici
+                        // décalait les points intermédiaires de 20px vers la droite à chaque
+                        // niveau de lane (bug rapporté), visible en pratique comme un crochet
+                        // parasite sur les arêtes à coudes réattachées à une lane (voir
+                        // reparentEdgeToWaypointLane) — supprimé, cf. bpmn-export.ts
+                        // (edgeParentOffset) pour le miroir symétrique côté export.
                         let offsetX = 0;
                         let offsetY = 0;
-                        let swimlaneCount = 0;
 
                         // Remonter la hiérarchie pour calculer l'offset
                         let current = edgeParent;
@@ -1934,18 +1944,8 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                                 offsetX += geo.x;
                                 offsetY += geo.y;
                             }
-
-                            // Compter les swimlanes pour l'ajustement
-                            const style = current.getStyle();
-                            if (style && style.baseStyleNames && style.baseStyleNames.includes('lane')) {
-                                swimlaneCount++;
-                            }
-
                             current = current.getParent();
                         }
-
-                        // Soustraire l'ajustement fait aux objets (20px par niveau de swimlane)
-                        offsetX -= (swimlaneCount * 20);
 
                         // Obtenir les positions des cellules source et target
                         const sourceGeo = sourceCell.getGeometry();
@@ -2030,7 +2030,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                             edge.setGeometry(edgeGeom);
                         }
 
-                        console.log(`MessageFlow ${flow.source} -> ${flow.target}: offset = (${offsetX}, ${offsetY}), swimlanes = ${swimlaneCount}`);
+                        console.log(`MessageFlow ${flow.source} -> ${flow.target}: offset = (${offsetX}, ${offsetY})`);
                     }
                 }
             }
