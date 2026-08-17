@@ -1213,22 +1213,34 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
         };
 
         // Repli géométrique pour les points INTERMÉDIAIRES d'une arête (sequenceFlow/
-        // messageFlow) : quand ils tombent TOUS dans une même lane — typiquement un
-        // flux qui relie deux lanes différentes mais dont le tracé (waypoints DI)
-        // passe surtout par l'une d'elles (cas vécu : Flow_21 de Lane.bpmn, de
-        // l'"Agent Helpdesk" vers l'"Agent administratif", dont les 2 points
-        // intermédiaires sont géographiquement dans la lane cible) — l'arête est
-        // réattachée à cette lane après coup : maxgraph l'a auto-parentée au plus
-        // proche ancêtre commun de source/target (souvent la racine pour un flux
-        // inter-lanes, voir edgeParentOffset dans bpmn-export.ts), ce qui laisse ces
-        // points en coordonnées absolues — déplacer la lane ne les déplacerait alors
-        // pas avec elle (bug rapporté). Ambigu (points dans des lanes différentes, ou
-        // hors de toute lane) ⇒ on ne force rien, le parent commun automatique reste
-        // en place : un point par lane n'a pas de parent unique cohérent possible.
+        // messageFlow) : quand TOUT son tracé DI (waypoints ET points d'ancrage
+        // source/target, pas seulement les points intermédiaires stockés dans
+        // geometry.points) tombe dans une même lane — typiquement un flux qui relie
+        // deux lanes différentes mais dont le tracé passe surtout par l'une d'elles
+        // (cas vécu : Flow_21 de Lane.bpmn, de l'"Agent Helpdesk" vers l'"Agent
+        // administratif") — l'arête est réattachée à cette lane après coup : maxgraph
+        // l'a auto-parentée au plus proche ancêtre commun de source/target (souvent
+        // la racine pour un flux inter-lanes, voir edgeParentOffset dans
+        // bpmn-export.ts), ce qui laisse ces points en coordonnées absolues —
+        // déplacer la lane ne les déplacerait alors pas avec elle (bug rapporté).
+        // On exige TOUS les points du tracé (premier/dernier waypoint DI inclus, pas
+        // seulement geometry.points) dans la MÊME lane, pas seulement les points
+        // intermédiaires : une lane est un rectangle, donc CONVEXE — si les deux
+        // extrémités d'un segment sont dans cette même lane, tout le segment y reste
+        // forcément aussi. Se limiter aux points intermédiaires (comme précédemment)
+        // laissait passer un segment reliant un point hors-lane à un point dans la
+        // lane, qui traverse alors une lane VOISINE en chemin (ex. la portion proche
+        // de la source, encore dans la lane de départ) ; cette arête finit enfant
+        // d'une lane sœur ordonnée AVANT la lane traversée, donc rendue DERRIÈRE son
+        // remplissage (bug rapporté sur triso - Order Process for Pizza V4.bpmn : des
+        // flèches traversant plusieurs lanes se retrouvaient cachées derrière l'une
+        // d'elles). Ambigu (points dans des lanes différentes, ou hors de toute lane)
+        // ⇒ on ne force rien, le parent commun automatique reste en place : un point
+        // par lane n'a pas de parent unique cohérent possible.
         const reparentEdgeToWaypointLane = (edge: Cell, waypoints: { x: number; y: number }[]): void => {
             if (waypoints.length <= 2) return;
             let laneId: string | undefined;
-            for (const wp of waypoints.slice(1, -1)) {
+            for (const wp of waypoints) {
                 const id = findContainingLaneId({ x: wp.x, y: wp.y, width: 0, height: 0 });
                 if (!id) return;
                 if (laneId === undefined) laneId = id;
@@ -2142,15 +2154,35 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
         //---------------------
         // Empilement z final : lanes au fond, flèches (sequenceFlow/messageFlow/
         // conversationLink/association) au-dessus d'elles mais sous tâches/gateways/
-        // data/annotations/events. graph.orderCells(true, cells) envoie chaque cellule
-        // au début du tableau d'enfants de SON PROPRE parent (racine pour une lane ou
-        // une arête inter-lanes ; la lane elle-même pour une arête qu'y a rattachée
-        // reparentEdgeToWaypointLane ci-dessus) — appeler d'abord sur les flèches PUIS
-        // sur les lanes les repousse encore plus au fond, dans cet ordre précis. Les
-        // sommets (tasks/gateways/data/annotations/events) ne sont eux jamais touchés :
-        // ajoutés avant les flèches, ils restent devant.
-        if (allEdgeCells.length > 0) graph.orderCells(true, allEdgeCells);
-        if (allLaneCells.length > 0) graph.orderCells(true, allLaneCells);
+        // data/annotations/events. graph.orderCells(true, cells) traite l'index de
+        // CHAQUE cellule dans le tableau donné comme son index cible au sein de SON
+        // PROPRE parent (voir OrderMixin.cellsOrdered : model.add(cell.getParent(),
+        // cell, i) où i est l'indice dans le tableau ENTIER, pas un compteur par
+        // parent) — un appel unique avec des cellules de parents DIFFÉRENTS (le cas
+        // courant : des flèches à la fois enfants de la racine et enfants de
+        // diverses lanes, voir reparentEdgeToWaypointLane) entrelace donc
+        // l'empilement au lieu du fond-milieu-avant-plan voulu (bug rapporté :
+        // flèche affichée derrière une lane). On regroupe donc par parent réel avant
+        // d'appeler orderCells séparément pour chaque groupe ; appeler d'abord sur
+        // les flèches PUIS sur les lanes repousse ces dernières encore plus au fond,
+        // dans cet ordre précis, au sein de chaque parent partagé (typiquement la
+        // racine). Les sommets (tasks/gateways/data/annotations/events) ne sont eux
+        // jamais touchés : ajoutés avant les flèches, ils restent devant.
+        const orderCellsByParent = (cells: Cell[]): void => {
+            const byParent = new Map<Cell, Cell[]>();
+            for (const cell of cells) {
+                const p = cell.getParent();
+                if (!p) continue;
+                const group = byParent.get(p as Cell);
+                if (group) group.push(cell);
+                else byParent.set(p as Cell, [cell]);
+            }
+            for (const group of byParent.values()) {
+                graph.orderCells(true, group);
+            }
+        };
+        orderCellsByParent(allEdgeCells);
+        orderCellsByParent(allLaneCells);
 
     } finally {
         graph.model.endUpdate();
