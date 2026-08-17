@@ -793,6 +793,12 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
     const parent = graph.getDefaultParent();
     const vertexMap: Record<string, Cell> = {};
 
+    // Empilement z final : lanes au fond, flèches au-dessus d'elles mais sous
+    // tâches/gateways/data/annotations/events — voir le passage final juste avant
+    // la fin de graph.model.beginUpdate() plus bas, qui consomme ces deux listes.
+    const allLaneCells: Cell[] = [];
+    const allEdgeCells: Cell[] = [];
+
     // Couleur de remplissage effective déjà résolue (propre ou héritée) par id — permet à
     // l'héritage de se propager en cascade entre lanes (process/participant -> lane ->
     // sous-lane), pas seulement sur un niveau. Les events/tasks/gateways n'héritent PAS
@@ -897,6 +903,27 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
         return min > 0 ? min : MIN_LANE_TITLE_SIZE;
     })();
 
+    // maxgraph retouche automatiquement la géométrie d'une cellule tout juste
+    // insérée dont la position/taille déborde de celle de son parent — deux
+    // mécanismes distincts, tous deux déclenchés par insertVertex : soit il
+    // agrandit le PARENT pour contenir l'enfant (Graph.extendParent, voir
+    // CellsMixin.extendParentsOnAdd), soit il déplace/rétrécit l'ENFANT pour le
+    // faire rentrer dans la zone de confinement du parent (Graph.constrainChild,
+    // voir ConnectionsMixin.constrainChildren) — les deux activés par défaut.
+    // Une lane BPMN important un flowNode dont le rattachement sémantique
+    // (flowNodeRef) diverge de sa position DI réelle (ex. tâche visuellement
+    // dessinée dans la ligne d'une autre lane, un flottement d'édition déjà présent
+    // dans le fichier source) se retrouverait donc soit avec une lane agrandie pour
+    // "contenir" cet enfant hors-cadre (bug rapporté : "la hauteur de la lane n'est
+    // pas respectée"), soit avec ce flowNode déplacé loin de sa position DI
+    // d'origine — dans les deux cas une trahison du fichier importé. Désactivés le
+    // temps du dessin, restaurés après (comportement interactif normal du
+    // glisser-déposer utilisateur non affecté).
+    const prevExtendParentsOnAdd = graph.isExtendParentsOnAdd(parent);
+    const prevConstrainChildren = graph.isConstrainChildren();
+    graph.setExtendParentsOnAdd(false);
+    graph.setConstrainChildren(false);
+
     graph.model.beginUpdate();
     try {
         // Clear graph
@@ -936,63 +963,14 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                 return;
             }
 
-            // Calculer la position du process à partir des lanes
-            const allLanePositions = allProcessLanes
-                .map(lane => positions[lane.id])
-                .filter(Boolean);
-
-            if (allLanePositions.length === 0) {
-                console.warn(`⚠️ Pas de position pour le process ${process.id}`);
-                return;
-            }
-
-            const minX = Math.min(...allLanePositions.map(p => p.x));
-            const minY = Math.min(...allLanePositions.map(p => p.y));
-            const maxX = Math.max(...allLanePositions.map(p => p.x + p.width));
-            const maxY = Math.max(...allLanePositions.map(p => p.y + p.height));
-
-            const processPos = {
-                x: minX,
-                y: minY,
-                width: maxX - minX,
-                height: maxY - minY
-            };
-
-            // Le process lui-même n'a de BPMNShape propre que s'il est référencé par un
-            // participant (cas géré séparément, voir plus bas) — un process nu (pas de
-            // pool/collaboration) n'a AUCUN shape pour lire son isHorizontal, d'où le
-            // repli sur ses lanes dans resolveContainerIsHorizontal.
-            const processIsHorizontal = resolveContainerIsHorizontal(process.id, allProcessLanes);
-
-            // Largeur du bandeau de titre (startSize) calée sur le début réel des lanes —
-            // voir addBPMNLane / AddBPMNLaneOptions.titleSize.
-            const processLaneOffsets = allProcessLanes
-                .map((lane: any) => positions[lane.id])
-                .filter(Boolean)
-                .map((lp: any) => laneTitleOffset(processIsHorizontal, processPos, lp));
-            const processTitleSize = resolveTitleSizeAndGrow(
-                processIsHorizontal,
-                processPos,
-                processLaneOffsets.length > 0 ? Math.min(...processLaneOffsets) : undefined
-            ) ?? defaultLaneTitleSize;
-
-            // Créer la lane pour le process
-            const processVertex = addBPMNLane(graph, parent, {
-                id: process.id,
-                value: process.name || process.id || 'Process',
-                x: processPos.x,
-                y: processPos.y,
-                width: processPos.width,
-                height: processPos.height,
-                titleSize: processTitleSize,
-                isHorizontal: processIsHorizontal,
-            });
-
-            vertexMap[process.id] = processVertex;
-            applyColors(processVertex, process.id);
-            setBpmnMeta(processVertex, { bpmnId: process.id, kind: 'process' });
-
-            // Créer les lanes directement dans le process (sans niveau laneSet)
+            // Un process nu (non référencé par un participant/pool) n'a jamais son
+            // propre BPMNShape dans le XML BPMN — seul un participant en a un. Y
+            // matérialiser un rectangle englobant ajouterait donc une forme absente
+            // du diagramme source (lane "process" fantôme autour des vraies lanes) ;
+            // ses lanes sont dessinées directement à la racine, chacune avec sa
+            // propre position DI, comme les lanes standalone ci-dessous — l'export
+            // (bpmn-export.ts, branche meta.kind === 'lane' au niveau racine) les
+            // regroupe déjà symétriquement sous un process synthétique sans poolCell.
             allProcessLanes.forEach((lane: any) => {
                 const lanePos = positions[lane.id];
                 if (!lanePos) {
@@ -1000,35 +978,24 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                     return;
                 }
 
-                // Position relative au process parent (délta des coordonnées BPMN absolues)
-                const relativeX = lanePos.x - processPos.x;
-                const relativeY = lanePos.y - processPos.y;
-
-                console.log(`  └─ Lane: ${lane.name} (${lane.id}) - pos relative: [${relativeX}, ${relativeY}]`);
-
-                const laneVertex = addBPMNLane(graph, processVertex, {
+                const laneVertex = addBPMNLane(graph, parent, {
                     id: lane.id,
                     value: lane.name || '',
-                    x: relativeX,
-                    y: relativeY,
+                    x: lanePos.x,
+                    y: lanePos.y,
                     width: lanePos.width,
                     height: lanePos.height,
-                    // Même largeur de titre que le process parent, pour la cohérence visuelle
-                    // entre les deux bandeaux imbriqués.
-                    titleSize: processTitleSize,
-                    isHorizontal: processIsHorizontal,
+                    isHorizontal: laneOrientations[lane.id] ?? true,
                 });
 
                 vertexMap[lane.id] = laneVertex;
-                // Une lane sans couleur propre hérite de celle du process : sinon, comme
-                // les lanes couvrent tout le contenu du process, leur fond blanc par
-                // défaut masquerait entièrement la couleur du process.
-                applyColors(laneVertex, lane.id, process.id);
+                applyColors(laneVertex, lane.id);
                 setBpmnMeta(laneVertex, { bpmnId: lane.id, kind: 'lane' });
-            });
 
-            // Mettre le process en arrière-plan
-            graph.orderCells(true, [processVertex]);
+                // Mettre en arrière-plan
+                graph.orderCells(true, [laneVertex]);
+                allLaneCells.push(laneVertex);
+            });
         });
 
         //---------------------
@@ -1055,6 +1022,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
 
             // Mettre en arrière plan
             graph.orderCells(true, [vertex]);
+            allLaneCells.push(vertex);
 
 
         });
@@ -1146,10 +1114,12 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                         // leur fond blanc par défaut masquerait entièrement sa couleur.
                         applyColors(laneVertex, lane.id, p.id);
                         setBpmnMeta(laneVertex, { bpmnId: lane.id, kind: 'lane' });
+                        allLaneCells.push(laneVertex);
                     });
 
                     // Mettre le participant en arrière-plan
                     graph.orderCells(true, [participantVertex]);
+                    allLaneCells.push(participantVertex);
                 } else {
                     // ProcessRef non trouvé, créer un participant simple
                     const simpleVertex = addBPMNLane(graph, parent, {
@@ -1212,10 +1182,85 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
             });
         });
 
+        // Position absolue de chaque lane connue (laneSets + standalone), pour le repli
+        // géométrique de getParentAndPosition ci-dessous.
+        const allLanePositions: { id: string; pos: { x: number; y: number; width: number; height: number } }[] = [];
+        elements.laneSets.forEach((laneSet) => {
+            laneSet.lanes.forEach((lane: any) => {
+                const p = positions[lane.id];
+                if (p) allLanePositions.push({ id: lane.id, pos: p });
+            });
+        });
+        elements.lanes.forEach((lane) => {
+            const p = positions[lane.id];
+            if (p) allLanePositions.push({ id: lane.id, pos: p });
+        });
+
+        // Repli géométrique : quelle lane (la plus petite en aire, en cas de
+        // chevauchement) contient le CENTRE de cette position absolue — utilisé quand
+        // aucun flowNodeRef ne rattache l'élément à une lane (voir appelant).
+        const findContainingLaneId = (absolutePos: { x: number; y: number; width: number; height: number }): string | undefined => {
+            const cx = absolutePos.x + absolutePos.width / 2;
+            const cy = absolutePos.y + absolutePos.height / 2;
+            let best: { id: string; area: number } | undefined;
+            for (const { id, pos } of allLanePositions) {
+                if (cx >= pos.x && cx <= pos.x + pos.width && cy >= pos.y && cy <= pos.y + pos.height) {
+                    const area = pos.width * pos.height;
+                    if (!best || area < best.area) best = { id, area };
+                }
+            }
+            return best?.id;
+        };
+
+        // Repli géométrique pour les points INTERMÉDIAIRES d'une arête (sequenceFlow/
+        // messageFlow) : quand ils tombent TOUS dans une même lane — typiquement un
+        // flux qui relie deux lanes différentes mais dont le tracé (waypoints DI)
+        // passe surtout par l'une d'elles (cas vécu : Flow_21 de Lane.bpmn, de
+        // l'"Agent Helpdesk" vers l'"Agent administratif", dont les 2 points
+        // intermédiaires sont géographiquement dans la lane cible) — l'arête est
+        // réattachée à cette lane après coup : maxgraph l'a auto-parentée au plus
+        // proche ancêtre commun de source/target (souvent la racine pour un flux
+        // inter-lanes, voir edgeParentOffset dans bpmn-export.ts), ce qui laisse ces
+        // points en coordonnées absolues — déplacer la lane ne les déplacerait alors
+        // pas avec elle (bug rapporté). Ambigu (points dans des lanes différentes, ou
+        // hors de toute lane) ⇒ on ne force rien, le parent commun automatique reste
+        // en place : un point par lane n'a pas de parent unique cohérent possible.
+        const reparentEdgeToWaypointLane = (edge: Cell, waypoints: { x: number; y: number }[]): void => {
+            if (waypoints.length <= 2) return;
+            let laneId: string | undefined;
+            for (const wp of waypoints.slice(1, -1)) {
+                const id = findContainingLaneId({ x: wp.x, y: wp.y, width: 0, height: 0 });
+                if (!id) return;
+                if (laneId === undefined) laneId = id;
+                else if (laneId !== id) return;
+            }
+            if (!laneId) return;
+            const laneCell = vertexMap[laneId];
+            if (!laneCell || edge.getParent() === laneCell) return;
+            graph.model.add(laneCell, edge);
+        };
+
         // Fonction helper pour obtenir le parent et la position relative d'un flowNode
         const getParentAndPosition = (flowNodeId: string, absolutePos: { x: number, y: number, width: number, height: number }) => {
-            const laneInfo = flowNodeToLane[flowNodeId];
-            if (!laneInfo) {
+            // La position DI (géométrie réelle, ce que l'utilisateur voit à l'écran)
+            // prime sur le flowNodeRef déclaré : un flowNode dont la lane sémantique
+            // diverge de sa position visuelle (fichier mal formé, ou édité dans un
+            // outil qui n'a pas resynchronisé flowNodeRef après un déplacement entre
+            // lanes — cas vécu : "Task 6" listé dans le flowNodeRef d'"Agent
+            // administratifs" mais dessiné dans la ligne de "Fournisseur") doit être
+            // rattaché — et donc rendu, z-order y compris — à la lane qu'il occupe
+            // RÉELLEMENT à l'écran, pas à celle déclarée dans le XML : sinon il devient
+            // enfant d'une lane dont il déborde largement le bas, et se retrouve rendu
+            // DERRIÈRE la lane suivante qui recouvre visuellement sa vraie position
+            // (bug rapporté). Repli sur le flowNodeRef déclaré seulement si aucune lane
+            // ne contient géométriquement l'élément (position hors de toute lane, mais
+            // une lane est explicitement déclarée : mieux vaut la lui laisser que de
+            // l'orpheliner à la racine) ; repli final sur le parent par défaut si ni
+            // l'un ni l'autre n'aboutit — couvre aussi les artefacts (dataObject/
+            // dataStore/textAnnotation, jamais listés en flowNodeRef, ce ne sont pas
+            // des flowNodes BPMN) qui n'ont alors que le repli géométrique.
+            const laneId = findContainingLaneId(absolutePos) ?? flowNodeToLane[flowNodeId]?.laneId;
+            if (!laneId) {
                 // Pas de lane parent, utiliser le parent par défaut
                 return {
                     parent: parent,
@@ -1224,9 +1269,9 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                 };
             }
 
-            const laneVertex = vertexMap[laneInfo.laneId];
+            const laneVertex = vertexMap[laneId];
             if (!laneVertex) {
-                console.warn(`⚠️ Lane ${laneInfo.laneId} introuvable pour flowNode ${flowNodeId}`);
+                console.warn(`⚠️ Lane ${laneId} introuvable pour flowNode ${flowNodeId}`);
                 return {
                     parent: parent,
                     x: absolutePos.x,
@@ -1234,9 +1279,9 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                 };
             }
 
-            const lanePos = positions[laneInfo.laneId];
+            const lanePos = positions[laneId];
             if (!lanePos) {
-                console.warn(`⚠️ Position de lane ${laneInfo.laneId} introuvable`);
+                console.warn(`⚠️ Position de lane ${laneId} introuvable`);
                 return {
                     parent: parent,
                     x: absolutePos.x,
@@ -1725,6 +1770,8 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
 
             if (sourceCell && targetCell) {
                 const edge = addBPMNConnection(graph, sourceCell, targetCell);
+                if (flow.waypoints) reparentEdgeToWaypointLane(edge, flow.waypoints);
+                allEdgeCells.push(edge);
 
                 edge.setValue(flow.name || '');
                 applyColors(edge, flow.id);
@@ -1861,6 +1908,8 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
 
             if (sourceCell && targetCell) {
                 const edge = addBPMNConnection(graph, sourceCell, targetCell);
+                if (flow.waypoints) reparentEdgeToWaypointLane(edge, flow.waypoints);
+                allEdgeCells.push(edge);
                 setMessageFlow(graph, edge);
                 applyColors(edge, flow.id);
                 setBpmnMeta(edge, { bpmnId: flow.id, kind: 'messageFlow', labelBounds: labelPositions[flow.id] });
@@ -2005,6 +2054,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
             }
 
             const edge = addBPMNConnection(graph, sourceCell, targetCell);
+            allEdgeCells.push(edge);
             edge.setValue(link.name || '');
             applyColors(edge, link.id);
             setBpmnMeta(edge, { bpmnId: link.id, kind: 'conversationLink', labelBounds: labelPositions[link.id] });
@@ -2048,6 +2098,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
             }
 
             const edge = addBPMNConnection(graph, sourceCell, targetCell);
+            allEdgeCells.push(edge);
             setBpmnMeta(edge, { bpmnId: assoc.id, kind: 'association', direction: assoc.direction });
             if (assoc.direction === 'One') {
                 setAnnotationDirectionalArrow(graph, edge);
@@ -2088,8 +2139,23 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
             }
         }
 
+        //---------------------
+        // Empilement z final : lanes au fond, flèches (sequenceFlow/messageFlow/
+        // conversationLink/association) au-dessus d'elles mais sous tâches/gateways/
+        // data/annotations/events. graph.orderCells(true, cells) envoie chaque cellule
+        // au début du tableau d'enfants de SON PROPRE parent (racine pour une lane ou
+        // une arête inter-lanes ; la lane elle-même pour une arête qu'y a rattachée
+        // reparentEdgeToWaypointLane ci-dessus) — appeler d'abord sur les flèches PUIS
+        // sur les lanes les repousse encore plus au fond, dans cet ordre précis. Les
+        // sommets (tasks/gateways/data/annotations/events) ne sont eux jamais touchés :
+        // ajoutés avant les flèches, ils restent devant.
+        if (allEdgeCells.length > 0) graph.orderCells(true, allEdgeCells);
+        if (allLaneCells.length > 0) graph.orderCells(true, allLaneCells);
+
     } finally {
         graph.model.endUpdate();
+        graph.setExtendParentsOnAdd(prevExtendParentsOnAdd);
+        graph.setConstrainChildren(prevConstrainChildren);
     }
 
     console.log('✅ Diagramme dessiné avec succès');

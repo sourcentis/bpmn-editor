@@ -64,11 +64,23 @@ for (const fixture of fixtures) {
         const origLanes = flatLanes(original);
         const reLanes = flatLanes(reimported);
         expect(sortedIds(reLanes)).toEqual(sortedIds(origLanes));
-        for (const lane of origLanes) {
-            const reLane = reLanes.find((l: any) => l.id === lane.id);
-            expect(reLane?.flowNodeRefs?.slice().sort(), `flowNodeRefs de la lane ${lane.id}`)
-                .toEqual((lane as any).flowNodeRefs?.slice().sort());
-        }
+        // Un flowNode assigné à une lane dans le fichier source ne doit jamais se
+        // retrouver orphelin (plus rattaché à AUCUNE lane) au round-trip — en
+        // revanche il peut désormais changer de lane, ou en gagner une nouvelle : la
+        // position DI (géométrie réelle) prime sur le flowNodeRef déclaré
+        // (getParentAndPosition, bpmn-import.ts), donc un flowNode dont le
+        // flowNodeRef contredit sa position visuelle migre vers la lane qui le
+        // contient réellement à l'écran, et un flowNode/artefact sans flowNodeRef
+        // (dataObject/dataStore/textAnnotation, jamais listés en flowNodeRef) en
+        // gagne un par repli géométrique — des gains/corrections de fidélité voulus,
+        // pas des pertes à traquer ici. Cas concrets : m02-lane (task listé dans la
+        // lane "Agent administratifs" mais dessiné dans la ligne "Fournisseur", migre
+        // vers la bonne lane) et m06-t7 (tâches déjà placées visuellement dans leurs
+        // lanes mais jamais déclarées structurellement, en gagnent une).
+        const allOrigFlowNodeIds = origLanes.flatMap((l: any) => l.flowNodeRefs ?? []);
+        const allReFlowNodeIds = reLanes.flatMap((l: any) => l.flowNodeRefs ?? []);
+        const orphaned = allOrigFlowNodeIds.filter((id: string) => !allReFlowNodeIds.includes(id));
+        expect(orphaned, 'flowNodeRefs devenus orphelins (plus rattachés à aucune lane) après round-trip').toEqual([]);
 
         expect(sortedIds(reimported.elements.events)).toEqual(sortedIds(original.elements.events));
         for (const ev of original.elements.events as any[]) {
