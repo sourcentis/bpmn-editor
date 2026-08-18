@@ -92,7 +92,7 @@ const SWATCH_COLORS: readonly string[] = [
     '#9fe59f', '#d6f2d0', '#efa8a8', '#ffd6d5',
     '#d4c2e5', '#e8dfee', '#d3b9d6', '#e7d7d4',
     '#f4c9e7', '#fce2ed', '#cccccc', '#e9e9e9',
-    '#eded9e', '#f1f1d1', '#9aecf4', '#d8f0f5',
+    '#eded9e', '#f1f1d1', '#9aecf4',
     '#000000'
 ];
 
