@@ -69,6 +69,25 @@ function isCollapsedSubProcess(xmlDoc: Document, id: string | null): boolean {
     return true;
 }
 
+// Le marqueur (X/O/+/losange plein...) d'une gateway est masquable via l'attribut
+// isMarkerVisible du BPMNShape — porté par le diagramme, pas par l'élément sémantique.
+// C'est le mécanisme standard (voir BPMNDI.xsd) pour distinguer une gateway "simple"
+// (le losange nu de GATEWAY_ELEMENTS dans bpmn-menu-select.ts, sémantiquement une
+// exclusiveGateway sans marqueur — seul type BPMN autorisant cette notation, voir la
+// spec Notation/Gateways) d'une exclusiveGateway affichée avec son marqueur "X" :
+// distinction purement visuelle, aucun attribut sémantique ne la porte. Absent :
+// marqueur affiché par défaut (valeur par défaut BPMN de isMarkerVisible est "true").
+function isMarkerHidden(xmlDoc: Document, id: string | null): boolean {
+    if (!id) return false;
+    const shapes = xmlDoc.getElementsByTagNameNS('*', 'BPMNShape');
+    for (const shape of Array.from(shapes)) {
+        if (shape.getAttribute('bpmnElement') === id) {
+            return shape.getAttribute('isMarkerVisible') === 'false';
+        }
+    }
+    return false;
+}
+
 // Icône BPMN_ICONS pour un boundaryEvent, à partir de sa nature et de son caractère
 // interruptif. Cette police n'a pas de glyphe "double cercle" dédié pour toutes les
 // combinaisons (ex. message/timer/signal/error/conditional interruptifs) : on retombe
@@ -263,6 +282,11 @@ export interface BpmnMeta {
     parallelMultiple?: boolean;
     collapsed?: boolean;
     processRef?: string;
+    // Marqueur ("X") d'une exclusiveGateway visible ou masqué — porté par
+    // isMarkerVisible sur le BPMNShape, voir isMarkerHidden() ci-dessus. Absent (cellules
+    // dessinées à la main, jamais passées par drawDiagram) : traité comme visible par
+    // inferVertexMeta.
+    markerVisible?: boolean;
     direction?: string;
     // Bounds BPMNLabel d'origine (coordonnées absolues), capturées telles
     // quelles plutôt que reconstruites par inversion de la formule d'offset
@@ -489,11 +513,13 @@ export function parseBPMN(xmlText: string): BpmnData {
     );
     console.log(`🔀 Gateways trouvés: ${gateways.length}`);
     gateways.forEach((g) => {
+        const id = g.getAttribute('id');
         elements.gateways.push({
-            id: g.getAttribute('id'),
+            id,
             name: g.getAttribute('name'),
             // Nom local uniquement : insensible au préfixe (bpmn:, bpmn2:, model:, ...).
             type: g.localName,
+            markerHidden: isMarkerHidden(xmlDoc, id),
         });
     });
 
@@ -1668,7 +1694,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
             vertexMap[g.id] = vertex;
             vertex.setValue(g.name || '');
             applyColors(vertex, g.id);
-            setBpmnMeta(vertex, { bpmnId: g.id, kind: g.type, labelBounds: labelPositions[g.id] });
+            setBpmnMeta(vertex, { bpmnId: g.id, kind: g.type, markerVisible: !g.markerHidden, labelBounds: labelPositions[g.id] });
 
             // Définir la taille selon le XML
             const geometry = vertex.getGeometry();
@@ -1683,7 +1709,12 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
 
             switch (g.type) {
                 case "exclusiveGateway":
-                    setIconCellValue(graph, vertex, BPMN_ICONS.EXCLUSIVE_GATEWAY);
+                    // Losange nu (GATEWAY, "gateway simple" dans bpmn-menu-select.ts) si le
+                    // marqueur "X" a été explicitement masqué côté diagramme — voir
+                    // isMarkerHidden() plus haut : seule l'exclusiveGateway est autorisée par
+                    // la spec à omettre son marqueur, donc aucun autre type de gateway n'a
+                    // besoin de cette branche.
+                    setIconCellValue(graph, vertex, g.markerHidden ? BPMN_ICONS.GATEWAY : BPMN_ICONS.EXCLUSIVE_GATEWAY);
                     break;
                 case "parallelGateway":
                     setIconCellValue(graph, vertex, BPMN_ICONS.PARALLEL_GATEWAY);

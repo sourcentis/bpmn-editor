@@ -242,7 +242,14 @@ function inferVertexMeta(cell: Cell): BpmnMeta {
     if (baseNames.includes('gateway')) {
         const glyph = iconGlyphOf(cell);
         const kind = (glyph !== undefined ? GATEWAY_ICON_TO_KIND[glyph] : undefined) ?? 'exclusiveGateway';
-        return { bpmnId: sanitizeId(rawId, 'Gateway'), kind };
+        // Le losange nu (BPMN_ICONS.GATEWAY, "Gateway" dans GATEWAY_ELEMENTS de
+        // bpmn-menu-select.ts) est sémantiquement une exclusiveGateway — seul type que la
+        // spec autorise à omettre son marqueur "X" — mais reste visuellement distinct :
+        // markerVisible:false le préserve via isMarkerVisible côté DI (voir emitShapeDI),
+        // sans quoi il redeviendrait indiscernable d'une exclusiveGateway "avec marqueur"
+        // au prochain import (voir isMarkerHidden() dans bpmn-import.ts).
+        const markerVisible = glyph !== BPMN_ICONS.GATEWAY;
+        return { bpmnId: sanitizeId(rawId, 'Gateway'), kind, markerVisible };
     }
     if (baseNames.includes('annotation')) return { bpmnId: sanitizeId(rawId, 'Annotation'), kind: 'textAnnotation' };
     if (baseNames.includes('conversation')) return { bpmnId: sanitizeId(rawId, 'Conversation'), kind: 'conversationNode' };
@@ -713,12 +720,13 @@ function emitShapeDI(
     cell: Cell,
     bpmnId: string,
     defaultParent: Cell,
-    extra: { isHorizontal?: boolean; isExpanded?: boolean } = {}
+    extra: { isHorizontal?: boolean; isExpanded?: boolean; isMarkerVisible?: boolean } = {}
 ): string {
     const abs = absoluteGeometry(cell, defaultParent);
     const attrs = [`id="Shape_${escapeXml(bpmnId)}"`, `bpmnElement="${escapeXml(bpmnId)}"`];
     if (extra.isHorizontal !== undefined) attrs.push(`isHorizontal="${extra.isHorizontal ? 'true' : 'false'}"`);
     if (extra.isExpanded !== undefined) attrs.push(`isExpanded="${extra.isExpanded ? 'true' : 'false'}"`);
+    if (extra.isMarkerVisible !== undefined) attrs.push(`isMarkerVisible="${extra.isMarkerVisible ? 'true' : 'false'}"`);
     attrs.push(...colorAttrs(cell));
 
     const meta = getBpmnMeta(cell);
@@ -828,8 +836,11 @@ export function exportBPMN(graph: Graph): string {
         }
         for (const n of p.flowNodes) {
             const isSubProcessFamily = n.meta.kind === 'subProcess' || n.meta.kind === 'transaction' || n.meta.kind === 'adHocSubProcess';
+            const isBareGateway = n.meta.kind === 'exclusiveGateway' && n.meta.markerVisible === false;
             nodeShapes.push(
-                emitShapeDI(n.cell, n.meta.bpmnId, defaultParent, isSubProcessFamily ? { isExpanded: !n.meta.collapsed } : {})
+                emitShapeDI(n.cell, n.meta.bpmnId, defaultParent,
+                    isSubProcessFamily ? { isExpanded: !n.meta.collapsed } :
+                    isBareGateway ? { isMarkerVisible: false } : {})
             );
         }
         for (const f of p.sequenceFlows) {
