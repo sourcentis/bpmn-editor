@@ -169,6 +169,9 @@ export function applyGraphStyles(graph: Graph) {
             strokeColor: "none",
             resizable: false,
 
+            // Centrage horizontal du label
+            align: "center",
+
             // Label sous l'objet
             verticalLabelPosition: "bottom",
             verticalAlign: "top",
@@ -179,9 +182,8 @@ export function applyGraphStyles(graph: Graph) {
 
             // Optionnel mais recommandé
             spacingTop: 0,
-
-            // Décalage horizontal vers la gauche
-            spacingLeft: -60,
+            spacingLeft: 0,
+            spacingRight: 0,
 
             // Affichage
             overflow: "visible",
