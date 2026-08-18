@@ -281,16 +281,28 @@ export function initBpmnEditor(
         return prevGetCursorForCell ? prevGetCursorForCell(cell) : null;
     };
 
-    // Autoriser le drop uniquement dans les lanes — jamais une lane DANS une autre
-    // lane : sans ce second garde-fou, glisser une lane et survoler une lane
-    // voisine (cas courant vu la disposition en bandes empilées) la ferait
-    // reparenter nativement sous cette voisine (comportement swimlane par défaut
-    // de maxGraph), désynchronisant sa géométrie de ses propres enfants qui, eux,
-    // ne bougent pas — la lane et son contenu semblent alors se disloquer au lieu
-    // de simplement se déplacer ensemble.
+    // Autoriser le drop uniquement dans les lanes — jamais dans un autre type de
+    // cellule ayant des enfants (le comportement swimlane par défaut de maxGraph
+    // considère toute cellule non vide comme cible valide, ce qui transformerait
+    // par exemple un "task"/"state" portant une icône interne en conteneur de
+    // drop). Une lane déposée sur une autre lane DEVIENT sa sous-lane (nesting
+    // swimlane standard de maxGraph — voir SwimlaneMixin.getDropTarget), en
+    // agrandissant au besoin la lane parente (et en cascade ses propres ancêtres :
+    // Graph.extendParent/cellsResized), comportement natif inchangé.
+    //
+    // Le garde-fou anti-cycle ci-dessous (une lane ne peut pas devenir sa propre
+    // descendante) réimplémente celui de SwimlaneMixin.getDropTarget — nécessaire
+    // puisque cette surcharge remplace entièrement la logique native au lieu de
+    // simplement l'affiner.
     graph.getDropTarget = function (cells: any[], _evt: MouseEvent, cell: any) {
         if (!cell?.style?.baseStyleNames?.includes?.("lane")) return null;
-        if (cells.some((c: any) => c?.style?.baseStyleNames?.includes?.("lane"))) return null;
+
+        let ancestor: any = cell;
+        while (ancestor) {
+            if (cells.includes(ancestor)) return null;
+            ancestor = typeof ancestor.getParent === "function" ? ancestor.getParent() : ancestor.parent;
+        }
+
         return cell;
     };
 
