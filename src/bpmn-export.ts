@@ -282,7 +282,20 @@ function inferEdgeMeta(cell: Cell): BpmnMeta {
     if (baseNames.includes('bpmnConversationLink')) return { bpmnId: sanitizeId(rawId, 'ConversationLink'), kind: 'conversationLink' };
     const bpmnId = sanitizeId(rawId, 'Flow');
     if (style.startArrow === 'bpmnMessage') return { bpmnId, kind: 'messageFlow' };
-    if (style.dashed === true) return { bpmnId, kind: 'association' };
+    if (style.dashed === true) {
+        // Un lien tâche<->donnée/database (posé par setAnnotationDirectionalArrow
+        // dans bpmn-arrows.ts, endArrow="classic") a un sens visuel — l'import le lit
+        // symétriquement via associationDirection (voir bpmn-import.ts, branche
+        // assoc.direction === 'One'/'Both'). Sans cellule déjà porteuse d'un BpmnMeta
+        // explicite (donc jamais réimportée dans cet éditeur), ce sens n'était lu
+        // nulle part ici : l'association ressortait toujours sans
+        // associationDirection ("None" par défaut BPMN), effaçant silencieusement la
+        // flèche que l'utilisateur voyait dans l'éditeur.
+        const hasEndArrow = !!style.endArrow && style.endArrow !== 'none';
+        const hasStartArrow = !!style.startArrow && style.startArrow !== 'none';
+        const direction = hasStartArrow && hasEndArrow ? 'Both' : (hasEndArrow || hasStartArrow) ? 'One' : undefined;
+        return { bpmnId, kind: 'association', direction };
+    }
     return { bpmnId, kind: 'sequenceFlow' };
 }
 
@@ -346,6 +359,19 @@ interface FlowEntry {
     direction?: string;
 }
 
+// Lien réel BPMN activité <-> donnée (dataInputAssociation/dataOutputAssociation),
+// distinct de <association> : niché DANS l'activité propriétaire (activityId) à
+// l'export, jamais un élément top-level du process comme sequenceFlow/association
+// — voir emitDataAssociations. Le sens est implicite au `kind`, pas un attribut
+// séparé (contrairement à FlowEntry.direction) : dataInputAssociation va toujours
+// de dataRef vers activityId, dataOutputAssociation toujours l'inverse.
+interface DataAssociationEntry {
+    id: string;
+    kind: 'dataInputAssociation' | 'dataOutputAssociation';
+    activityId: string;
+    dataRef: string;
+}
+
 interface ProcessEntry {
     id: string;
     poolCell?: Cell;
@@ -354,6 +380,7 @@ interface ProcessEntry {
     lanes: LaneEntry[];
     flowNodes: FlowNodeEntry[];
     sequenceFlows: FlowEntry[];
+    dataAssociations: DataAssociationEntry[];
 }
 
 interface AnnotationEntry {
@@ -406,7 +433,7 @@ function collectModel(graph: Graph): ExportModel {
     let defaultProcess: ProcessEntry | null = null;
     const getDefaultProcess = (): ProcessEntry => {
         if (!defaultProcess) {
-            defaultProcess = { id: 'Process_1', lanes: [], flowNodes: [], sequenceFlows: [] };
+            defaultProcess = { id: 'Process_1', lanes: [], flowNodes: [], sequenceFlows: [], dataAssociations: [] };
             processes.push(defaultProcess);
         }
         return defaultProcess;
@@ -501,7 +528,7 @@ function collectModel(graph: Graph): ExportModel {
         if (bandCells.has(v)) {
             bands.push({ id: meta.bpmnId, name: String(v.getValue?.() ?? ''), cell: v, flowNodeRefs: [], childLanes: [] });
         } else if (meta.kind === 'process') {
-            const proc: ProcessEntry = { id: meta.bpmnId, poolCell: v, lanes: [], flowNodes: [], sequenceFlows: [] };
+            const proc: ProcessEntry = { id: meta.bpmnId, poolCell: v, lanes: [], flowNodes: [], sequenceFlows: [], dataAssociations: [] };
             processes.push(proc);
             cellToPool.set(v, proc);
             collectUnder(v, proc, undefined);
@@ -515,6 +542,7 @@ function collectModel(graph: Graph): ExportModel {
                 lanes: [],
                 flowNodes: [],
                 sequenceFlows: [],
+                dataAssociations: [],
             };
             processes.push(proc);
             cellToPool.set(v, proc);
@@ -633,6 +661,19 @@ function collectModel(graph: Graph): ExportModel {
             }
             meta.kind = 'association';
         }
+        // Un lien tâche<->donnée/database (dashed avec flèche, voir
+        // setAnnotationDirectionalArrow dans bpmn-arrows.ts) exporte en
+        // <dataInputAssociation>/<dataOutputAssociation> — le vrai type BPMN pour ce
+        // lien, lu par les autres outils (ex. bpmn.io) — plutôt qu'une <association>
+        // générique, dès lors qu'un seul des deux bouts est une donnée/database (un
+        // lien donnée<->donnée, ou un contenu déjà explicitement typé 'association'
+        // venant d'un fichier tiers via getBpmnMeta, garde le rendu <association>
+        // générique). Symétrique de leur lecture dans bpmn-import.ts.
+        const sourceIsData = sourceMeta.kind === 'dataObjectReference' || sourceMeta.kind === 'dataStoreReference';
+        const targetIsData = targetMeta.kind === 'dataObjectReference' || targetMeta.kind === 'dataStoreReference';
+        if (meta.kind === 'association' && sourceIsData !== targetIsData) {
+            meta.kind = sourceIsData ? 'dataInputAssociation' : 'dataOutputAssociation';
+        }
         edgeById.set(meta.bpmnId, e);
 
         const entry: FlowEntry = {
@@ -647,6 +688,14 @@ function collectModel(graph: Graph): ExportModel {
             messageFlows.push(entry);
         } else if (meta.kind === 'conversationLink') {
             conversationLinks.push(entry);
+        } else if (meta.kind === 'dataInputAssociation' || meta.kind === 'dataOutputAssociation') {
+            const pool = cellToPool.get(source) ?? cellToPool.get(target) ?? processes[0] ?? getDefaultProcess();
+            pool.dataAssociations.push({
+                id: meta.bpmnId,
+                kind: meta.kind,
+                activityId: meta.kind === 'dataInputAssociation' ? targetMeta.bpmnId : sourceMeta.bpmnId,
+                dataRef: meta.kind === 'dataInputAssociation' ? sourceMeta.bpmnId : targetMeta.bpmnId,
+            });
         } else if (meta.kind === 'association') {
             associations.push(entry);
         } else {
@@ -674,7 +723,7 @@ function eventDefinitionTags(definition: string | undefined): string[] {
     return [`<bpmn2:${definition}EventDefinition/>`];
 }
 
-function emitFlowNode(meta: BpmnMeta, name: string): string {
+function emitFlowNode(meta: BpmnMeta, name: string, extraChildrenXml: string): string {
     const tag = `bpmn2:${meta.kind}`;
     const nameAttr = name ? ` name="${escapeXml(name)}"` : '';
     const extra: string[] = [];
@@ -689,11 +738,49 @@ function emitFlowNode(meta: BpmnMeta, name: string): string {
 
     const attrsStr = extra.length ? ' ' + extra.join(' ') : '';
     const defs = /Event$/.test(meta.kind) ? eventDefinitionTags(meta.definition) : [];
+    const children = defs.join('') + extraChildrenXml;
 
-    if (defs.length === 0) {
+    if (!children) {
         return `<${tag} id="${escapeXml(meta.bpmnId)}"${nameAttr}${attrsStr}/>`;
     }
-    return `<${tag} id="${escapeXml(meta.bpmnId)}"${nameAttr}${attrsStr}>${defs.join('')}</${tag}>`;
+    return `<${tag} id="${escapeXml(meta.bpmnId)}"${nameAttr}${attrsStr}>${children}</${tag}>`;
+}
+
+// id de la <property> synthétique portant le targetRef d'un dataInputAssociation
+// (voir emitDataAssociations) — bpmn.io pose ce même placeholder ("__targetRef_
+// placeholder") quand l'activité n'a pas de vrai dataInput déclaré, ce qui est
+// toujours le cas ici (cet éditeur ne modélise pas dataInput/dataOutput/
+// ioSpecification). Dérivé déterministe de l'id de l'association plutôt qu'un
+// compteur : stable d'un export à l'autre pour un même diagramme.
+function dataInputPlaceholderId(associationId: string): string {
+    return `Property_${associationId}`;
+}
+
+// Émet, pour UNE activité donnée, ses éventuels dataInputAssociation/
+// dataOutputAssociation — nichés DANS l'activité (contrairement à sequenceFlow/
+// association, des éléments top-level du process) : c'est le vrai type BPMN pour
+// un lien activité<->donnée, lu par les autres outils (ex. bpmn.io), plutôt que
+// l'<association> générique utilisée pour tout le reste (annotations, lien
+// touchant une lane...). Ordre imposé par le schéma tActivity (property* avant
+// dataInputAssociation* avant dataOutputAssociation*) : chaque dataInputAssociation
+// referme aussi sa propre <property> placeholder (targetRef), qui doit donc être
+// émise avant lui — voir dataInputPlaceholderId.
+function emitDataAssociations(activityId: string, all: DataAssociationEntry[]): string {
+    const forThis = all.filter(a => a.activityId === activityId);
+    const inputs = forThis.filter(a => a.kind === 'dataInputAssociation');
+    const outputs = forThis.filter(a => a.kind === 'dataOutputAssociation');
+
+    const propsXml = inputs
+        .map(a => `<bpmn2:property id="${escapeXml(dataInputPlaceholderId(a.id))}" name="__targetRef_placeholder"/>`)
+        .join('');
+    const inputsXml = inputs
+        .map(a => `<bpmn2:dataInputAssociation id="${escapeXml(a.id)}"><bpmn2:sourceRef>${escapeXml(a.dataRef)}</bpmn2:sourceRef><bpmn2:targetRef>${escapeXml(dataInputPlaceholderId(a.id))}</bpmn2:targetRef></bpmn2:dataInputAssociation>`)
+        .join('');
+    const outputsXml = outputs
+        .map(a => `<bpmn2:dataOutputAssociation id="${escapeXml(a.id)}"><bpmn2:targetRef>${escapeXml(a.dataRef)}</bpmn2:targetRef></bpmn2:dataOutputAssociation>`)
+        .join('');
+
+    return propsXml + inputsXml + outputsXml;
 }
 
 function emitLane(lane: LaneEntry): string {
@@ -733,7 +820,9 @@ function emitProcess(p: ProcessEntry, artifactsXml: string): string {
     const laneSetXml = p.lanes.length
         ? `<bpmn2:laneSet id="LaneSet_${escapeXml(p.id)}">${p.lanes.map(emitLane).join('')}</bpmn2:laneSet>`
         : '';
-    const nodesXml = p.flowNodes.map(n => emitFlowNode(n.meta, String(n.cell.getValue?.() ?? ''))).join('');
+    const nodesXml = p.flowNodes
+        .map(n => emitFlowNode(n.meta, String(n.cell.getValue?.() ?? ''), emitDataAssociations(n.meta.bpmnId, p.dataAssociations)))
+        .join('');
     const flowsXml = p.sequenceFlows.map(emitSequenceFlow).join('');
     // Le nom du process n'est capturé que pour un process "nu" (sans
     // participant) : quand un participant référence un process, l'import ne
@@ -888,6 +977,10 @@ export function exportBPMN(graph: Graph): string {
         for (const f of p.sequenceFlows) {
             const cell = model.edgeById.get(f.id);
             if (cell) edgeDI.push(emitEdgeDI(graph, cell, f.id, defaultParent));
+        }
+        for (const da of p.dataAssociations) {
+            const cell = model.edgeById.get(da.id);
+            if (cell) edgeDI.push(emitEdgeDI(graph, cell, da.id, defaultParent));
         }
     }
     for (const a of model.annotations) {

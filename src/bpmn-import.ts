@@ -247,6 +247,10 @@ export interface BpmnElements {
     participants: any[];
     annotations: any[];
     associations: any[];
+    // <dataInputAssociation>/<dataOutputAssociation> — le vrai lien BPMN entre une
+    // activité et une donnée/database, distinct de la <association> générique (voir
+    // le commentaire au-dessus de leur parsing plus bas).
+    dataAssociations: any[];
     conversationNodes: any[];
     conversationLinks: any[];
 }
@@ -361,6 +365,7 @@ export function parseBPMN(xmlText: string): BpmnData {
         participants: [],
         annotations: [],
         associations: [],
+        dataAssociations: [],
         messageFlow: [],
         conversationNodes: [],
         conversationLinks: []
@@ -727,6 +732,65 @@ export function parseBPMN(xmlText: string): BpmnData {
             // "Both" : flèche aux deux extrémités.
             direction: assoc.getAttribute('associationDirection') || 'None',
             waypoints,
+        });
+    }
+
+    //---------------------
+    // dataInputAssociation / dataOutputAssociation : le vrai lien BPMN entre une
+    // activité et une donnée (dataObjectReference/dataStoreReference), niché à
+    // l'intérieur de l'activité propriétaire plutôt qu'un élément top-level du
+    // process (contrairement à sequenceFlow/association) — voir bpmn-export.ts
+    // pour la symétrie. Le sourceRef d'un dataInputAssociation référence
+    // directement la donnée ; son targetRef pointe vers une <property>
+    // synthétique interne à l'activité (placeholder bpmn.io, sans intérêt
+    // visuel) qu'on ignore : c'est l'activité PARENTE elle-même
+    // (dia.parentElement) qui joue le rôle de cible réelle du trait dessiné.
+    // dataOutputAssociation n'a symétriquement qu'un targetRef (la donnée) ;
+    // sa source est implicitement l'activité parente.
+    function findEdgeWaypoints(elementId: string | null): Array<{ x: number; y: number }> {
+        if (!elementId) return [];
+        const bpmnEdges = xmlDoc.getElementsByTagNameNS('*', 'BPMNEdge');
+        for (const edge of Array.from(bpmnEdges)) {
+            if (edge.getAttribute('bpmnElement') === elementId) {
+                return Array.from(edge.getElementsByTagNameNS('*', 'waypoint')).map(wp => ({
+                    x: parseFloat(wp.getAttribute('x') || '0'),
+                    y: parseFloat(wp.getAttribute('y') || '0'),
+                }));
+            }
+        }
+        return [];
+    }
+
+    const dataInputAssociations = selectByLocalName(xmlDoc, 'dataInputAssociation');
+    const dataOutputAssociations = selectByLocalName(xmlDoc, 'dataOutputAssociation');
+    console.log(`🔗 dataInputAssociation: ${dataInputAssociations.length}, dataOutputAssociation: ${dataOutputAssociations.length}`);
+
+    for (const dia of Array.from(dataInputAssociations)) {
+        const activityId = dia.parentElement?.getAttribute('id');
+        // sourceRef+ autorise plusieurs sources côté schéma ; un diagramme dessine
+        // un trait par lien, donc une seule est représentable ici — on prend la
+        // première (cas réel très largement dominant : un seul sourceRef).
+        const sourceRef = selectByLocalName(dia, 'sourceRef')[0]?.textContent?.trim();
+        if (!activityId || !sourceRef) continue;
+        elements.dataAssociations.push({
+            id: dia.getAttribute('id'),
+            kind: 'dataInputAssociation',
+            activityId,
+            dataRef: sourceRef,
+            waypoints: findEdgeWaypoints(dia.getAttribute('id')),
+        });
+    }
+
+    for (const doa of Array.from(dataOutputAssociations)) {
+        const activityId = doa.parentElement?.getAttribute('id');
+        const targetRef = selectByLocalName(doa, 'targetRef')[0]?.textContent?.trim();
+        if (!activityId || !targetRef) continue;
+        elements.dataAssociations.push({
+            id: doa.getAttribute('id'),
+            kind: 'dataOutputAssociation',
+            activityId,
+            dataRef: targetRef,
+            waypoints: findEdgeWaypoints(doa.getAttribute('id')),
         });
     }
 
@@ -2228,6 +2292,54 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                     // points intermédiaires d'un BPMNEdge à plus de 2 waypoints (un outil tiers
                     // peut avoir enregistré un tracé coudé) plutôt que de les rejouer en
                     // `geometry.points`, ce qui casserait la ligne droite exigée par la notation.
+                    graph.model.setGeometry(edge, geometry);
+                }
+            }
+        }
+
+        //---------------------
+        // Créer les traits pointillés dataInputAssociation/dataOutputAssociation —
+        // le vrai lien BPMN activité <-> donnée, distinct de <association> (voir le
+        // commentaire de leur parsing dans parseBPMN ci-dessus). Le sens de la
+        // flèche est implicite au type de l'élément, pas une propriété séparée
+        // comme associationDirection : dataInputAssociation va toujours de la
+        // donnée vers l'activité, dataOutputAssociation toujours de l'activité
+        // vers la donnée.
+        for (const da of elements.dataAssociations) {
+            const activityCell = vertexMap[da.activityId];
+            const dataCell = vertexMap[da.dataRef];
+            if (!activityCell || !dataCell) {
+                console.warn(`⚠️ ${da.kind} ${da.id} : activité ou donnée introuvable (${da.activityId} <-> ${da.dataRef})`);
+                continue;
+            }
+
+            const sourceCell = da.kind === 'dataInputAssociation' ? dataCell : activityCell;
+            const targetCell = da.kind === 'dataInputAssociation' ? activityCell : dataCell;
+
+            const edge = addBPMNConnection(graph, sourceCell, targetCell);
+            allEdgeCells.push(edge);
+            setBpmnMeta(edge, { bpmnId: da.id, kind: da.kind });
+            setAnnotationDirectionalArrow(graph, edge);
+
+            if (da.waypoints && da.waypoints.length >= 2) {
+                const geometry = edge.getGeometry();
+                const sourceGeo = sourceCell.getGeometry();
+                const targetGeo = targetCell.getGeometry();
+                if (geometry && sourceGeo && targetGeo) {
+                    const sourceAbs = getAbsolutePosition(sourceCell);
+                    const targetAbs = getAbsolutePosition(targetCell);
+                    const firstWaypoint = da.waypoints[0];
+                    const lastWaypoint = da.waypoints[da.waypoints.length - 1];
+
+                    applyEdgeAnchors(
+                        edge,
+                        sourceGeo, sourceAbs.x, sourceAbs.y,
+                        targetGeo, targetAbs.x, targetAbs.y,
+                        firstWaypoint, lastWaypoint
+                    );
+
+                    geometry.sourcePoint = new Point(firstWaypoint.x - sourceAbs.x, firstWaypoint.y - sourceAbs.y);
+                    geometry.targetPoint = new Point(lastWaypoint.x - targetAbs.x, lastWaypoint.y - targetAbs.y);
                     graph.model.setGeometry(edge, geometry);
                 }
             }
