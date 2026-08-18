@@ -55,6 +55,8 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#loading-an-existing-diagram">Loading an existing diagram</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#exporting-to-bpmn-20">Exporting to BPMN 2.0</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#read-only-viewer">Read-only viewer</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#next-steps">Next steps</a>
@@ -159,6 +161,14 @@ fetch('./sample.bpmn')
 — <code>loadXml()</code> expects the editor's own serialization format (what
 <code>getXml()</code> produces), not raw BPMN 2.0 XML. The toolbar's <strong>Import</strong> button
 is the one that reads actual BPMN 2.0 files from other tools.</p>
+<h2 id="exporting-to-bpmn-20">Exporting to BPMN 2.0<a class="headerlink" href="#exporting-to-bpmn-20" title="Permanent link">&para;</a></h2>
+<pre><code class="language-js">const bpmnXml = editor.exportBpmnXml();
+</code></pre>
+<p>The counterpart of <code>importBpmnXml()</code> — produces standard BPMN 2.0 XML
+readable by other BPMN tools, not <code>getXml()</code>'s own format. This is exactly
+what the toolbar's <strong>Export</strong> button (right next to <strong>Import</strong>) calls to
+produce the downloaded <code>.bpmn</code> file; call it directly to get the XML string
+without triggering a download (e.g. to send it to your own backend).</p>
 <h2 id="read-only-viewer">Read-only viewer<a class="headerlink" href="#read-only-viewer" title="Permanent link">&para;</a></h2>
 <pre><code class="language-js">const viewer = createBpmnEditor(document.getElementById('viewer'), {
   ui: 'none',
