@@ -34,6 +34,20 @@ function selectByLocalName(root: Document | Element, ...localNames: string[]): E
     return out;
 }
 
+// Aplatit un arbre de lanes (lane.childLanes, voir parseLaneElement) en une liste
+// incluant toute lane à quelque profondeur que ce soit — pour les usages qui
+// n'ont besoin que de retrouver une lane par id ou par flowNodeRef, sans se
+// soucier de sa position dans la hiérarchie (map flowNodeToLane, positions de
+// repli géométrique, etc. dans drawDiagram ci-dessous).
+function flattenLanes(lanes: any[]): any[] {
+    const out: any[] = [];
+    for (const lane of lanes) {
+        out.push(lane);
+        if (lane.childLanes?.length) out.push(...flattenLanes(lane.childLanes));
+    }
+    return out;
+}
+
 // Lit les couleurs portées par un élément de diagramme (BPMNShape/BPMNEdge). Deux
 // conventions coexistent : "BPMN in Color" (attributs background-color/border-color,
 // préfixe usuel color:) et bpmn.io/Camunda bioc (fill/stroke, préfixe bioc:). On balaie
@@ -374,6 +388,30 @@ export function parseBPMN(xmlText: string): BpmnData {
     const laneSets = selectByLocalName(xmlDoc, 'laneSet');
     console.log(`🏊 LaneSets trouvés: ${laneSets.length}`);
 
+    // Un <lane> BPMN peut porter son propre <childLaneSet> (lanes imbriquées,
+    // profondeur arbitraire) — que ce soit un fichier tiers hiérarchique, ou le
+    // résultat de l'export d'une lane déposée sur une autre via le glisser-
+    // déposer interactif (voir bpmn-parent.ts/bpmn-edit.ts). `flowNodeRefs` et
+    // `childLaneSet` sont lus sur les enfants DIRECTS du <lane> uniquement (pas
+    // selectByLocalName, qui descend tout le sous-arbre) : sinon les
+    // flowNodeRefs d'une sous-lane remonteraient aussi dans sa lane parente.
+    function parseLaneElement(laneEl: Element): any {
+        const directChildren = Array.from(laneEl.children);
+        const childLaneSet = directChildren.find(el => el.localName === 'childLaneSet');
+        const childLaneElements = childLaneSet
+            ? Array.from(childLaneSet.children).filter(el => el.localName === 'lane')
+            : [];
+        return {
+            id: laneEl.getAttribute('id'),
+            name: laneEl.getAttribute('name'),
+            flowNodeRefs: directChildren
+                .filter(el => el.localName === 'flowNodeRef')
+                .map(ref => ref.textContent?.trim())
+                .filter(Boolean),
+            childLanes: childLaneElements.map(parseLaneElement),
+        };
+    }
+
     for (const laneSet of Array.from(laneSets)) {
         const laneSetId = laneSet.getAttribute('id');
 
@@ -384,23 +422,17 @@ export function parseBPMN(xmlText: string): BpmnData {
 
         console.log(`  📋 LaneSet: ${laneSetId}, Process parent: ${laneSetName} (${processId})`);
 
-        const lanes: any[] = [];
-
-        // Récupérer toutes les lanes du laneSet
-        const laneElements = selectByLocalName(laneSet, 'lane').filter(el => el.parentElement === laneSet);
+        // Récupérer les lanes DIRECTES du laneSet (les sous-lanes de chacune,
+        // via son éventuel childLaneSet, sont lues récursivement par
+        // parseLaneElement dans lane.childLanes).
+        const laneElements = Array.from(laneSet.children).filter(el => el.localName === 'lane');
         console.log(`  └─ Lanes dans ${laneSetId}: ${laneElements.length}`);
 
-        for (const lane of Array.from(laneElements)) {
-            const laneData = {
-                id: lane.getAttribute('id'),
-                name: lane.getAttribute('name'),
-                flowNodeRefs: selectByLocalName(lane, 'flowNodeRef').map(
-                    ref => ref.textContent?.trim()
-                ).filter(Boolean)
-            };
-            lanes.push(laneData);
+        const lanes = laneElements.map(lane => {
+            const laneData = parseLaneElement(lane);
             console.log(`    • Lane: ${laneData.name} (${laneData.id})`);
-        }
+            return laneData;
+        });
 
         if (lanes.length > 0) {
             elements.laneSets.push({
@@ -929,6 +961,65 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
         return min > 0 ? min : MIN_LANE_TITLE_SIZE;
     })();
 
+    // Dessine récursivement une liste de lanes SŒURS (même conteneur direct) puis,
+    // pour chacune, ses éventuelles sous-lanes (lane.childLanes — voir
+    // parseLaneElement) : une lane BPMN parent d'une autre, qu'elle vienne d'un
+    // fichier tiers hiérarchique (<lane><childLaneSet>) ou d'un aller-retour
+    // export/import de lane déposée sur une autre via le glisser-déposer
+    // interactif (bpmn-parent.ts/bpmn-edit.ts), doit rester parent de cette autre
+    // après import — pas retomber à plat en lanes sœurs.
+    //
+    // `parentAbsPos` est l'origine ABSOLUE (coordonnées BPMN du fichier, PAS
+    // celles du graphe) du conteneur déjà dessiné (participant, process ou lane
+    // parente) : chaque lane est positionnée par différence à cette origine,
+    // exactement le calcul déjà fait pour "lane directement dans un participant"
+    // avant que cette fonction n'existe — seule la profondeur de récursion change.
+    function drawLanes(
+        lanes: any[],
+        parentCell: Cell,
+        parentAbsPos: { x: number; y: number },
+        titleSize: number | undefined,
+        isHorizontal: boolean,
+        inheritFillFrom: string | undefined,
+    ): void {
+        lanes.forEach((lane: any) => {
+            const lanePos = positions[lane.id];
+            if (!lanePos) {
+                console.warn(`⚠️ Pas de position pour la lane ${lane.id}`);
+                return;
+            }
+
+            const laneIsHorizontal = laneOrientations[lane.id] ?? isHorizontal;
+
+            const laneVertex = addBPMNLane(graph, parentCell, {
+                id: lane.id,
+                value: lane.name || '',
+                x: lanePos.x - parentAbsPos.x,
+                y: lanePos.y - parentAbsPos.y,
+                width: lanePos.width,
+                height: lanePos.height,
+                titleSize,
+                isHorizontal: laneIsHorizontal,
+            });
+
+            vertexMap[lane.id] = laneVertex;
+            // Une lane sans couleur propre hérite de celle de son conteneur direct
+            // (participant ou lane parente) : sinon, comme une lane couvre tout le
+            // contenu de son conteneur, son fond blanc par défaut le masquerait.
+            applyColors(laneVertex, lane.id, inheritFillFrom);
+            setBpmnMeta(laneVertex, { bpmnId: lane.id, kind: 'lane' });
+
+            // Mettre en arrière-plan (dans son propre conteneur — sans effet sur
+            // l'empilement global, géré séparément en fin d'import via allLaneCells).
+            graph.orderCells(true, [laneVertex]);
+            allLaneCells.push(laneVertex);
+
+            if (lane.childLanes?.length) {
+                drawLanes(lane.childLanes, laneVertex, lanePos, titleSize, laneIsHorizontal, lane.id);
+            }
+        });
+    }
+
     // maxgraph retouche automatiquement la géométrie d'une cellule tout juste
     // insérée dont la position/taille déborde de celle de son parent — deux
     // mécanismes distincts, tous deux déclenchés par insertVertex : soit il
@@ -997,31 +1088,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
             // propre position DI, comme les lanes standalone ci-dessous — l'export
             // (bpmn-export.ts, branche meta.kind === 'lane' au niveau racine) les
             // regroupe déjà symétriquement sous un process synthétique sans poolCell.
-            allProcessLanes.forEach((lane: any) => {
-                const lanePos = positions[lane.id];
-                if (!lanePos) {
-                    console.warn(`⚠️ Pas de position pour la lane ${lane.id}`);
-                    return;
-                }
-
-                const laneVertex = addBPMNLane(graph, parent, {
-                    id: lane.id,
-                    value: lane.name || '',
-                    x: lanePos.x,
-                    y: lanePos.y,
-                    width: lanePos.width,
-                    height: lanePos.height,
-                    isHorizontal: laneOrientations[lane.id] ?? true,
-                });
-
-                vertexMap[lane.id] = laneVertex;
-                applyColors(laneVertex, lane.id);
-                setBpmnMeta(laneVertex, { bpmnId: lane.id, kind: 'lane' });
-
-                // Mettre en arrière-plan
-                graph.orderCells(true, [laneVertex]);
-                allLaneCells.push(laneVertex);
-            });
+            drawLanes(allProcessLanes, parent, { x: 0, y: 0 }, undefined, true, undefined);
         });
 
         //---------------------
@@ -1107,41 +1174,9 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
                     applyColors(participantVertex, p.id);
                     setBpmnMeta(participantVertex, { bpmnId: p.id, kind: 'participant', processRef: referencedProcess.id });
 
-                    // Créer les lanes directement dans le participant
-                    allProcessLanes.forEach((lane: any) => {
-                        const lanePos = positions[lane.id];
-                        if (!lanePos) {
-                            console.warn(`⚠️ Pas de position pour la lane ${lane.id}`);
-                            return;
-                        }
-
-                        // Position relative au participant parent (délta des coordonnées BPMN absolues)
-                        const relativeX = lanePos.x - pos.x;
-                        const relativeY = lanePos.y - pos.y;
-
-                        console.log(`  └─ Lane: ${lane.name} (${lane.id}) - pos relative: [${relativeX}, ${relativeY}]`);
-
-                        const laneVertex = addBPMNLane(graph, participantVertex, {
-                            id: lane.id,
-                            value: lane.name || '',
-                            x: relativeX,
-                            y: relativeY,
-                            width: lanePos.width,
-                            height: lanePos.height,
-                            // Même largeur de titre que le participant parent, pour la
-                            // cohérence visuelle entre les deux bandeaux imbriqués.
-                            titleSize,
-                            isHorizontal: participantIsHorizontal,
-                        });
-
-                        vertexMap[lane.id] = laneVertex;
-                        // Une lane sans couleur propre hérite de celle du participant :
-                        // sinon, comme les lanes couvrent tout le contenu du participant,
-                        // leur fond blanc par défaut masquerait entièrement sa couleur.
-                        applyColors(laneVertex, lane.id, p.id);
-                        setBpmnMeta(laneVertex, { bpmnId: lane.id, kind: 'lane' });
-                        allLaneCells.push(laneVertex);
-                    });
+                    // Créer les lanes directement dans le participant (et, en cascade,
+                    // toute sous-lane imbriquée sous chacune — voir drawLanes).
+                    drawLanes(allProcessLanes, participantVertex, pos, titleSize, participantIsHorizontal, p.id);
 
                     // Mettre le participant en arrière-plan
                     graph.orderCells(true, [participantVertex]);
@@ -1189,9 +1224,11 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
         // Créer une map des flowNodes vers leurs lanes parentes
         const flowNodeToLane: Record<string, { laneId: string, processId?: string }> = {};
 
-        // Pour les lanes dans les laneSets (qui sont dans les processes)
+        // Pour les lanes dans les laneSets (qui sont dans les processes) — y compris
+        // les sous-lanes imbriquées (flattenLanes), chacune rattachant ses PROPRES
+        // flowNodeRefs, pas ceux de sa lane parente.
         elements.laneSets.forEach((laneSet) => {
-            laneSet.lanes.forEach((lane: any) => {
+            flattenLanes(laneSet.lanes).forEach((lane: any) => {
                 lane.flowNodeRefs?.forEach((flowNodeId: string) => {
                     flowNodeToLane[flowNodeId] = {
                         laneId: lane.id,
@@ -1212,7 +1249,7 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
         // géométrique de getParentAndPosition ci-dessous.
         const allLanePositions: { id: string; pos: { x: number; y: number; width: number; height: number } }[] = [];
         elements.laneSets.forEach((laneSet) => {
-            laneSet.lanes.forEach((lane: any) => {
+            flattenLanes(laneSet.lanes).forEach((lane: any) => {
                 const p = positions[lane.id];
                 if (p) allLanePositions.push({ id: lane.id, pos: p });
             });

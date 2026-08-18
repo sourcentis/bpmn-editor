@@ -301,6 +301,36 @@ interface LaneEntry {
     name: string;
     cell: Cell;
     flowNodeRefs: string[];
+    // Lanes dont le PARENT graphe est cette lane elle-même (nesting swimlane
+    // standard maxGraph — voir bpmn-edit.ts/bpmn-parent.ts) — jamais reparentées
+    // à plat au niveau du process/participant : émises en <bpmn2:childLaneSet>
+    // imbriqué par emitLane, lues symétriquement par parseLaneElement à l'import.
+    childLanes: LaneEntry[];
+}
+
+// Retrouve une lane par id à n'importe quelle profondeur (une lane sœur au
+// niveau du process comme une sous-lane imbriquée) — utilisé pour rattacher un
+// flowNode à sa lane DIRECTE, qui peut être n'importe où dans la hiérarchie.
+function findLaneById(lanes: LaneEntry[], id: string): LaneEntry | undefined {
+    for (const lane of lanes) {
+        if (lane.id === id) return lane;
+        const found = findLaneById(lane.childLanes, id);
+        if (found) return found;
+    }
+    return undefined;
+}
+
+// Aplatit un arbre de lanes en une liste incluant toute lane à quelque
+// profondeur que ce soit — pour les usages qui doivent voir TOUTES les lanes
+// sans se soucier de leur position dans la hiérarchie (garde-fou d'arête
+// orpheline, DI).
+function flattenLanes(lanes: LaneEntry[]): LaneEntry[] {
+    const out: LaneEntry[] = [];
+    for (const lane of lanes) {
+        out.push(lane);
+        out.push(...flattenLanes(lane.childLanes));
+    }
+    return out;
 }
 
 interface FlowNodeEntry {
@@ -397,7 +427,12 @@ function collectModel(graph: Graph): ExportModel {
     // icône/du seul type de ce conteneur. On replie donc systématiquement
     // les enfants d'une cellule non reconnue comme lane sur le lane/process
     // englobant, pour ne jamais perdre de contenu structurel.
-    const collectUnder = (container: Cell, proc: ProcessEntry, laneId: string | undefined): void => {
+    // `laneList` est l'endroit où pousser une lane TROUVÉE À CE NIVEAU : la liste
+    // top-level du process (proc.lanes) tant qu'on descend un participant/process,
+    // ou childLanes de la lane parente dès qu'on descend DANS une lane — c'est ce
+    // qui construit la hiérarchie de lanes (une lane parent d'une autre reste son
+    // parent à l'export, jamais reparentée à plat — voir LaneEntry.childLanes).
+    const collectUnder = (container: Cell, proc: ProcessEntry, laneId: string | undefined, laneList: LaneEntry[] = proc.lanes): void => {
         for (const child of container.getChildren?.() ?? []) {
             if (!child.isVertex?.()) continue;
             // Icône/badge décoratif (voir DECORATIVE_STYLES dans bpmn-helpers.ts) :
@@ -412,10 +447,10 @@ function collectModel(graph: Graph): ExportModel {
             if (DECORATIVE_STYLES.some((n) => childBaseNames.includes(n))) continue;
             const meta = metaOfVertex(child);
             if (meta.kind === 'lane') {
-                const lane: LaneEntry = { id: meta.bpmnId, name: String(child.getValue?.() ?? ''), cell: child, flowNodeRefs: [] };
-                proc.lanes.push(lane);
+                const lane: LaneEntry = { id: meta.bpmnId, name: String(child.getValue?.() ?? ''), cell: child, flowNodeRefs: [], childLanes: [] };
+                laneList.push(lane);
                 cellToPool.set(child, proc);
-                collectUnder(child, proc, lane.id);
+                collectUnder(child, proc, lane.id, lane.childLanes);
                 continue;
             }
             if (meta.kind === 'textAnnotation') {
@@ -426,10 +461,10 @@ function collectModel(graph: Graph): ExportModel {
             proc.flowNodes.push({ cell: child, meta });
             cellToPool.set(child, proc);
             if (laneId) {
-                const lane = proc.lanes.find(l => l.id === laneId);
+                const lane = findLaneById(proc.lanes, laneId);
                 lane?.flowNodeRefs.push(meta.bpmnId);
             }
-            if (child.getChildCount?.() > 0) collectUnder(child, proc, laneId);
+            if (child.getChildCount?.() > 0) collectUnder(child, proc, laneId, laneList);
         }
     };
 
@@ -464,7 +499,7 @@ function collectModel(graph: Graph): ExportModel {
     for (const v of topVertices) {
         const meta = metaOfVertex(v);
         if (bandCells.has(v)) {
-            bands.push({ id: meta.bpmnId, name: String(v.getValue?.() ?? ''), cell: v, flowNodeRefs: [] });
+            bands.push({ id: meta.bpmnId, name: String(v.getValue?.() ?? ''), cell: v, flowNodeRefs: [], childLanes: [] });
         } else if (meta.kind === 'process') {
             const proc: ProcessEntry = { id: meta.bpmnId, poolCell: v, lanes: [], flowNodes: [], sequenceFlows: [] };
             processes.push(proc);
@@ -490,10 +525,10 @@ function collectModel(graph: Graph): ExportModel {
             // Lane autonome (hors laneSet, hors participant) : rattachée au
             // process synthétique par défaut, qui n'a pas de cellule propre.
             const proc = getDefaultProcess();
-            const lane: LaneEntry = { id: meta.bpmnId, name: String(v.getValue?.() ?? ''), cell: v, flowNodeRefs: [] };
+            const lane: LaneEntry = { id: meta.bpmnId, name: String(v.getValue?.() ?? ''), cell: v, flowNodeRefs: [], childLanes: [] };
             proc.lanes.push(lane);
             cellToPool.set(v, proc);
-            collectUnder(v, proc, lane.id);
+            collectUnder(v, proc, lane.id, lane.childLanes);
         } else if (meta.kind === 'textAnnotation') {
             annotations.push({ cell: v, meta });
         } else {
@@ -522,7 +557,7 @@ function collectModel(graph: Graph): ExportModel {
     // désormais d'en démarrer/terminer une, voir bpmn-menu-init.ts) : sans ça, ce garde-fou
     // la traite comme une extrémité orpheline et l'arête est éliminée silencieusement.
     for (const p of processes) {
-        for (const l of p.lanes) knownNodeIds.add(l.id);
+        for (const l of flattenLanes(p.lanes)) knownNodeIds.add(l.id);
     }
 
     const associations: FlowEntry[] = [];
@@ -664,7 +699,14 @@ function emitFlowNode(meta: BpmnMeta, name: string): string {
 function emitLane(lane: LaneEntry): string {
     const refs = lane.flowNodeRefs.map(id => `<bpmn2:flowNodeRef>${escapeXml(id)}</bpmn2:flowNodeRef>`).join('');
     const nameAttr = lane.name ? ` name="${escapeXml(lane.name)}"` : '';
-    return `<bpmn2:lane id="${escapeXml(lane.id)}"${nameAttr}>${refs}</bpmn2:lane>`;
+    // Une lane devenue parent d'une autre lane (nesting swimlane interactif —
+    // voir LaneEntry.childLanes) émet son propre <childLaneSet> imbriqué, dans
+    // l'ordre attendu par le schéma BPMN tLane (flowNodeRef* puis childLaneSet?)
+    // — lu symétriquement par parseLaneElement à l'import.
+    const childLaneSetXml = lane.childLanes.length
+        ? `<bpmn2:childLaneSet id="LaneSet_${escapeXml(lane.id)}">${lane.childLanes.map(emitLane).join('')}</bpmn2:childLaneSet>`
+        : '';
+    return `<bpmn2:lane id="${escapeXml(lane.id)}"${nameAttr}>${refs}${childLaneSetXml}</bpmn2:lane>`;
 }
 
 function emitSequenceFlow(f: FlowEntry): string {
@@ -831,7 +873,7 @@ export function exportBPMN(graph: Graph): string {
         if (p.poolCell) {
             poolShapes.push(emitShapeDI(p.poolCell, p.participantId ?? p.id, defaultParent, { isHorizontal: poolIsHorizontal(p.poolCell) }));
         }
-        for (const lane of p.lanes) {
+        for (const lane of flattenLanes(p.lanes)) {
             laneShapes.push(emitShapeDI(lane.cell, lane.id, defaultParent, { isHorizontal: poolIsHorizontal(lane.cell) }));
         }
         for (const n of p.flowNodes) {
