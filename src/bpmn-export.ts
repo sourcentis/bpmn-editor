@@ -511,6 +511,12 @@ function collectModel(graph: Graph): ExportModel {
     for (const a of annotations) knownNodeIds.add(a.meta.bpmnId);
     for (const n of conversationNodes) knownNodeIds.add(n.meta.bpmnId);
     for (const b of bands) knownNodeIds.add(b.id);
+    // Une lane est un noeud valide comme extrémité d'arête (le menu contextuel permet
+    // désormais d'en démarrer/terminer une, voir bpmn-menu-init.ts) : sans ça, ce garde-fou
+    // la traite comme une extrémité orpheline et l'arête est éliminée silencieusement.
+    for (const p of processes) {
+        for (const l of p.lanes) knownNodeIds.add(l.id);
+    }
 
     const associations: FlowEntry[] = [];
     const messageFlows: FlowEntry[] = [];
@@ -557,6 +563,32 @@ function collectModel(graph: Graph): ExportModel {
         // <bpmn2:association>, quel que soit son style de trait.
         if (!getBpmnMeta(e) && meta.kind !== 'messageFlow' && meta.kind !== 'conversationLink' &&
             (sourceMeta.kind === 'textAnnotation' || targetMeta.kind === 'textAnnotation')) {
+            meta.kind = 'association';
+        }
+        // BPMN interdit tout autant qu'une lane (pas un FlowNode) soit sourceRef/targetRef
+        // d'un sequenceFlow ou d'un messageFlow (tInteractionNode ne couvre que
+        // participant/FlowNode) — seule une <bpmn2:association> peut légalement toucher
+        // une lane, quel que soit le type choisi dans l'éditeur (voir le sous-menu
+        // restreint sequence/message flow de bpmn-menu-select.ts, qui autorise ce tracé
+        // mais ne le rend pas conforme au schéma pour autant). "bandCells" est exclu :
+        // une bande de participant d'un diagramme de conversation porte kind:'lane'
+        // avant réimport mais son conversationLink suit son propre traitement plus bas.
+        const sourceIsPlainLane = sourceMeta.kind === 'lane' && !bandCells.has(source);
+        const targetIsPlainLane = targetMeta.kind === 'lane' && !bandCells.has(target);
+        if (sourceIsPlainLane || targetIsPlainLane) {
+            // Encode lequel des deux seuls styles autorisés touchant une lane (sequence
+            // flow ou message flow, voir LANE_EDGE_ELEMENTS dans bpmn-menu-select.ts)
+            // était utilisé, via associationDirection (seul canal restant côté
+            // <bpmn2:association> : "One" = sequence flow, "Both" = message flow) —
+            // sans ça, drawDiagram() (bpmn-import.ts) retomberait sur le rendu
+            // annotation générique (trait fin, sans flèche ni marqueur) à la
+            // réimportation, perdant le style dès qu'on quitte cet éditeur. Ne s'applique
+            // que si l'arête partait bien d'un sequence/message flow : une association déjà
+            // native (contenu tiers touchant une lane) garde sa direction d'origine telle
+            // quelle plutôt que de se la faire écraser.
+            if (meta.kind === 'sequenceFlow' || meta.kind === 'messageFlow') {
+                meta.direction = meta.kind === 'messageFlow' ? 'Both' : 'One';
+            }
             meta.kind = 'association';
         }
         edgeById.set(meta.bpmnId, e);

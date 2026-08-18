@@ -18,7 +18,7 @@ import {
     setOutputDataVertex,
     setTransactionVertex
 } from "./bpmn-helpers";
-import {setAnnotationArrow, setAnnotationDirectionalArrow, setMessageFlow} from "./bpmn-arrows";
+import {setAnnotationArrow, setAnnotationDirectionalArrow, setMessageFlow, setSequenceFlow} from "./bpmn-arrows";
 import {BPMN_ICONS} from "./bpmn-icons";
 import {setAdHocMarker, setSubProcessMarker} from "./bpmn-badge";
 
@@ -2112,7 +2112,21 @@ export function drawDiagram(graph: Graph, data: BpmnData): void {
             const edge = addBPMNConnection(graph, sourceCell, targetCell);
             allEdgeCells.push(edge);
             setBpmnMeta(edge, { bpmnId: assoc.id, kind: 'association', direction: assoc.direction });
-            if (assoc.direction === 'One') {
+            // Une association touchant une lane ne peut être qu'un repli d'export pour
+            // l'un des deux seuls styles autorisés entre lanes (sequence/message flow,
+            // voir LANE_EDGE_ELEMENTS dans bpmn-menu-select.ts et le commentaire associé
+            // dans bpmn-export.ts) : associationDirection y encode lequel des deux plutôt
+            // que la sémantique standard "flèche(s) d'annotation" — "One" = sequence flow,
+            // "Both" = message flow. Sans ce cas particulier, elle retomberait sur le
+            // rendu annotation générique ci-dessous (trait fin sans marqueur), perdant le
+            // style dès qu'on quitte cet éditeur.
+            if (isLaneVertex(graph, sourceCell) || isLaneVertex(graph, targetCell)) {
+                if (assoc.direction === 'Both') {
+                    setMessageFlow(graph, edge);
+                } else {
+                    setSequenceFlow(graph, edge);
+                }
+            } else if (assoc.direction === 'One') {
                 setAnnotationDirectionalArrow(graph, edge);
             } else if (assoc.direction === 'Both') {
                 setAnnotationDirectionalArrow(graph, edge);

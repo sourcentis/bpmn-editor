@@ -199,6 +199,13 @@ const DATA_ELEMENTS: BpmnElementDef[] = [
     {id: "database", name: "Datastore", glyph: BPMN_ICONS.DATABASE},
 ];
 
+// Seuls types autorisés pour une arête touchant une lane — voir le filtre
+// "laneInvolved" dans openMenu ci-dessous.
+const LANE_EDGE_ELEMENTS: BpmnElementDef[] = [
+    {id: "sequence-flow", name: "Sequence flow", glyph: BPMN_ICONS.SEQUENCE_FLOW},
+    {id: "message-flow", name: "Message flow", glyph: BPMN_ICONS.CONDITIONAL_FLOW},
+];
+
 const EDGE_ELEMENTS: BpmnElementDef[] = [
     {id: "sequence-flow", name: "Sequence flow", glyph: BPMN_ICONS.SEQUENCE_FLOW},
     {id: "message-flow", name: "Message flow", glyph: BPMN_ICONS.CONDITIONAL_FLOW},
@@ -487,7 +494,13 @@ export function setupBpmnMenuSelect(
                 },
             ];
         } else if (edge) {
-            elements = EDGE_ELEMENTS;
+            // Une arête touchant une lane (dans un sens comme dans l'autre — vers une
+            // autre lane, un state, une tâche, une gateway...) ne peut être qu'un
+            // sequence flow ou un message flow : un conditional/default flow ou un
+            // boundary event n'a pas de sens dès qu'une lane est en jeu (voir aussi le
+            // repli en <bpmn2:association> à l'export, bpmn-export.ts).
+            const laneInvolved = isLaneVertex(graph, edge.source as Cell) || isLaneVertex(graph, edge.target as Cell);
+            elements = laneInvolved ? LANE_EDGE_ELEMENTS : EDGE_ELEMENTS;
         }
         // Fill object in the Menu depending on the vertex type
         else if (isProcessVertex(graph, vertex)) {
