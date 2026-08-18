@@ -84,8 +84,16 @@ const MENU_BUTTONS: ReadonlyArray<MenuButton> = [
     { action: 'search',          title: 'Insert cartography object',    icon: ICONS.search },
 ];
 
+// Tableau12-inspired pastel pairs (base hue + lighter tint), grouped by hue:
+// blue/orange, green/red, purple/brown, pink/gray, yellow/cyan.
 const SWATCH_COLORS: readonly string[] = [
-    '#ffffff', '#fde68a', '#bbf7d0', '#bfdbfe', '#fecaca', '#e9d5ff', '#d1d5db',
+    '#ffffff',
+    '#99cbed', '#dfe9f6', '#ffcc9f', '#ffe4c9',
+    '#9fe59f', '#d6f2d0', '#efa8a8', '#ffd6d5',
+    '#d4c2e5', '#e8dfee', '#d3b9d6', '#e7d7d4',
+    '#f4c9e7', '#fce2ed', '#cccccc', '#e9e9e9',
+    '#eded9e', '#f1f1d1', '#9aecf4', '#d8f0f5',
+    '#000000'
 ];
 
 function appendGlyphOrIcon(btn: HTMLElement, item: { glyph?: string; icon?: string }, alt: string): void {
@@ -442,7 +450,8 @@ const CSS_TEXT = `
   top: 100%;
   left: 0;
   margin-top: 4px;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(5, 20px);
   gap: 4px;
   padding: 6px;
   background: #ffffff;

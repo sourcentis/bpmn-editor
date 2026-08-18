@@ -50,6 +50,20 @@ export function initVertexMenuActions(
         }
     }
 
+    // Blanc interdit sur les arêtes (invisible sur fond blanc), noir interdit
+    // sur les objets (illisible avec le texte noir des libellés) — voir
+    // applyMenuVisibilityForCell.
+    function setSwatchVisible(color: string, visible: boolean) {
+        const swatch = menuEl.querySelector<HTMLElement>(`[data-color="${color}"]`);
+        if (!swatch) return;
+        swatch.classList.toggle("bpmn-editor-hidden", !visible);
+
+        if (swatch instanceof HTMLButtonElement) {
+            swatch.disabled = !visible;
+            swatch.tabIndex = visible ? 0 : -1;
+        }
+    }
+
     // Nombre de boutons visibles par ligne (doit rester cohérent avec le
     // max-width de .bpmn-editor-vertex-menu, tuné pour une ligne de 4
     // boutons — voir le commentaire dans dom.ts).
@@ -180,6 +194,10 @@ export function initVertexMenuActions(
         for (const action of ALL_ACTIONS) {
             setActionVisible(action, actions.has(action));
         }
+
+        // blanc: pas sur les arêtes / noir: pas sur les objets
+        setSwatchVisible("#ffffff", !cell.isEdge());
+        setSwatchVisible("#000000", !cell.isVertex());
 
         recomputeMenuBreaks();
     }
