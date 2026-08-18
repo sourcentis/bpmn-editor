@@ -118,14 +118,17 @@ rather than on an arbitrary local machine with different fonts.
 
 ```bash
 npm run build
-cd examples
-python3 -m http.server 8000
+npm run serve
 ```
 
-Open `http://localhost:8000/editor.html`, `viewer.html`, or
-`with-simulated-backend.html`. Each `examples/*.html` file is self-contained
-and reads `../dist/bpmn-editor.js` directly — no separate dev build step
-beyond `npm run build`.
+`npm run serve` starts a static server at the package root and opens
+`http://localhost:8000/examples/` automatically — a gallery page linking to
+`editor.html`, `viewer.html`, and `with-simulated-backend.html`. Each
+`examples/*.html` file is self-contained and reads `../dist/bpmn-editor.js`
+directly — no separate dev build step beyond `npm run build`. The server
+must run from the package root (not from `examples/`): the demo pages'
+`../dist/...` references need to stay in-bounds of the served root, or
+they 404.
 
 ### Trying your changes from a consumer project (e.g. Mercator)
 
@@ -180,8 +183,9 @@ npm run build
 # Then publish these as a static site (any static host works, e.g. GitHub
 # Pages via a gh-pages branch or the repo's Pages settings):
 #   dist/            (the built package, referenced by the examples via ../dist/…)
-#   examples/         (editor.html, viewer.html, with-simulated-backend.html,
-#                      sample.bpmn, sample.maxgraph)
+#   examples/         (index.html, editor.html, viewer.html,
+#                      with-simulated-backend.html, sample.bpmn,
+#                      sample.maxgraph, favicon.svg, favicon.ico)
 ```
 
 The examples resolve `@maxgraph/core` via a CDN import map (see the comment

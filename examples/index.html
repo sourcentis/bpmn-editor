@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>@sourcentis/bpmn-editor — examples</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="alternate icon" href="./favicon.ico" />
+  <!--
+    Zero backend, zero bundler: this page only needs to be served over
+    http(s) (browsers block ES module imports from file://). From the
+    package root: `npm run build` (once, so ../dist/bpmn-editor.js exists),
+    then `npm run serve` — opens this page automatically. The server must
+    run from the package root, not from this directory: every demo below
+    references ../dist/bpmn-editor.js, which needs to stay in-bounds of
+    the served root, or it 404s.
+  -->
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; background: #f3f4f6; }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    p.lead { color: #4b5563; margin: 0 0 24px; font-size: 14px; max-width: 640px; }
+    ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; max-width: 640px; }
+    li {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    }
+    a.card { display: block; padding: 14px 16px; text-decoration: none; color: inherit; }
+    a.card:hover { background: #f9fafb; }
+    a.card h2 { font-size: 15px; margin: 0 0 4px; color: #111827; }
+    a.card p { font-size: 13px; color: #4b5563; margin: 0; }
+    code { background: #eef2ff; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+    footer { margin-top: 24px; font-size: 12px; color: #9ca3af; max-width: 640px; }
+  </style>
+</head>
+<body>
+  <h1>@sourcentis/bpmn-editor — examples</h1>
+  <p class="lead">
+    Three self-contained demo pages, no backend involved — each resolves
+    <code>@maxgraph/core</code> from a CDN via an import map and
+    <code>@sourcentis/bpmn-editor</code> from <code>../dist/bpmn-editor.js</code>.
+  </p>
+
+  <ul>
+    <li>
+      <a class="card" href="./editor.html">
+        <h2>Editor</h2>
+        <p>Full editing surface, <code>ui: 'default'</code> — toolbar, palette, import/export, no provider/persistence.</p>
+      </a>
+    </li>
+    <li>
+      <a class="card" href="./viewer.html">
+        <h2>Read-only viewer</h2>
+        <p><code>ui: 'none'</code> + <code>readOnly: true</code> — canvas-only, pan/zoom, no editing.</p>
+      </a>
+    </li>
+    <li>
+      <a class="card" href="./with-simulated-backend.html">
+        <h2>Simulated backend</h2>
+        <p><code>provider</code> and <code>persistence</code> implemented in memory — shows the two backend ports in action.</p>
+      </a>
+    </li>
+  </ul>
+
+  <footer>
+    Run <code>npm run build</code> once at the package root before opening any demo above.
+  </footer>
+</body>
+</html>

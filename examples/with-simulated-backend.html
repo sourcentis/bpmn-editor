@@ -4,14 +4,16 @@
   <meta charset="utf-8" />
   <title>@sourcentis/bpmn-editor — simulated backend (provider + persistence)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
-  <link rel="alternate icon" href="../favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="alternate icon" href="./favicon.ico" />
   <!--
     Zero backend, zero bundler: this page only needs to be served over
-    http(s) (browsers block ES module imports from file://). From this
-    directory, e.g.: `python3 -m http.server 8000`, then open
-    http://localhost:8000/with-simulated-backend.html — after running
-    `npm run build` once at the package root so ../dist/bpmn-editor.js exists.
+    http(s) (browsers block ES module imports from file://). From the
+    package root: `npm run build` (once, so ../dist/bpmn-editor.js exists),
+    then `npm run serve` — opens http://localhost:8000/examples/
+    automatically. The server must run from the package root, not from
+    this directory: the ../dist reference above needs to stay in-bounds
+    of the served root, or it 404s.
 
     @maxgraph/core is a peerDependency of @sourcentis/bpmn-editor (it is
     not bundled — see the "peer dependency, not a bundler" note in the
