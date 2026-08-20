@@ -73,6 +73,9 @@ undo/redo, and import/export, with no server and no other setup.
 backend integration (`BpmnObjectProvider` / `BpmnPersistence`), i18n, and
 the full API reference.
 
+🚀 **[Try it live](https://www.sourcentis.com/bpmn-editor)** — the editor
+running full-screen in your browser, no install needed.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for build commands and the
