@@ -302,15 +302,34 @@ export function initVertexMenuActions(
     // geste sera un simple clic ou un drag.
     let pressed = false;
 
+    // Vrai si le mousedown qui a démarré le geste en cours a touché une
+    // cellule (par opposition au fond du graph) — c'est ce qui distingue un
+    // clic/ctrl-clic sur un élément (qui doit pouvoir ouvrir le menu) d'un
+    // rubber-band de sélection par zone démarré sur le fond (qui ne le doit
+    // pas, même s'il finit par sélectionner plusieurs cellules — voir
+    // `lastGestureWasZoneSelect` ci-dessous).
+    let mouseDownOnCell = false;
+
+    // Vrai après un mouseUp dont le geste était: parti du fond du graph
+    // (`!mouseDownOnCell`) ET déplacé (`wasCellMoved`) — c'est-à-dire un
+    // rubber-band de sélection par zone, qu'il ait fini sur une cellule ou
+    // sur le fond. Recalculé à chaque mouseUp, donc toujours à jour pour le
+    // CHANGE de sélection et le CLICK qui suivent dans le même geste (voir
+    // updateFromSelection / onGraphClick) : la sélection multiple qui en
+    // résulte ne doit pas ouvrir le menu contextuel.
+    let lastGestureWasZoneSelect = false;
+
     const mouseListener = {
-        mouseDown: (_sender: unknown, me: { getEvent: () => MouseEvent }) => {
+        mouseDown: (_sender: unknown, me: { getEvent: () => MouseEvent; getCell?: () => Cell | null }) => {
             const evt = me.getEvent();
             mouseDownPoint = { x: evt.clientX, y: evt.clientY };
             pressed = true;
+            mouseDownOnCell = !!me.getCell?.();
         },
         mouseMove: () => {},
-        mouseUp: () => {
+        mouseUp: (_sender: unknown, me: { getEvent: () => MouseEvent }) => {
             pressed = false;
+            lastGestureWasZoneSelect = !mouseDownOnCell && wasCellMoved(me.getEvent());
         },
     };
     // Inséré en tête de graph.mouseListeners (plutôt que via addMouseListener,
@@ -490,6 +509,11 @@ export function initVertexMenuActions(
             // tant que le bouton reste enfoncé (drag de sélection rectangle
             // en cours) — voir le commentaire équivalent ci-dessous.
             if (pressed) return;
+
+            // Sélection par zone (rubber-band démarré sur le fond) : la
+            // sélection résultante reste acquise, mais le menu contextuel ne
+            // doit pas s'ouvrir tout seul — voir `lastGestureWasZoneSelect`.
+            if (lastGestureWasZoneSelect) return hide();
 
             if (lastAnchor) {
                 ensureMenuInContainer();
@@ -694,16 +718,20 @@ export function initVertexMenuActions(
 
         // Un déplacement d'une cellule déjà sélectionnée (drag du groupe) ne
         // doit ni ouvrir ni repositionner le menu — seul un clic net le fait.
-        // Un rubber-band de sélection (glissé depuis le fond, donc rawCell
-        // null) n'est PAS concerné : c'est un geste de sélection légitime,
-        // pas un drag de cellule, même s'il parcourt une grande distance.
         if (rawCell && moved) return;
 
         const selected = getSelectedMenuCells();
 
-        // Sélection multiple: menu restreint (couleur + suppression), ciblant
-        // toutes les cellules sélectionnées — voir applyMenuVisibilityForMultiSelection.
+        // Sélection multiple: menu restreint (couleur + aligner + suppression),
+        // ciblant toutes les cellules sélectionnées — voir
+        // applyMenuVisibilityForMultiSelection. Seulement pour une sélection
+        // construite clic par clic (ex: ctrl-clic) : un rubber-band de
+        // sélection par zone (parti du fond du graph, voir
+        // `lastGestureWasZoneSelect`) laisse la sélection acquise sans ouvrir
+        // le menu.
         if (selected.length > 1) {
+            if (lastGestureWasZoneSelect) return hide();
+
             currentCells = selected;
             currentCell = selected[0];
 
