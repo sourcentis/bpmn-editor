@@ -20,6 +20,12 @@ import arrowCounterclockwise from '../assets/icons/arrow-counterclockwise.svg?in
 import trashFill from '../assets/icons/trash-fill.svg?inline';
 import search from '../assets/icons/search.svg?inline';
 import arrowsFullscreen from '../assets/icons/arrows-fullscreen.svg?inline';
+import alignLeft from '../assets/icons/align-left.svg?inline';
+import alignCenter from '../assets/icons/align-center.svg?inline';
+import alignRight from '../assets/icons/align-right.svg?inline';
+import alignTop from '../assets/icons/align-top.svg?inline';
+import alignMiddle from '../assets/icons/align-middle.svg?inline';
+import alignBottom from '../assets/icons/align-bottom.svg?inline';
 
 export const ICONS = {
     zoomIn,
@@ -41,6 +47,16 @@ export const ICONS = {
     rotate: arrowClockwise,
     delete: trashFill,
     search,
+    // Main "align" menu button reuses the align-left glyph — like "color"
+    // reusing the palette icon, it's just one representative of the submenu
+    // it opens (see the align-* entries below), not meant to be exhaustive.
+    align: alignLeft,
+    alignLeft,
+    alignCenter,
+    alignRight,
+    alignTop,
+    alignMiddle,
+    alignBottom,
 } as const;
 
 export type IconName = keyof typeof ICONS;

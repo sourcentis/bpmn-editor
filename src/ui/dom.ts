@@ -78,10 +78,27 @@ const MENU_BUTTONS: ReadonlyArray<MenuButton> = [
     { action: 'connect',         title: 'Lier',                         icon: ICONS.connect },
     { action: 'config',          title: 'Configuration',                icon: ICONS.config },
     { action: 'color',           title: 'Couleur',                      icon: ICONS.color },
+    // Sélection multiple uniquement (voir applyMenuVisibilityForMultiSelection,
+    // bpmn-menu-init.ts) — masqué en sélection simple. Placé juste après
+    // "color" dans le DOM: puisque seuls color/align/delete restent visibles
+    // en sélection multiple, il apparaît bien entre les deux quel que soit
+    // l'ordre des boutons masqués (rotate, add-annotations...) entre les deux.
+    { action: 'align',           title: 'Aligner',                      icon: ICONS.align },
     { action: 'rotate',          title: 'Rotate',                       icon: ICONS.rotate },
     { action: 'add-annotations', title: 'Annotation',                   glyph: BPMN_ICONS.ANNOTATION },
     { action: 'delete',          title: 'Supprimer',                    icon: ICONS.delete },
     { action: 'search',          title: 'Insert cartography object',    icon: ICONS.search },
+];
+
+// Deux lignes de trois: alignement horizontal (gauche/centre/droite) puis
+// vertical (haut/milieu/bas) — voir handlers["align"] dans bpmn-menu-handler.ts.
+const ALIGN_OPTIONS: ReadonlyArray<{ align: string; icon: string; title: string }> = [
+    { align: 'left',   icon: ICONS.alignLeft,   title: 'Aligner à gauche' },
+    { align: 'center', icon: ICONS.alignCenter, title: 'Centrer horizontalement' },
+    { align: 'right',  icon: ICONS.alignRight,  title: 'Aligner à droite' },
+    { align: 'top',    icon: ICONS.alignTop,    title: 'Aligner en haut' },
+    { align: 'middle', icon: ICONS.alignMiddle, title: 'Centrer verticalement' },
+    { align: 'bottom', icon: ICONS.alignBottom, title: 'Aligner en bas' },
 ];
 
 // Tableau12-inspired pastel pairs (base hue + lighter tint), grouped by hue:
@@ -232,7 +249,7 @@ function buildVertexMenu(): HTMLElement {
         btn.dataset.action = def.action;
         btn.title = def.title;
         appendGlyphOrIcon(btn, def, def.title);
-        if (def.action === 'color') btn.setAttribute('aria-expanded', 'false');
+        if (def.action === 'color' || def.action === 'align') btn.setAttribute('aria-expanded', 'false');
         menu.appendChild(btn);
 
         // One break slot after every button, hidden by default — which ones
@@ -256,6 +273,21 @@ function buildVertexMenu(): HTMLElement {
         palette.appendChild(swatch);
     }
     menu.appendChild(palette);
+
+    const alignMenu = document.createElement('div');
+    alignMenu.className = 'bpmn-editor-align-menu bpmn-editor-hidden';
+    alignMenu.dataset.role = 'align-menu';
+    alignMenu.setAttribute('aria-hidden', 'true');
+    for (const opt of ALIGN_OPTIONS) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'bpmn-editor-align-btn';
+        btn.dataset.align = opt.align;
+        btn.title = opt.title;
+        appendGlyphOrIcon(btn, opt, opt.title);
+        alignMenu.appendChild(btn);
+    }
+    menu.appendChild(alignMenu);
 
     return menu;
 }
@@ -466,6 +498,36 @@ const CSS_TEXT = `
   border: 1px solid rgba(0, 0, 0, 0.15);
   cursor: pointer;
   padding: 0;
+}
+.bpmn-editor-align-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  display: grid;
+  grid-template-columns: repeat(3, 28px);
+  gap: 2px;
+  padding: 4px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+.bpmn-editor-align-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  line-height: 1;
+}
+.bpmn-editor-align-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
 }
 .bpmn-editor-hidden {
   display: none !important;

@@ -8,9 +8,6 @@ export function initVertexMenuActions(
     undoManager: UndoManager,
     menuEl: HTMLElement
 ): VertexMenuController {
-    const requireSingle = true;
-
-
 // -------------------------------------------------------
 // Helpers
 
@@ -109,6 +106,7 @@ export function initVertexMenuActions(
             "connect",
             "config",
             "color",
+            "align",
             "add-annotations",
             "delete",
             "search",
@@ -118,6 +116,10 @@ export function initVertexMenuActions(
 
         // défaut: tout visible (
         const actions = new Set<string>(ALL_ACTIONS as unknown as string[]);
+
+        // "align" n'a de sens qu'en sélection multiple — voir
+        // applyMenuVisibilityForMultiSelection, jamais pour une cellule seule.
+        actions.delete("align");
 
         const baseStyles = getBaseStyleNames(cell);
 
@@ -202,6 +204,51 @@ export function initVertexMenuActions(
         recomputeMenuBreaks();
     }
 
+    // Menu restreint affiché quand plusieurs cellules sont sélectionnées :
+    // seuls "changer la couleur" et "supprimer" ont un sens à s'appliquer en
+    // masse (voir handlers["color"]/["delete"] dans bpmn-menu-handler.ts, qui
+    // itèrent sur ActionContext.cells). Tout le reste (ajout de vertex,
+    // connect, config, search, rotate...) suppose une cellule unique.
+    function applyMenuVisibilityForMultiSelection(cells: Cell[]) {
+        const ALL_ACTIONS = [
+            "add-state",
+            "add-task",
+            "add-gateway",
+            "connect",
+            "config",
+            "color",
+            "align",
+            "add-annotations",
+            "delete",
+            "search",
+            "rotate",
+        ] as const;
+
+        const actions = new Set<string>(["color", "delete"]);
+
+        // "Aligner" ne fait quelque chose que s'il y a au moins deux sommets
+        // (les arêtes sont ignorées par handlers["align"] — voir
+        // bpmn-menu-handler.ts) : une sélection de deux arêtes, ou d'un seul
+        // sommet + une arête, n'a rien à aligner.
+        const vertexCount = cells.filter((c) => c.isVertex()).length;
+        if (vertexCount > 1) actions.add("align");
+
+        for (const action of ALL_ACTIONS) {
+            setActionVisible(action, actions.has(action));
+        }
+
+        // Même règle que pour une cellule unique (voir applyMenuVisibilityForCell),
+        // généralisée : blanc masqué seulement si TOUTE la sélection est faite
+        // d'arêtes, noir masqué seulement si TOUTE la sélection est faite de
+        // sommets — une sélection mixte garde les deux.
+        const allEdges = cells.every((c) => c.isEdge());
+        const allVertices = cells.every((c) => c.isVertex());
+        setSwatchVisible("#ffffff", !allEdges);
+        setSwatchVisible("#000000", !allVertices);
+
+        recomputeMenuBreaks();
+    }
+
     // Vrai entre la fin d'un geste "connect" (edge créée par
     // ConnectionHandler.connect(), voir bpmn-menu-handler.ts) et le clic
     // suivant traité par onGraphClick — les deux sont le même clic natif :
@@ -222,8 +269,23 @@ export function initVertexMenuActions(
 
     let currentCell: Cell | null = null;
 
+    // Non-null (length > 1) uniquement pendant une sélection multiple : porte
+    // l'ensemble des cellules ciblées par "color"/"delete" (voir onMenuClick).
+    // null en sélection simple — `currentCell` seul fait foi dans ce cas.
+    let currentCells: Cell[] | null = null;
+
     // 🔥 On accepte vertex OU edge
     const isMenuCell = (c: Cell | null | undefined) => !!c && (c.isVertex() || c.isEdge());
+
+    // Cellules actuellement sélectionnées, résolues (icône/badge → parent) et
+    // dédupliquées — deux entrées de sélection distinctes (ex: icône + son
+    // parent, si jamais les deux finissaient sélectionnées) peuvent se
+    // résoudre vers la même cellule réelle.
+    const getSelectedMenuCells = (): Cell[] => {
+        const raw = graph.getSelectionCells() as Cell[];
+        const resolved = raw.filter(isMenuCell).map(resolveMenuCell);
+        return Array.from(new Set(resolved));
+    };
 
     // Distance (en pixels écran) au-delà de laquelle un mousedown->mouseup
     // sur une cellule est considéré comme un déplacement plutôt qu'un simple clic.
@@ -270,8 +332,10 @@ export function initVertexMenuActions(
 
     const hide = () => {
         currentCell = null;
+        currentCells = null;
         lastAnchor = null;
         setPaletteOpen(false);
+        setAlignMenuOpen(false);
         menuEl.classList.add("bpmn-editor-hidden");
     };
 
@@ -369,6 +433,39 @@ export function initVertexMenuActions(
         placeMenuAt(p.x, p.y);
     };
 
+    // Boîte englobante (coords container, comme state.x/y ailleurs dans ce
+    // fichier) des cellules sélectionnées, pour ancrer le menu multi-sélection
+    // quand on n'a pas de MouseEvent (ex: sélection en rectangle terminée sur
+    // le fond, ou zoom/pan pendant qu'une sélection multiple est active).
+    const getUnionScreenBounds = (cells: Cell[]) => {
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        let found = false;
+        for (const c of cells) {
+            const state = graph.view.getState(c);
+            if (!state) continue;
+            found = true;
+            minX = Math.min(minX, state.x);
+            minY = Math.min(minY, state.y);
+            maxX = Math.max(maxX, state.x + state.width);
+            maxY = Math.max(maxY, state.y + state.height);
+        }
+        if (!found) return null;
+        return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+    };
+
+    const showForMultiSelectionFallback = (cells: Cell[]) => {
+        applyMenuVisibilityForMultiSelection(cells);
+        const bounds = getUnionScreenBounds(cells);
+        if (!bounds) return hide();
+        placeMenuAt(bounds.x + bounds.width + 8, bounds.y);
+    };
+
+    const showForMultiSelectionAtMouse = (cells: Cell[], e: MouseEvent) => {
+        applyMenuVisibilityForMultiSelection(cells);
+        const p = getLocalPointFromMouse(e);
+        placeMenuAt(p.x, p.y);
+    };
+
     const updateFromSelection = () => {
         // ConnectionHandler.connect() sélectionne la nouvelle arête juste
         // après l'avoir créée (voir bpmn-menu-handler.ts / le commentaire de
@@ -381,35 +478,42 @@ export function initVertexMenuActions(
         // ici : c'est onGraphClick, plus tard dans le même clic, qui le fait.
         if (justConnected) return;
 
-        const cells = graph.getSelectionCells() as Cell[];
+        const cells = getSelectedMenuCells();
 
-        if (requireSingle) {
-            if (cells.length !== 1 || !isMenuCell(cells[0])) return hide();
-            currentCell = resolveMenuCell(cells[0]);
+        if (cells.length === 0) return hide();
 
-            // Tant que le bouton est enfoncé, on ne (re)positionne pas le menu:
-            // SelectionHandler sélectionne la cellule dès le mousedown, avant
-            // de savoir si le geste est un clic ou un déplacement. L'ouverture
-            // effective est décidée au relâchement par onGraphClick.
+        if (cells.length > 1) {
+            currentCell = cells[0];
+            currentCells = cells;
+
+            // Même garde-fou qu'en sélection simple: on ne (re)positionne pas
+            // tant que le bouton reste enfoncé (drag de sélection rectangle
+            // en cours) — voir le commentaire équivalent ci-dessous.
             if (pressed) return;
 
-            // Si on a un ancrage (dernier clic), on garde l'emplacement
             if (lastAnchor) {
                 ensureMenuInContainer();
+                applyMenuVisibilityForMultiSelection(cells);
                 menuEl.style.left = `${lastAnchor.x}px`;
                 menuEl.style.top = `${lastAnchor.y}px`;
                 menuEl.classList.remove("bpmn-editor-hidden");
                 return;
             }
 
-            showForCellFallback(currentCell);
+            showForMultiSelectionFallback(cells);
             return;
         }
 
-        const first = cells.find((c) => isMenuCell(c));
-        if (!first) return hide();
-        currentCell = resolveMenuCell(first);
+        currentCells = null;
+        currentCell = cells[0];
 
+        // Tant que le bouton est enfoncé, on ne (re)positionne pas le menu:
+        // SelectionHandler sélectionne la cellule dès le mousedown, avant
+        // de savoir si le geste est un clic ou un déplacement. L'ouverture
+        // effective est décidée au relâchement par onGraphClick.
+        if (pressed) return;
+
+        // Si on a un ancrage (dernier clic), on garde l'emplacement
         if (lastAnchor) {
             ensureMenuInContainer();
             menuEl.style.left = `${lastAnchor.x}px`;
@@ -455,7 +559,28 @@ export function initVertexMenuActions(
     function togglePalette() {
         if (!paletteEl) return;
         const isOpen = !paletteEl.classList.contains("bpmn-editor-hidden");
+        setAlignMenuOpen(false);
         setPaletteOpen(!isOpen);
+    }
+
+    // Sous-menu "aligner" (sélection multiple uniquement) — même mécanique
+    // que la palette de couleur, mutuellement exclusif avec elle: ouvrir
+    // l'un ferme l'autre.
+    const alignMenuEl = menuEl.querySelector<HTMLElement>('[data-role="align-menu"]');
+    const alignBtn = menuEl.querySelector<HTMLElement>('[data-action="align"]');
+
+    function setAlignMenuOpen(open: boolean) {
+        if (!alignMenuEl || !alignBtn) return;
+        alignMenuEl.classList.toggle("bpmn-editor-hidden", !open);
+        alignBtn.setAttribute("aria-expanded", open ? "true" : "false");
+        alignMenuEl.setAttribute("aria-hidden", open ? "false" : "true");
+    }
+
+    function toggleAlignMenu() {
+        if (!alignMenuEl) return;
+        const isOpen = !alignMenuEl.classList.contains("bpmn-editor-hidden");
+        setPaletteOpen(false);
+        setAlignMenuOpen(!isOpen);
     }
 
     // 3) click menu
@@ -474,6 +599,23 @@ export function initVertexMenuActions(
                 graph,
                 undoManager,
                 cell: currentCell,
+                cells: currentCells ?? undefined,
+                parent: graph.getDefaultParent(),
+                menuEl: target,
+                event: e,
+            });
+
+            hide();
+            return;
+        }
+
+        const alignBtnClicked = target.closest<HTMLElement>("[data-align]");
+        if (alignBtnClicked) {
+            handlers["align"]?.({
+                graph,
+                undoManager,
+                cell: currentCell,
+                cells: currentCells ?? undefined,
                 parent: graph.getDefaultParent(),
                 menuEl: target,
                 event: e,
@@ -493,12 +635,19 @@ export function initVertexMenuActions(
             return;
         }
 
+        if (action === "align") {
+            toggleAlignMenu();
+            return;
+        }
+
         setPaletteOpen(false);
+        setAlignMenuOpen(false);
 
         handlers[action]?.({
             graph,
             undoManager,
             cell: currentCell,
+            cells: currentCells ?? undefined,
             parent: graph.getDefaultParent(),
             menuEl,
             event: e,
@@ -543,12 +692,37 @@ export function initVertexMenuActions(
             return;
         }
 
+        // Un déplacement d'une cellule déjà sélectionnée (drag du groupe) ne
+        // doit ni ouvrir ni repositionner le menu — seul un clic net le fait.
+        // Un rubber-band de sélection (glissé depuis le fond, donc rawCell
+        // null) n'est PAS concerné : c'est un geste de sélection légitime,
+        // pas un drag de cellule, même s'il parcourt une grande distance.
+        if (rawCell && moved) return;
+
+        const selected = getSelectedMenuCells();
+
+        // Sélection multiple: menu restreint (couleur + suppression), ciblant
+        // toutes les cellules sélectionnées — voir applyMenuVisibilityForMultiSelection.
+        if (selected.length > 1) {
+            currentCells = selected;
+            currentCell = selected[0];
+
+            if (me) {
+                showForMultiSelectionAtMouse(selected, me);
+                return;
+            }
+
+            lastAnchor = null;
+            showForMultiSelectionFallback(selected);
+            return;
+        }
+
+        currentCells = null;
+
         if (!rawCell || !isMenuCell(rawCell)) {
             hide();
             return;
         }
-
-        if (moved) return;
 
         const cell = resolveMenuCell(rawCell);
         currentCell = cell;
@@ -594,6 +768,7 @@ export function initVertexMenuActions(
             if (!isMenuCell(cell)) return;
             const resolved = resolveMenuCell(cell);
             currentCell = resolved;
+            currentCells = null;
             lastAnchor = null;
             showForCellFallback(resolved);
         },
