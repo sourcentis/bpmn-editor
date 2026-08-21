@@ -443,14 +443,29 @@ const CSS_TEXT = `
   /* Without an explicit width, a flex-wrap container sizes itself to fit
      ALL items on one line (shrink-to-fit against max-content), then just
      clips that width down to max-width — it does NOT shrink to the actual
-     widest wrapped row. Sized to a 4-button row (4 × 28px buttons + 3 × 2px
-     gaps + padding + border). Row breaks are forced explicitly via
+     widest wrapped row. Row breaks are forced explicitly via
      .bpmn-editor-menu-break slots, toggled at runtime by
      recomputeMenuBreaks() (bpmn-menu-init.ts) against the buttons actually
      visible for the clicked cell — this max-width is kept only as a
-     fallback ceiling for narrow hosts. Recompute if button size/gap/padding
-     changes. */
-  max-width: 128px;
+     fallback ceiling for narrow hosts, so its exact value shouldn't matter.
+     But flex-wrap still auto-wraps on its own, ahead of the explicit break,
+     the moment cumulative row width exceeds max-width — so max-width must
+     stay wide enough to fit a full 4-button row (4 × 28px buttons + 3 × 2px
+     gaps + padding + border = 128px) or that auto-wrap fires early. Edge on
+     Windows was observed rounding flex item/gap widths a hair wider than
+     Chrome/Firefox at some display-scale factors, enough to overflow a
+     128px cap mid-row: the result was an unwanted auto-wrap after the 3rd
+     button *and* the intentional forced break after the 4th, i.e. two line
+     breaks instead of one. Sized here with a few px of slack above the
+     128px exact fit — note the box's rendered width IS max-width whenever
+     content overflows it (always true here, 11 buttons never fit one
+     line), so this value is also literally the menu's visible width: keep
+     the slack small (a wider max-width directly means a wider menu, not
+     just a bigger safety margin) and comfortably below 158px, where a 5th
+     button would fit, so sub-pixel rounding differences across browsers/
+     zoom levels can't reintroduce the bug. Recompute if button
+     size/gap/padding changes. */
+  max-width: 133px;
   padding: 4px;
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.12);
