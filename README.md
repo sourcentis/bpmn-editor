@@ -51,6 +51,11 @@ editor.
 
 ## Quick start
 
+### With a bundler (Vite, Webpack, Next.js, ...)
+
+After `npm install`, your bundler resolves the imports below from
+`node_modules` automatically:
+
 ```html
 <div id="editor" style="height: 640px;"></div>
 
@@ -64,7 +69,41 @@ editor.
 ```
 
 That's it — a complete BPMN editor with a toolbar, drag-and-drop palette,
-undo/redo, and import/export, with no server and no other setup.
+undo/redo, and import/export.
+
+### Without a bundler (plain HTML page)
+
+The snippet above uses a *bare specifier* (`'@sourcentis/bpmn-editor'`,
+not a `./` path) — browsers can't resolve that on their own, only a
+bundler can. For a plain HTML page, add an
+[import map](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/script/type/importmap)
+before your script instead:
+
+```html
+<script type="importmap">
+{
+  "imports": {
+    "@maxgraph/core": "https://esm.sh/@maxgraph/core@0.21.0",
+    "@sourcentis/bpmn-editor": "./node_modules/@sourcentis/bpmn-editor/dist/bpmn-editor.js"
+  }
+}
+</script>
+<div id="editor" style="height: 640px;"></div>
+
+<script type="module">
+  import { createBpmnEditor } from '@sourcentis/bpmn-editor';
+
+  const editor = createBpmnEditor(document.getElementById('editor'), {
+    ui: 'default',
+  });
+</script>
+```
+
+Then serve the page over http(s) — `npx serve`, `python -m http.server`, or
+similar (browsers block ES module imports from `file://`). See
+[`examples/editor.html`](examples/editor.html) for a complete, runnable
+version of this setup: clone this repo, then
+`npm install && npm run build && npm run serve`.
 
 ## Documentation
 
