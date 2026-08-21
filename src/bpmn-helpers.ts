@@ -1,7 +1,7 @@
 // src/bpmn-helpers.ts
 import { Cell, Graph } from "@maxgraph/core";
 import { BPMN_ICONS } from "./bpmn-icons";
-import { setConversationFlow } from "./bpmn-arrows";
+import { setAnnotationArrow, setConversationFlow } from "./bpmn-arrows";
 
 // ── BPMN element factories ─────────────────────────────────────────────────────
 
@@ -239,7 +239,12 @@ export function addBPMNConnection(graph: Graph, source: Cell, target: Cell): Cel
         style:  { baseStyleNames: ["bpmn-edge"] },
     });
 
-    if (isConversationVertex(graph, source) || isConversationVertex(graph, target))
+    // Un lien touchant une annotation reste en pointillé même quand l'autre
+    // extrémité est une conversation — ce cas prime sur le double-trait
+    // habituel des liens de conversation (voir setConversationFlow).
+    if (isAnnotationVertex(graph, source) || isAnnotationVertex(graph, target))
+        setAnnotationArrow(graph, edge);
+    else if (isConversationVertex(graph, source) || isConversationVertex(graph, target))
         setConversationFlow(graph, edge);
 
     return edge;
@@ -260,6 +265,7 @@ export const isGatewayVertex      = (_graph: Graph, cell: Cell): boolean => !!ce
 export const isActivitiesVertex   = (_graph: Graph, cell: Cell): boolean => !!cell && cellHasBaseStyle(cell, "activities");
 export const isLaneVertex         = (_graph: Graph, cell: Cell): boolean => !!cell && cellHasBaseStyle(cell, "lane");
 export const isConversationVertex = (_graph: Graph, cell: Cell): boolean => !!cell && cellHasBaseStyle(cell, "conversation");
+export const isAnnotationVertex   = (_graph: Graph, cell: Cell): boolean => !!cell && cellHasBaseStyle(cell, "annotation");
 export const isDataVertex         = (_graph: Graph, cell: Cell): boolean =>
     !!cell && (cellHasBaseStyle(cell, "data") || cellHasBaseStyle(cell, "database"));
 
