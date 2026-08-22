@@ -25,6 +25,7 @@ import { installEdgeRules } from './bpmn-arrows';
 import { installDropInActivitiesParent } from './bpmn-parent';
 import { initCopyPaste } from './bpmn-copy-paste';
 import { initZOrder, setupBringToFrontKeyBinding } from './bpmn-zorder';
+import { installIconHitTestFix } from './bpmn-icon-hit';
 
 export function createBpmnEditor(container: HTMLElement, options: BpmnEditorOptions = {}): BpmnEditorInstance {
     const ui = options.ui ?? 'default';
@@ -66,6 +67,12 @@ export function createBpmnEditor(container: HTMLElement, options: BpmnEditorOpti
     // attached to (see bpmn-zorder.ts).
     const disposeZOrder = initZOrder(graph);
     disposers.push(disposeZOrder);
+
+    // Même remarque qu'au-dessus pour initZOrder : nécessaire dans les DEUX
+    // modes — un viewer readOnly doit lui aussi pouvoir cliquer un state/
+    // gateway (sélection, navigate) sans que son icône n'absorbe le clic.
+    const disposeIconHitTestFix = installIconHitTestFix(graph);
+    disposers.push(disposeIconHitTestFix);
 
     if (readOnly) {
         graph.setEnabled(false);
