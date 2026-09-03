@@ -333,10 +333,24 @@ export function getCurrentBpmnData(): BpmnData | null {
 
 // Sanitize XML (défense en profondeur)
 export function sanitizeXml(xml: string): string {
-    return xml
+    const cleaned = xml
+        // Remove disallowed control chars
         .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+        // Drop XML declarations / processing instructions
+        .replace(/<\?xml[\s\S]*?\?>/gi, '')
+        .replace(/<\?[\s\S]*?\?>/g, '')
+        // Block DTD / ENTITY based payloads (XXE/XSS defense-in-depth)
+        .replace(/<!DOCTYPE[\s\S]*?>/gi, '')
+        .replace(/<!ENTITY[\s\S]*?>/gi, '')
         .trim();
+
+    if (!cleaned) {
+        throw new Error('XML vide ou invalide');
+    }
+
+    return cleaned;
 }
+
 
 // Parser BPMN
 export function parseBPMN(xmlText: string): BpmnData {
